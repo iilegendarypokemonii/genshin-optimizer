@@ -3,5 +3,13 @@
   "identifier": "default",
   "description": "Default desktop capability for the local optimizer shell.",
   "windows": ["main"],
-  "permissions": ["core:default", "dialog:default", "fs:default"]
+  "permissions": [
+    "core:default",
+    "core:window:allow-show",
+    "dialog:default",
+    "fs:default",
+    "fs:create-app-specific-dirs",
+    "fs:allow-applocaldata-read-recursive",
+    "fs:allow-applocaldata-write-recursive"
+  ]
 }
