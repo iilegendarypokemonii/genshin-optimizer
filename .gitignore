@@ -4,6 +4,8 @@
 dist
 tmp
 /out-tsc
+src-tauri/target
+.codex-run
 
 # dependencies
 node_modules

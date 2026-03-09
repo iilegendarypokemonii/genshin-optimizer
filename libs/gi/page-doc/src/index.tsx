@@ -21,14 +21,11 @@ import {
   Typography,
 } from '@mui/material'
 import { Suspense } from 'react'
-import ReactGA from 'react-ga4'
 import { useTranslation } from 'react-i18next'
 import { Link, Route, Routes, useMatch } from 'react-router-dom'
 
 export default function PageDocumentation() {
   // const { t } = useTranslation("documentation")
-  ReactGA.send({ hitType: 'pageview', page: '/doc' })
-
   const {
     params: { currentTab },
   } = useMatch('/doc/:currentTab') ?? { params: { currentTab: '' } }

@@ -1,4 +1,3 @@
-import { AdResponsive } from '@genshin-optimizer/common/ad'
 import { useForceUpdate } from '@genshin-optimizer/common/react-util'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import {
@@ -36,7 +35,6 @@ import {
   ArtifactSetMultiAutocomplete,
   ArtifactSlotToggle,
   DataContext,
-  GOAdWrapper,
   HitModeToggle,
   NoArtWarning,
   ReactionToggle,
@@ -520,11 +518,6 @@ export default function TabUpopt() {
                     onClick={() => setArtifactIdToEdit('new')}
                   />
                   <StatFilterCard disabled={false} />
-                  <AdResponsive
-                    bgt="light"
-                    dataAdSlot="3955015620"
-                    Ad={GOAdWrapper}
-                  />
                 </Grid>
               </Grid>
             </Box>

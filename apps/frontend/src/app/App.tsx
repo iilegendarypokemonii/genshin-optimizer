@@ -2,18 +2,12 @@ import {
   DBLocalStorage,
   SandboxStorage,
 } from '@genshin-optimizer/common/database'
-import { ScrollTop, useRefSize, useTitle } from '@genshin-optimizer/common/ui'
+import { ScrollTop, useTitle } from '@genshin-optimizer/common/ui'
 import { ArtCharDatabase } from '@genshin-optimizer/gi/db'
 import { DatabaseContext } from '@genshin-optimizer/gi/db-ui'
 import '@genshin-optimizer/gi/i18n' // import to load translations
 import { theme } from '@genshin-optimizer/gi/theme'
-import {
-  GOAdWrapper,
-  SillyContext,
-  SnowContext,
-  useSilly,
-  useSnow,
-} from '@genshin-optimizer/gi/ui'
+import { SillyContext, SnowContext, useSilly, useSnow } from '@genshin-optimizer/gi/ui'
 import {
   Box,
   Container,
@@ -21,40 +15,38 @@ import {
   Skeleton,
   StyledEngineProvider,
   ThemeProvider,
-  useTheme,
 } from '@mui/material'
-import { Suspense, lazy, useCallback, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import './App.scss'
-import {
-  AdBanner,
-  AdBlockContextWrapper,
-  AdRailSticky,
-} from '@genshin-optimizer/common/ad'
 import ErrorBoundary from './ErrorBoundary'
 import Footer from './Footer'
 import Header from './Header'
 import Snow from './Snow'
 
-const PageHome = lazy(() => import('@genshin-optimizer/gi/page-home'))
-const PageArtifacts = lazy(() => import('@genshin-optimizer/gi/page-artifacts'))
-const PageTools = lazy(() => import('@genshin-optimizer/gi/page-tools'))
-const PageSettings = lazy(() => import('@genshin-optimizer/gi/page-settings'))
-const PageWeapons = lazy(() => import('@genshin-optimizer/gi/page-weapons'))
-const PageArchive = lazy(() => import('@genshin-optimizer/gi/page-archive'))
-const PageDocumentation = lazy(() => import('@genshin-optimizer/gi/page-doc'))
-const PageScanner = lazy(() => import('@genshin-optimizer/gi/page-scanner'))
-const PageCharacters = lazy(
-  () => import('@genshin-optimizer/gi/page-characters')
-)
-const PageTeams = lazy(() => import('@genshin-optimizer/gi/page-teams'))
-const PageTeam = lazy(() => import('@genshin-optimizer/gi/page-team'))
+const loadPageHome = () => import('@genshin-optimizer/gi/page-home')
+const loadPageArtifacts = () => import('@genshin-optimizer/gi/page-artifacts')
+const loadPageSettings = () => import('@genshin-optimizer/gi/page-settings')
+const loadPageWeapons = () => import('@genshin-optimizer/gi/page-weapons')
+const loadPageArchive = () => import('@genshin-optimizer/gi/page-archive')
+const loadPageDocumentation = () => import('@genshin-optimizer/gi/page-doc')
+const loadPageCharacters = () => import('@genshin-optimizer/gi/page-characters')
+const loadPageTeams = () => import('@genshin-optimizer/gi/page-teams')
+const loadPageTeam = () => import('@genshin-optimizer/gi/page-team')
+
+const PageHome = lazy(loadPageHome)
+const PageArtifacts = lazy(loadPageArtifacts)
+const PageSettings = lazy(loadPageSettings)
+const PageWeapons = lazy(loadPageWeapons)
+const PageArchive = lazy(loadPageArchive)
+const PageDocumentation = lazy(loadPageDocumentation)
+const PageCharacters = lazy(loadPageCharacters)
+const PageTeams = lazy(loadPageTeams)
+const PageTeam = lazy(loadPageTeam)
 
 function App() {
   const dbIndex = parseInt(localStorage.getItem('dbIndex') || '1')
   const [databases, setDatabases] = useState(() => {
-    localStorage.removeItem('GONewTabDetection')
-    localStorage.setItem('GONewTabDetection', 'debug')
     return ([1, 2, 3, 4] as const).map((index) => {
       if (index === dbIndex) {
         return new ArtCharDatabase(index, new DBLocalStorage(localStorage))
@@ -94,9 +86,7 @@ function App() {
             <DatabaseContext.Provider value={dbContextObj}>
               <ErrorBoundary>
                 <HashRouter basename="/">
-                  <AdBlockContextWrapper>
-                    <Content />
-                  </AdBlockContextWrapper>
+                  <Content />
                   <ScrollTop />
                 </HashRouter>
               </ErrorBoundary>
@@ -109,9 +99,27 @@ function App() {
 }
 function Content() {
   useTitle()
-  const theme = useTheme()
-  const { width, ref } = useRefSize(true)
-  const adWidth = width - (theme.breakpoints.values.xl + 10) //account for the "full width" of container
+
+  useEffect(() => {
+    const preloadRoutes = () => {
+      void loadPageArtifacts()
+      void loadPageWeapons()
+      void loadPageCharacters()
+      void loadPageTeams()
+      void loadPageArchive()
+      void loadPageSettings()
+    }
+
+    if (typeof window === 'undefined') return
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(preloadRoutes, { timeout: 1500 })
+      return () => window.cancelIdleCallback(idleId)
+    }
+
+    const timeout = window.setTimeout(preloadRoutes, 800)
+    return () => window.clearTimeout(timeout)
+  }, [])
+
   return (
     <Box
       display="flex"
@@ -123,65 +131,37 @@ function Content() {
       })}
     >
       <Header anchor="back-to-top-anchor" />
-      {/* Top banner ad */}
-      <AdBanner width={width} dataAdSlot="3477080462" Ad={GOAdWrapper} />
-      {/* Main content */}
-      <Box
-        display="flex"
-        ref={ref}
-        justifyContent="center"
-        alignItems="flex-start"
+      <Container
+        maxWidth="xl"
+        sx={{ px: { xs: 0.5, sm: 1 }, flexGrow: 1, mx: 'auto', width: '100%' }}
       >
-        {/* left Rail ad */}
-        <AdRailSticky
-          adWidth={adWidth}
-          dataAdSlot="2411728037"
-          Ad={GOAdWrapper}
-        />
-        {/* Content */}
-        <Container
-          maxWidth="xl"
-          sx={{ px: { xs: 0.5, sm: 1 }, flexGrow: 1, mx: 0 }}
+        <Suspense
+          fallback={
+            <Skeleton
+              variant="rectangular"
+              sx={{ width: '100%', height: 1000 }}
+            />
+          }
         >
-          <Suspense
-            fallback={
-              <Skeleton
-                variant="rectangular"
-                sx={{ width: '100%', height: 1000 }}
-              />
-            }
-          >
-            <Routes>
-              <Route index element={<PageHome />} />
-              <Route path="/artifacts" element={<PageArtifacts />} />
-              <Route path="/weapons" element={<PageWeapons />} />
-              <Route path="/characters/*" element={<PageCharacters />} />
-              <Route path="/teams/*">
-                <Route index element={<PageTeams />} />
-                <Route path=":teamId/*" element={<PageTeam />} />
-              </Route>
-              <Route path="/archive/*" element={<PageArchive />} />
-              <Route path="/tools" element={<PageTools />} />
-              <Route path="/setting" element={<PageSettings />} />
-              <Route path="/doc/*" element={<PageDocumentation />} />
-              <Route path="/scanner" element={<PageScanner />} />
-            </Routes>
-          </Suspense>
-        </Container>
-        {/* right rail ad */}
-        <AdRailSticky
-          adWidth={adWidth}
-          dataAdSlot="2411728037"
-          Ad={GOAdWrapper}
-          isRightRail
-        />
-      </Box>
+          <Routes>
+            <Route index element={<PageHome />} />
+            <Route path="/artifacts" element={<PageArtifacts />} />
+            <Route path="/weapons" element={<PageWeapons />} />
+            <Route path="/characters/*" element={<PageCharacters />} />
+            <Route path="/teams/*">
+              <Route index element={<PageTeams />} />
+              <Route path=":teamId/*" element={<PageTeam />} />
+            </Route>
+            <Route path="/archive/*" element={<PageArchive />} />
+            <Route path="/setting" element={<PageSettings />} />
+            <Route path="/doc/*" element={<PageDocumentation />} />
+          </Routes>
+        </Suspense>
+      </Container>
 
       {/* make sure footer is always at bottom */}
       <Box flexGrow={1} />
       <Snow />
-      {/* Footer Ad */}
-      <AdBanner width={width} dataAdSlot="2396256483" Ad={GOAdWrapper} />
       <Footer />
     </Box>
   )
