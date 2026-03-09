@@ -8,7 +8,6 @@ import {
   CardThemed,
   ShowingAndSortOptionSelect,
   useInfScroll,
-  useIsMount,
 } from '@genshin-optimizer/common/ui'
 import {
   catTotal,
@@ -59,7 +58,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import ReactGA from 'react-ga4'
 import { useTranslation } from 'react-i18next'
 import { useMatch, useNavigate } from 'react-router-dom'
 const columns = { xs: 1, sm: 2, md: 3, lg: 4, xl: 4 }
@@ -101,8 +99,6 @@ export default function PageCharacter() {
   const brPt = useMediaQueryUp()
 
   const [newCharacter, setnewCharacter] = useState(false)
-  if (useIsMount()) ReactGA.send({ hitType: 'pageview', page: '/characters' })
-
   // character favorite updater
   const characterMetaDirty = useDataManagerValues(database.charMeta)
 

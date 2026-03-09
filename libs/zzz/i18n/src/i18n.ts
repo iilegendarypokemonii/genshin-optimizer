@@ -22,6 +22,33 @@ export const languageCodeList = [
   'vi',
 ]
 
+function getLocaleLoadPath(lng: string, ns: string) {
+  if (typeof window === 'undefined')
+    return `./assets/locales/${lng}/${ns}.json`
+  return new URL(
+    `./assets/locales/${lng}/${ns}.json`,
+    window.location.href.split('#')[0]
+  ).toString()
+}
+
+const commonNamespaces = new Set(['build', 'common', 'loadout'])
+
+function getDevLocaleLoadPath(lng: string, ns: string) {
+  const relativeBase = commonNamespaces.has(ns)
+    ? '../../../common/localization/assets/locales/'
+    : ns.endsWith('_gen')
+      ? '../../dm-localization/assets/locales/'
+      : '../../localization/assets/locales/'
+  return new URL(`${relativeBase}${lng}/${ns}.json`, import.meta.url).toString()
+}
+
+function resolveLocaleLoadPath(lngs: string | string[], namespaces: string | string[]) {
+  const lng = Array.isArray(lngs) ? lngs[0] : lngs
+  const ns = Array.isArray(namespaces) ? namespaces[0] : namespaces
+  if (import.meta.env.DEV) return getDevLocaleLoadPath(lng, ns)
+  return getLocaleLoadPath(lng, ns)
+}
+
 /**
  * @see: https://www.i18next.com/translation-function/essentials
  * @see: https://react.i18next.com/latest/using-with-hooks
@@ -57,7 +84,7 @@ i18n
 
     backend: {
       // Path to load localization data from.
-      loadPath: './assets/locales/{{lng}}/{{ns}}.json',
+      loadPath: resolveLocaleLoadPath,
     },
     interpolation: {
       escapeValue: false, // react does interlopation already

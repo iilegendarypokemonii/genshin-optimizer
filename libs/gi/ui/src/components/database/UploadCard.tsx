@@ -1,6 +1,7 @@
 import { SandboxStorage } from '@genshin-optimizer/common/database'
 import { iconInlineProps } from '@genshin-optimizer/common/svgicons'
 import { CardThemed } from '@genshin-optimizer/common/ui'
+import { openTextFileWithDialog } from '@genshin-optimizer/common/util'
 import {
   ArtCharDatabase,
   type ImportResult,
@@ -20,15 +21,10 @@ import {
   Grid,
   Tooltip,
   Typography,
-  styled,
 } from '@mui/material'
-import type { ChangeEventHandler, DragEventHandler } from 'react'
+import type { DragEventHandler } from 'react'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-
-const InvisInput = styled('input')({
-  display: 'none',
-})
 
 export function UploadCard({
   index,
@@ -88,14 +84,12 @@ export function UploadCard({
     setfilename('')
     onReplace()
   }
-  const onUpload: ChangeEventHandler<HTMLInputElement> = async (e) => {
-    const file = e.target.files?.[0]
-    e.target.value = '' // reset the value so the same file can be uploaded again...
-    if (file) setfilename(file.name)
-    const reader = new FileReader()
-    reader.onload = () => setdata(reader.result as string)
-    file && reader.readAsText(file)
-  }
+  const onUpload = useCallback(async () => {
+    const file = await openTextFileWithDialog()
+    if (!file) return
+    setfilename(file.name)
+    setdata(file.content)
+  }, [])
   const onDrop: DragEventHandler<HTMLDivElement> = async (e) => {
     e.preventDefault()
     const file = e.dataTransfer.files[0]
@@ -117,17 +111,9 @@ export function UploadCard({
       <CardContent>
         <Grid container spacing={2} sx={{ mb: 1 }}>
           <Grid item>
-            <label htmlFor="icon-button-file">
-              <InvisInput
-                accept=".json"
-                id="icon-button-file"
-                type="file"
-                onChange={onUpload}
-              />
-              <Button component="span" color="info" startIcon={<FileOpen />}>
-                {t('uploadCard.buttons.open')}
-              </Button>
-            </label>
+            <Button color="info" startIcon={<FileOpen />} onClick={onUpload}>
+              {t('uploadCard.buttons.open')}
+            </Button>
           </Grid>
           <Grid item flexGrow={1}>
             <CardThemed sx={{ px: 2, py: 1 }}>

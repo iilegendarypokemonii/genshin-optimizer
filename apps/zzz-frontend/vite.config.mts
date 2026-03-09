@@ -39,21 +39,21 @@ export default defineConfig(() => ({
       targets: [
         {
           src: normalizePath(
-            resolve('../../libs/common/localization/assets/locales')
+            resolve('../../libs/common/localization/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/zzz/localization/assets/locales')
+            resolve('../../libs/zzz/localization/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/zzz/dm-localization/assets/locales')
+            resolve('../../libs/zzz/dm-localization/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(resolve('../../apps/zzz-frontend/assets/*')),

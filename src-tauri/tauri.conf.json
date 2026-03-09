@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Genshin Optimizer Local",
+  "version": "0.1.0",
+  "identifier": "com.iilegendarypokemonii.genshinoptimizerlocal",
+  "build": {
+    "beforeDevCommand": "node .yarn/releases/yarn-3.4.1.cjs frontend:desktop",
+    "devUrl": "http://127.0.0.1:4200",
+    "beforeBuildCommand": "node .yarn/releases/yarn-3.4.1.cjs frontend:desktop:build",
+    "frontendDist": "../dist/apps/frontend"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Genshin Optimizer Local",
+        "width": 1440,
+        "height": 960,
+        "minWidth": 1120,
+        "minHeight": 760,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "../apps/frontend/public/favicon.ico",
+      "../apps/frontend/public/favicon-32x32.png",
+      "../apps/frontend/public/android-chrome-192x192.png",
+      "../apps/frontend/public/android-chrome-512x512.png"
+    ]
+  }
+}

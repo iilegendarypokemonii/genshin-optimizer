@@ -8,7 +8,7 @@ import {
   ModalWrapper,
   TextFieldLazy,
 } from '@genshin-optimizer/common/ui'
-import { range } from '@genshin-optimizer/common/util'
+import { range, saveTextFileWithDialog } from '@genshin-optimizer/common/util'
 import { DatabaseContext } from '@genshin-optimizer/gi/db-ui'
 import { Delete, Download, ImportExport, Upload } from '@mui/icons-material'
 import ContentPasteIcon from '@mui/icons-material/ContentPaste'
@@ -82,7 +82,7 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
     database.toExtraLocalDB()
   }, [database, name])
 
-  const download = useCallback(() => {
+  const download = useCallback(async () => {
     const date = new Date()
     const dateStr = date
       .toISOString()
@@ -91,14 +91,7 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
       .replaceAll(':', '-')
     const JSONStr = JSON.stringify(database.exportGOOD())
     const filename = `${name.trim().replaceAll(' ', '_')}_${dateStr}.json`
-    const contentType = 'application/json;charset=utf-8'
-    const a = document.createElement('a')
-    a.download = filename
-    a.href = `data:${contentType},${encodeURIComponent(JSONStr)}`
-    a.target = '_blank'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+    await saveTextFileWithDialog(filename, JSONStr)
   }, [database, name])
 
   const onSwap = useCallback(() => {

@@ -8,6 +8,64 @@ import { defineConfig, normalizePath } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import pkg from '../../package.json' assert { type: 'json' }
 
+function manualChunks(id: string) {
+  const path = normalizePath(id)
+
+  if (path.includes('/node_modules/')) {
+    if (
+      path.includes('/react/') ||
+      path.includes('/react-dom/') ||
+      path.includes('/scheduler/') ||
+      path.includes('/react-router/')
+    ) {
+      return 'vendor-react'
+    }
+    if (path.includes('/@mui/') || path.includes('/@emotion/')) {
+      return 'vendor-mui'
+    }
+    if (path.includes('/i18next/') || path.includes('/react-i18next/')) {
+      return 'vendor-i18n'
+    }
+    return 'vendor'
+  }
+
+  if (path.includes('/libs/gi/page-home/')) return 'page-home'
+  if (path.includes('/libs/gi/page-artifacts/')) return 'page-artifacts'
+  if (path.includes('/libs/gi/page-weapons/')) return 'page-weapons'
+  if (path.includes('/libs/gi/page-characters/')) return 'page-characters'
+  if (path.includes('/libs/gi/page-teams/')) return 'page-teams'
+  if (path.includes('/libs/gi/page-team/')) return 'page-team'
+  if (path.includes('/libs/gi/page-archive/')) return 'page-archive'
+  if (path.includes('/libs/gi/page-settings/')) return 'page-settings'
+  if (path.includes('/libs/gi/page-doc/')) return 'page-doc'
+
+  if (
+    path.includes('/libs/gi/ui/') ||
+    path.includes('/libs/common/ui/') ||
+    path.includes('/libs/common/svgicons/') ||
+    path.includes('/libs/gi/svgicons/')
+  ) {
+    return 'ui-core'
+  }
+
+  if (
+    path.includes('/libs/gi/db/') ||
+    path.includes('/libs/gi/db-ui/') ||
+    path.includes('/libs/common/database/')
+  ) {
+    return 'data-core'
+  }
+
+  if (
+    path.includes('/libs/gi/formula/') ||
+    path.includes('/libs/gi/solver/') ||
+    path.includes('/libs/game-opt/') ||
+    path.includes('/libs/pando/')
+  ) {
+    return 'calc-core'
+  }
+}
+
 export default defineConfig(() => ({
   base: '',
   root: __dirname,
@@ -16,6 +74,10 @@ export default defineConfig(() => ({
   server: {
     port: 4200,
     host: 'localhost',
+    // Locale assets are sourced from shared libs outside this app root.
+    fs: {
+      allow: ['../..'],
+    },
   },
 
   preview: {
@@ -32,27 +94,27 @@ export default defineConfig(() => ({
       targets: [
         {
           src: normalizePath(
-            resolve('../../libs/common/localization/assets/locales')
+            resolve('../../libs/common/localization/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/gi/localization/assets/locales')
+            resolve('../../libs/gi/localization/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/gi/dm-localization/assets/locales')
+            resolve('../../libs/gi/dm-localization/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/gi/silly-wisher-names/assets/locales')
+            resolve('../../libs/gi/silly-wisher-names/assets/locales/**/*')
           ),
-          dest: 'assets',
+          dest: 'assets/locales',
         },
         {
           src: normalizePath(resolve('../../apps/frontend/assets/*')),
@@ -82,6 +144,11 @@ export default defineConfig(() => ({
     reportCompressedSize: true,
     commonjsOptions: {
       transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      output: {
+        manualChunks,
+      },
     },
   },
 
