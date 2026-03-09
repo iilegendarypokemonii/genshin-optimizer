@@ -8,6 +8,8 @@ import { defineConfig, normalizePath } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import pkg from '../../package.json' assert { type: 'json' }
 
+const isDesktopBuild = process.env.npm_lifecycle_event === 'frontend:desktop:build'
+
 function manualChunks(id: string) {
   const path = normalizePath(id)
 
@@ -145,11 +147,13 @@ export default defineConfig(() => ({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
-    rollupOptions: {
-      output: {
-        manualChunks,
-      },
-    },
+    rollupOptions: isDesktopBuild
+      ? undefined
+      : {
+          output: {
+            manualChunks,
+          },
+        },
   },
 
   test: {

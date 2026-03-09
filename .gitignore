@@ -6,6 +6,8 @@ tmp
 /out-tsc
 src-tauri/target
 .codex-run
+desktop/*
+!desktop/.gitkeep
 
 # dependencies
 node_modules

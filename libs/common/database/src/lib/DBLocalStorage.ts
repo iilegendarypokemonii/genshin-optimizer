@@ -24,10 +24,15 @@ export class DBLocalStorage implements DBStorage {
   }
 
   get keys(): string[] {
-    return Object.keys(this.storage)
+    return this.getStorageKeys()
   }
   get entries(): [key: string, value: string][] {
-    return Object.entries(this.storage)
+    return this.getStorageKeys()
+      .map((key) => {
+        const value = this.storage.getItem(key)
+        return value === null ? undefined : ([key, value] as [string, string])
+      })
+      .filter((entry): entry is [string, string] => !!entry)
   }
 
   get(key: string) {
@@ -63,7 +68,7 @@ export class DBLocalStorage implements DBStorage {
     this.storage.clear()
   }
   removeForKeys(shouldRemove: (key: string) => boolean) {
-    for (const key in this.storage) {
+    for (const key of this.getStorageKeys()) {
       if (shouldRemove(key)) this.storage.removeItem(key)
     }
   }
@@ -78,5 +83,14 @@ export class DBLocalStorage implements DBStorage {
   }
   setDBIndex(ind: 1 | 2 | 3 | 4) {
     this.setString(this.dbIndexKey, ind.toString())
+  }
+
+  private getStorageKeys() {
+    const keys: string[] = []
+    for (let index = 0; index < this.storage.length; index++) {
+      const key = this.storage.key(index)
+      if (key !== null) keys.push(key)
+    }
+    return keys
   }
 }
