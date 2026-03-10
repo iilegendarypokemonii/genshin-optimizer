@@ -74,9 +74,33 @@ async function bootstrap() {
         <App />
       </React.StrictMode>
     )
+    // Check for updates in the background after the app is ready
+    checkForUpdates()
   } catch (error) {
     console.error('Startup error', error)
     renderFatalError(error)
+  }
+}
+
+async function checkForUpdates() {
+  try {
+    const { check } = await import('@tauri-apps/plugin-updater')
+    const { relaunch } = await import('@tauri-apps/plugin-process')
+    const { ask } = await import('@tauri-apps/plugin-dialog')
+
+    const update = await check()
+    if (!update) return
+
+    const yes = await ask(
+      `Version ${update.version} is available. Update and restart now?`,
+      { title: 'Update Available', kind: 'info', okLabel: 'Update', cancelLabel: 'Later' }
+    )
+    if (!yes) return
+
+    await update.downloadAndInstall()
+    await relaunch()
+  } catch {
+    // Update check is best-effort — don't bother the user if it fails
   }
 }
 
