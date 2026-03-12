@@ -11,7 +11,6 @@
     "fs:create-app-specific-dirs",
     "fs:allow-applocaldata-read-recursive",
     "fs:allow-applocaldata-write-recursive",
-    "updater:default",
     "process:allow-restart"
   ]
 }
