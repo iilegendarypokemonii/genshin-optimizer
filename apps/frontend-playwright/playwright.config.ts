@@ -26,7 +26,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'yarn frontend:desktop',
+    command: 'node ../../node_modules/vite/bin/vite.js --config apps/frontend/vite.config.mts --host 127.0.0.1 --port 4200 --strictPort',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
     cwd: '../../',
