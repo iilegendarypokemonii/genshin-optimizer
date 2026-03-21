@@ -130,7 +130,7 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
           size="small"
           value={uid}
           placeholder="UID"
-          sx={{ borderRadius: 1, px: 1, width: 120 }}
+          sx={{ borderRadius: 1, px: 1, width: 150, flexShrink: 0 }}
           onChange={(uid) => {
             database.dbMeta.set({ uid })
             database.toExtraLocalDB()
