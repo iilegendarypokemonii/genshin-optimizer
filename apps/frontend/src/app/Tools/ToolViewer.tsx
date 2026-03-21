@@ -51,6 +51,8 @@ export default function ToolViewer({
         width: 1280,
         height: 900,
         center: true,
+        zoomHotkeysEnabled: true,
+        browserExtensionsEnabled: false,
       })
 
       await new Promise<void>((resolve, reject) => {
