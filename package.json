@@ -47,6 +47,7 @@
     "@swc/core": "1.5.25",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/cli": "^2.10.1",
+    "@tauri-apps/plugin-opener": "^2.5.3",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.1.0",
     "@types/jest": "29.5.14",
