@@ -1,25 +1,20 @@
 # Genshin Optimizer - Local Desktop Fork
 
-## Goal
-
-Turn Genshin Optimizer from a web app into a personal desktop application. This fork serves as a local hub for Genshin Impact (and future HoYoverse game) tooling — consolidating outside tools, data sources, and custom features beyond what the upstream web app offers.
-
-Stay compatible with upstream (`frzyc/genshin-optimizer`). All fork changes should be additive — new files, new exports, config changes — so that `git merge upstream/master` remains clean. Currently up to date with upstream at 10.33.0.
-
 ## Repo layout
 
 Nx monorepo (yarn 3.4.1) with ~130 libraries across multiple games:
 
 ```
-apps/frontend/       → Main GI web app (Vite + React + MUI)
-libs/gi/             → Genshin Impact libs (52 packages)
-libs/sr/             → Star Rail libs
-libs/zzz/            → Zenless Zone Zero libs
-libs/common/         → Shared utilities
-libs/game-opt/       → Cross-game optimization engine
-src-tauri/           → Tauri 2 desktop shell (Rust)
-desktop/             → Built desktop exe
-tools/scripts/       → Build helper scripts
+apps/frontend/             → Main GI web app (Vite + React + MUI)
+apps/frontend-playwright/  → Playwright e2e tests (fork-only, not an Nx project)
+libs/gi/                   → Genshin Impact libs (52 packages)
+libs/sr/                   → Star Rail libs
+libs/zzz/                  → Zenless Zone Zero libs
+libs/common/               → Shared utilities
+libs/game-opt/             → Cross-game optimization engine
+src-tauri/                 → Tauri 2 desktop shell (Rust)
+desktop/                   → Built desktop exe
+tools/scripts/             → Build helper scripts
 ```
 
 Key GI libraries:
@@ -35,7 +30,23 @@ Key GI libraries:
 - `upstream` → `frzyc/genshin-optimizer` (main project)
 - `aurceive` → `aurceive/genshin-optimizer` (expression feature source)
 
-To sync with upstream: `git fetch upstream && git merge upstream/master`
+### Branch strategy
+
+- **`master`** — clean mirror of `upstream/master`. Fast-forward only. Never commit fork changes here.
+- **`desktop`** — main working branch. All fork features (Tauri shell, expression targets, desktop UX) live here on top of master.
+- **`feature/*`** — feature branches for new work, branched from `desktop`, merged back into `desktop`.
+
+### Syncing with upstream
+
+```bash
+git fetch upstream
+git checkout master
+git merge --ff-only upstream/master
+git checkout desktop
+git rebase master
+```
+
+If rebase conflicts occur, resolve them on `desktop` — never modify `master`.
 
 ## Features exclusive to this fork
 
@@ -74,10 +85,18 @@ yarn nx run frontend:build    # production build to dist/apps/frontend/
 yarn frontend                 # dev server
 ```
 
+### Testing
+```bash
+yarn test                 # run all unit tests (Nx)
+yarn test:e2e             # run Playwright e2e smoke tests (starts Vite dev server if needed)
+yarn test:e2e:ui          # Playwright interactive UI mode
+yarn mini-ci              # format + typecheck + lint + test
+```
+
+Playwright tests live in `apps/frontend-playwright/` and run against `http://localhost:4200` (HashRouter, routes use `/#/` prefix). They are standalone — not an Nx project — to avoid merge conflicts with upstream.
+
 ### Other commands
 ```bash
-yarn test                 # run all tests
-yarn mini-ci              # format + typecheck + lint + test
 yarn reload-dm            # update game data submodules
 ```
 
