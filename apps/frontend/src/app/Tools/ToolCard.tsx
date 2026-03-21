@@ -8,7 +8,7 @@ import {
   Chip,
   Typography,
 } from '@mui/material'
-import type { ToolEntry } from './toolsManifest'
+import type { ToolEntry, ToolLink } from './toolsManifest'
 
 const categoryColors: Record<
   ToolEntry['category'],
@@ -23,11 +23,15 @@ const categoryColors: Record<
 
 export default function ToolCard({
   tool,
+  extraLinks,
   onOpen,
 }: {
   tool: ToolEntry
+  extraLinks?: ToolLink[]
   onOpen: (url: string) => void
 }) {
+  const allLinks = [...(tool.links ?? []), ...(extraLinks ?? [])]
+
   return (
     <Card
       data-testid={`tool-card-${tool.id}`}
@@ -66,7 +70,7 @@ export default function ToolCard({
           >
             Open
           </Button>
-          {tool.links?.map((link) => (
+          {allLinks.map((link) => (
             <Button
               key={link.label}
               size="small"
