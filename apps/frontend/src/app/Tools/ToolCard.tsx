@@ -1,5 +1,6 @@
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import {
+  Box,
   Button,
   Card,
   CardActions,
@@ -25,7 +26,7 @@ export default function ToolCard({
   onOpen,
 }: {
   tool: ToolEntry
-  onOpen: (tool: ToolEntry) => void
+  onOpen: (url: string) => void
 }) {
   return (
     <Card
@@ -56,14 +57,26 @@ export default function ToolCard({
         </Typography>
       </CardContent>
       <CardActions>
-        <Button
-          size="small"
-          variant="contained"
-          endIcon={<OpenInNewIcon />}
-          onClick={() => onOpen(tool)}
-        >
-          Open
-        </Button>
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+          <Button
+            size="small"
+            variant="contained"
+            endIcon={<OpenInNewIcon />}
+            onClick={() => onOpen(tool.url)}
+          >
+            Open
+          </Button>
+          {tool.links?.map((link) => (
+            <Button
+              key={link.label}
+              size="small"
+              variant="outlined"
+              onClick={() => onOpen(link.url)}
+            >
+              {link.label}
+            </Button>
+          ))}
+        </Box>
       </CardActions>
     </Card>
   )
