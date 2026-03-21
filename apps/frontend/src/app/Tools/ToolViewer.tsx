@@ -55,7 +55,18 @@ export default function ToolViewer({
     }
   }
 
-  const handleOpenExternal = () => {
+  const handleOpenExternal = async () => {
+    if (isTauri()) {
+      try {
+        const mod = await import(
+          /* @vite-ignore */ '@tauri-apps/plugin-opener'
+        )
+        await mod.openUrl(activeUrl)
+        return
+      } catch {
+        // Plugin not available, fall through to window.open
+      }
+    }
     window.open(activeUrl, '_blank', 'noopener,noreferrer')
   }
 
