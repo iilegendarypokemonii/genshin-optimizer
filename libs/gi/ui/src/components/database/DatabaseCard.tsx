@@ -19,6 +19,7 @@ import {
   Chip,
   Divider,
   Grid,
+  TextField,
   Typography,
 } from '@mui/material'
 import { useCallback, useContext } from 'react'
@@ -126,13 +127,13 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
             database.toExtraLocalDB()
           }}
         />
-        <TextFieldLazy
+        <TextField
           size="small"
           value={uid}
           placeholder="UID"
           sx={{ borderRadius: 1, px: 1, width: 150, flexShrink: 0 }}
-          onChange={(uid) => {
-            database.dbMeta.set({ uid })
+          onChange={(e) => {
+            database.dbMeta.set({ uid: e.target.value })
             database.toExtraLocalDB()
           }}
         />
