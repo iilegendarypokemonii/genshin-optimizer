@@ -16,6 +16,7 @@ const createDbMetaSchema = (defaultName: string) =>
     gender: z
       .enum(allGenderKeys as unknown as [GenderKey, ...GenderKey[]])
       .catch('F'),
+    uid: z.string().catch(''),
   })
 
 // Type derived from schema

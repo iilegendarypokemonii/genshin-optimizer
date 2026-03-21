@@ -53,7 +53,7 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
     setDatabase,
   } = useContext(DatabaseContext)
   const database = databases[index]
-  const { name, lastEdit } = useDataEntryBase(database.dbMeta)
+  const { name, lastEdit, uid } = useDataEntryBase(database.dbMeta)
 
   const current = mainDB === database
   const [uploadOpen, onOpen, onClose] = useBoolState()
@@ -123,6 +123,16 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
           sx={{ borderRadius: 1, px: 1, flexGrow: 1 }}
           onChange={(name) => {
             database.dbMeta.set({ name })
+            database.toExtraLocalDB()
+          }}
+        />
+        <TextFieldLazy
+          size="small"
+          value={uid}
+          placeholder="UID"
+          sx={{ borderRadius: 1, px: 1, width: 120 }}
+          onChange={(uid) => {
+            database.dbMeta.set({ uid })
             database.toExtraLocalDB()
           }}
         />

@@ -3,12 +3,19 @@ export type ToolLink = {
   url: string
 }
 
+export type DatabaseInfo = {
+  name: string
+  uid: string
+}
+
 export type ToolEntry = {
   id: string
   name: string
   description: string
   url: string
   links?: ToolLink[]
+  /** Generate links dynamically from database state (e.g. UID-based profile links) */
+  dynamicLinks?: (databases: DatabaseInfo[]) => ToolLink[]
   /** MUI icon name hint (actual rendering uses a generic icon) */
   icon: string
   category: 'database' | 'planner' | 'wiki' | 'community' | 'calculator'
@@ -20,6 +27,13 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Enka.Network',
     description: 'Character showcase and profile viewer',
     url: 'https://enka.network/',
+    dynamicLinks: (dbs) =>
+      dbs
+        .filter((db) => db.uid)
+        .map((db) => ({
+          label: db.name,
+          url: `https://enka.network/u/${db.uid}`,
+        })),
     icon: 'AccountBox',
     category: 'database',
   },
@@ -44,6 +58,13 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Akasha System',
     description: 'Leaderboards and build database',
     url: 'https://akasha.cv/',
+    dynamicLinks: (dbs) =>
+      dbs
+        .filter((db) => db.uid)
+        .map((db) => ({
+          label: db.name,
+          url: `https://akasha.cv/profile/${db.uid}`,
+        })),
     icon: 'Leaderboard',
     category: 'database',
   },
