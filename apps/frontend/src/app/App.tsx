@@ -156,7 +156,7 @@ function Content() {
             </Route>
             <Route path="/archive/*" element={<PageArchive />} />
             <Route path="/setting" element={<PageSettings />} />
-            <Route path="/tools" element={<PageTools />} />
+            <Route path="/tools/:toolId?" element={<PageTools />} />
             <Route path="/doc/*" element={<PageDocumentation />} />
           </Routes>
         </Suspense>
