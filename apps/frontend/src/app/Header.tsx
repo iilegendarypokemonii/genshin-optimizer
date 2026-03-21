@@ -6,6 +6,7 @@ import { useDBMeta, useDatabase } from '@genshin-optimizer/gi/db-ui'
 import { FlowerIcon } from '@genshin-optimizer/gi/svgicons'
 import { SillyContext } from '@genshin-optimizer/gi/ui'
 import ArticleIcon from '@mui/icons-material/Article'
+import ExtensionIcon from '@mui/icons-material/Extension'
 import BookIcon from '@mui/icons-material/Book'
 import GroupsIcon from '@mui/icons-material/Groups'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -75,6 +76,12 @@ const teams: ITab = {
   value: 'teams',
   textSuffix: <TeamChip key="charAdd" />,
 }
+const tools: ITab = {
+  i18Key: 'Tools',
+  icon: <ExtensionIcon />,
+  to: '/tools',
+  value: 'tools',
+}
 const doc: ITab = {
   i18Key: 'tabs.doc',
   icon: <ArticleIcon />,
@@ -124,6 +131,7 @@ const maincontent = [
   weapons,
   characters,
   teams,
+  tools,
   archive,
   doc,
   setting,
@@ -241,6 +249,7 @@ const mobileContent = [
   weapons,
   characters,
   teams,
+  tools,
   archive,
   doc,
   setting,

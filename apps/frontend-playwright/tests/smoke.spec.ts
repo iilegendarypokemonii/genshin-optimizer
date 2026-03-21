@@ -13,6 +13,7 @@ test.describe('Smoke tests', () => {
     { name: 'Weapons', path: '/#/weapons' },
     { name: 'Characters', path: '/#/characters' },
     { name: 'Teams', path: '/#/teams' },
+    { name: 'Tools', path: '/#/tools' },
     { name: 'Archive', path: '/#/archive' },
     { name: 'Setting', path: '/#/setting' },
     { name: 'Doc', path: '/#/doc' },

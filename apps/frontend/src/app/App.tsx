@@ -33,6 +33,7 @@ const loadPageDocumentation = () => import('@genshin-optimizer/gi/page-doc')
 const loadPageCharacters = () => import('@genshin-optimizer/gi/page-characters')
 const loadPageTeams = () => import('@genshin-optimizer/gi/page-teams')
 const loadPageTeam = () => import('@genshin-optimizer/gi/page-team')
+const loadPageTools = () => import('./Tools')
 
 const PageHome = lazy(loadPageHome)
 const PageArtifacts = lazy(loadPageArtifacts)
@@ -43,6 +44,7 @@ const PageDocumentation = lazy(loadPageDocumentation)
 const PageCharacters = lazy(loadPageCharacters)
 const PageTeams = lazy(loadPageTeams)
 const PageTeam = lazy(loadPageTeam)
+const PageTools = lazy(loadPageTools)
 
 function App() {
   const dbIndex = parseInt(localStorage.getItem('dbIndex') || '1')
@@ -154,6 +156,7 @@ function Content() {
             </Route>
             <Route path="/archive/*" element={<PageArchive />} />
             <Route path="/setting" element={<PageSettings />} />
+            <Route path="/tools" element={<PageTools />} />
             <Route path="/doc/*" element={<PageDocumentation />} />
           </Routes>
         </Suspense>
