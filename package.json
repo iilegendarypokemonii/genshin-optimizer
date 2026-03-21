@@ -15,7 +15,9 @@
     "reload-dm": "git submodule update --init",
     "update-dm": "git submodule update --remote",
     "gen-file": "nx run-many -t gen-file",
-    "test": "nx run-many -t test"
+    "test": "nx run-many -t test",
+    "test:e2e": "npx playwright test --config apps/frontend-playwright/playwright.config.ts",
+    "test:e2e:ui": "npx playwright test --config apps/frontend-playwright/playwright.config.ts --ui"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -37,6 +39,7 @@
     "@nx/web": "20.5.0",
     "@nx/webpack": "20.5.0",
     "@nx/workspace": "20.5.0",
+    "@playwright/test": "^1.58.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.10",
     "@svgr/webpack": "8.0.1",
     "@swc-node/register": "1.9.2",
