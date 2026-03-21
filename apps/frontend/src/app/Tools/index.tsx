@@ -1,20 +1,27 @@
 import ExtensionIcon from '@mui/icons-material/Extension'
 import { Box, Grid, Typography } from '@mui/material'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import ToolCard from './ToolCard'
 import ToolViewer from './ToolViewer'
 import { toolsManifest } from './toolsManifest'
 
 export default function ToolsPage() {
   const { toolId } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+
   const activeTool = toolId
     ? toolsManifest.find((t) => t.id === toolId) ?? null
     : null
 
   if (activeTool) {
+    const urlOverride = searchParams.get('url')
     return (
-      <ToolViewer tool={activeTool} onClose={() => navigate('/tools')} />
+      <ToolViewer
+        tool={activeTool}
+        urlOverride={urlOverride}
+        onClose={() => navigate('/tools')}
+      />
     )
   }
 
@@ -30,7 +37,18 @@ export default function ToolsPage() {
       <Grid container spacing={2}>
         {toolsManifest.map((tool) => (
           <Grid item xs={12} sm={6} md={4} key={tool.id}>
-            <ToolCard tool={tool} onOpen={(t) => navigate(`/tools/${t.id}`)} />
+            <ToolCard
+              tool={tool}
+              onOpen={(url) => {
+                if (url === tool.url) {
+                  navigate(`/tools/${tool.id}`)
+                } else {
+                  navigate(
+                    `/tools/${tool.id}?url=${encodeURIComponent(url)}`
+                  )
+                }
+              }}
+            />
           </Grid>
         ))}
       </Grid>

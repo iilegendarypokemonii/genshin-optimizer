@@ -7,7 +7,7 @@ const TOOL_IDS = [
   'paimon-moe',
   'genshin-interactive-map',
   'akasha-system',
-  'project-ambr',
+  'lunaris',
   'keqing-mains',
 ] as const
 
@@ -30,28 +30,24 @@ test.describe('Tools page', () => {
     await page.goto('/#/tools')
     await expect(page.getByTestId('tools-page')).toBeVisible()
 
-    // Verify enka-network card has visible text content
     const enkaCard = page.getByTestId('tool-card-enka-network')
     await expect(enkaCard).toBeVisible()
     await expect(enkaCard).toContainText('Enka')
 
-    // Verify paimon-moe card has visible text content
-    const paimonCard = page.getByTestId('tool-card-paimon-moe')
-    await expect(paimonCard).toBeVisible()
-    await expect(paimonCard).toContainText('Paimon')
+    const lunarisCard = page.getByTestId('tool-card-lunaris')
+    await expect(lunarisCard).toBeVisible()
+    await expect(lunarisCard).toContainText('Lunaris')
   })
 
   test('Category chips are visible', async ({ page }) => {
     await page.goto('/#/tools')
     await expect(page.getByTestId('tools-page')).toBeVisible()
 
-    // At least one category chip should be visible
     const categories = ['database', 'planner', 'wiki', 'community']
     const chipLocators = categories.map((cat) =>
       page.getByText(new RegExp(cat, 'i'))
     )
 
-    // At least one of these category labels should be present on the page
     let found = false
     for (const locator of chipLocators) {
       if ((await locator.count()) > 0) {
@@ -81,27 +77,37 @@ test.describe('Tools page', () => {
     await page.goto('/#/tools')
     await expect(page.getByTestId('tools-page')).toBeVisible()
 
-    // Open a tool
     const enkaCard = page.getByTestId('tool-card-enka-network')
     await enkaCard.getByRole('button', { name: 'Open' }).click()
     await expect(page.getByTestId('tool-viewer')).toBeVisible()
 
-    // Close the viewer
-    const closeButton = page.getByTestId('tool-viewer').getByRole('button', { name: /close/i })
+    const closeButton = page
+      .getByTestId('tool-viewer')
+      .getByRole('button', { name: /close/i })
     await closeButton.click()
 
-    // Verify tool cards are visible again
-    await expect(page.getByTestId('tool-viewer')).not.toBeVisible()
+    await expect(page.getByTestId('tools-page')).toBeVisible()
     for (const id of TOOL_IDS) {
       await expect(page.getByTestId(`tool-card-${id}`)).toBeVisible()
     }
+  })
+
+  test('Tool sub-links open with correct URL', async ({ page }) => {
+    await page.goto('/#/tools')
+    await expect(page.getByTestId('tools-page')).toBeVisible()
+
+    const lunarisCard = page.getByTestId('tool-card-lunaris')
+    await lunarisCard.getByRole('button', { name: 'Endgame' }).click()
+
+    const iframe = page.getByTestId('tool-iframe')
+    await expect(iframe).toBeVisible()
+    await expect(iframe).toHaveAttribute('src', /lunaris\.moe\/endgame/)
   })
 
   test('Navigation from header', async ({ page }) => {
     await page.goto('/#/')
     await expect(page.locator('#root')).not.toBeEmpty()
 
-    // Click the Tools tab/link in the header
     const toolsTab = page.locator('a[href*="tools"]').first()
     await expect(toolsTab).toBeVisible()
     await toolsTab.click()

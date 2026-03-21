@@ -1,8 +1,14 @@
+export type ToolLink = {
+  label: string
+  url: string
+}
+
 export type ToolEntry = {
   id: string
   name: string
   description: string
   url: string
+  links?: ToolLink[]
   /** MUI icon name hint (actual rendering uses a generic icon) */
   icon: string
   category: 'database' | 'planner' | 'wiki' | 'community' | 'calculator'
@@ -14,7 +20,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Enka.Network',
     description: 'Character showcase and profile viewer',
     url: 'https://enka.network/',
-    icon: 'AccountBox', // profile/showcase
+    icon: 'AccountBox',
     category: 'database',
   },
   {
@@ -22,7 +28,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Paimon.moe',
     description: 'Wish tracker, timeline, and calculator',
     url: 'https://paimon.moe/',
-    icon: 'Timeline', // timeline/planner
+    icon: 'Timeline',
     category: 'planner',
   },
   {
@@ -30,7 +36,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Genshin Interactive Map',
     description: 'Official interactive map from HoYoLAB',
     url: 'https://act.hoyolab.com/ys/app/interactive-map/',
-    icon: 'Map', // map
+    icon: 'Map',
     category: 'wiki',
   },
   {
@@ -38,15 +44,18 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Akasha System',
     description: 'Leaderboards and build database',
     url: 'https://akasha.cv/',
-    icon: 'Leaderboard', // leaderboards
+    icon: 'Leaderboard',
     category: 'database',
   },
   {
-    id: 'project-ambr',
-    name: 'Project Ambr',
-    description: 'Comprehensive game database browser',
-    url: 'https://ambr.top/',
-    icon: 'Storage', // database
+    id: 'lunaris',
+    name: 'Lunaris',
+    description: 'Character guides, team building, and endgame tools',
+    url: 'https://lunaris.moe/',
+    links: [
+      { label: 'Endgame', url: 'https://lunaris.moe/endgame' },
+    ],
+    icon: 'AutoAwesome',
     category: 'wiki',
   },
   {
@@ -54,7 +63,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Keqing Mains',
     description: 'Guides and theorycrafting community',
     url: 'https://keqingmains.com/',
-    icon: 'School', // guides
+    icon: 'School',
     category: 'community',
   },
 ]

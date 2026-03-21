@@ -8,9 +8,11 @@ import type { ToolEntry } from './toolsManifest'
 
 export default function ToolViewer({
   tool,
+  urlOverride,
   onClose,
 }: {
   tool: ToolEntry | null
+  urlOverride?: string | null
   onClose: () => void
 }) {
   const [tauriWindow, setTauriWindow] = useState(false)
@@ -25,6 +27,8 @@ export default function ToolViewer({
   }, [tool?.id])
 
   if (!tool) return null
+
+  const activeUrl = urlOverride || tool.url
 
   const handleOpenInWindow = async () => {
     if (!isTauri()) return
@@ -42,7 +46,7 @@ export default function ToolViewer({
       }
 
       const webview = new WebviewWindow(`tool-${tool.id}`, {
-        url: tool.url,
+        url: activeUrl,
         title: `${tool.name} - Genshin Optimizer`,
         width: 1280,
         height: 900,
@@ -62,7 +66,7 @@ export default function ToolViewer({
   }
 
   const handleOpenExternal = () => {
-    window.open(tool.url, '_blank', 'noopener,noreferrer')
+    window.open(activeUrl, '_blank', 'noopener,noreferrer')
   }
 
   // If tool is open in a Tauri window, show a minimal status view
@@ -151,7 +155,7 @@ export default function ToolViewer({
       </Toolbar>
       <iframe
         data-testid="tool-iframe"
-        src={tool.url}
+        src={activeUrl}
         title={tool.name}
         sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
         style={{

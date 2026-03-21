@@ -33,6 +33,7 @@ import type { ReactElement, ReactNode } from 'react'
 import { Suspense, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink, useMatch } from 'react-router-dom'
+import { toolsManifest } from './Tools/toolsManifest'
 import go_icon from './go_icon.png'
 import silly_icon from './silly_icon.png'
 type ITab = {
@@ -81,6 +82,7 @@ const tools: ITab = {
   icon: <ExtensionIcon />,
   to: '/tools',
   value: 'tools',
+  textSuffix: <ToolsChip key="toolsCount" />,
 }
 const doc: ITab = {
   i18Key: 'tabs.doc',
@@ -116,6 +118,9 @@ function TeamChip() {
 function WeaponChip() {
   const database = useDatabase()
   return <Tally>{useDataManagerKeys(database.weapons).length}</Tally>
+}
+function ToolsChip() {
+  return <Tally>{toolsManifest.length}</Tally>
 }
 
 export default function Header({ anchor }: { anchor: string }) {
