@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 30_000,
+  // Dev-mode Vite transforms this monorepo on demand; first navigations on a
+  // cold server can take 30s+, so give each test generous headroom.
+  timeout: 90_000,
   expect: {
     timeout: 60_000,
   },
@@ -26,7 +28,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'node ../../node_modules/vite/bin/vite.js --config apps/frontend/vite.config.mts --host 127.0.0.1 --port 4200 --strictPort',
+    command: 'node node_modules/vite/bin/vite.js --config apps/frontend/vite.config.mts --host 127.0.0.1 --port 4200 --strictPort',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
     cwd: '../../',
