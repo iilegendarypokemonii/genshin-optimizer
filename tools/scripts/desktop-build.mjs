@@ -6,8 +6,26 @@ import {
   readFileSync,
   rmSync,
 } from 'node:fs'
-import { join } from 'node:path'
-import { spawn } from 'node:child_process'
+import { delimiter, dirname, join } from 'node:path'
+import { spawn, spawnSync } from 'node:child_process'
+import { homedir } from 'node:os'
+
+// Cargo must be on PATH for tauri build, but ~/.cargo/bin/cargo.exe can be a
+// symlink that native PATH search fails to resolve in some shells. Resolve the
+// real toolchain cargo via rustup and prepend its directory.
+const cargoBin = join(homedir(), '.cargo', 'bin')
+const pathDirs = [cargoBin]
+const rustup = spawnSync(join(cargoBin, 'rustup.exe'), ['which', 'cargo'], {
+  encoding: 'utf8',
+})
+if (rustup.status === 0 && rustup.stdout.trim()) {
+  pathDirs.unshift(dirname(rustup.stdout.trim()))
+}
+const currentPath = (process.env.PATH ?? '').split(delimiter)
+process.env.PATH = [
+  ...pathDirs.filter((d) => !currentPath.includes(d)),
+  ...currentPath,
+].join(delimiter)
 
 const rootDir = process.cwd()
 const desktopDir = join(rootDir, 'desktop')

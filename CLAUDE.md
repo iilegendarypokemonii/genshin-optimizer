@@ -67,12 +67,20 @@ yarn desktop:dev          # or: yarn tauri dev
 ```
 Starts Vite dev server on localhost:4200 + Tauri webview window.
 
+### Update the installed app (one command, ~4 min warm)
+```bash
+yarn desktop:update       # kill running app → build → copy exe → relaunch
+```
+This is the standard way to ship changes into `desktop/Genshin Optimizer Local.exe`
+(the exe people actually launch). The exe never updates itself — if you commit
+without running this, the app keeps showing old code.
+
 ### Release build (~3 min)
 ```bash
-yarn tauri build          # needs cargo in PATH
+yarn tauri build          # needs cargo in PATH; build only, no copy
+yarn desktop:build        # build + copy exe/resources to desktop/ (no kill/relaunch)
 ```
 Outputs exe to `src-tauri/target/release/genshin-optimizer-desktop.exe`.
-Copy to `desktop/Genshin Optimizer Local.exe` for the standard location.
 
 Build is fast because:
 - `bundle.active: false` — skips MSI/NSIS installer packaging
