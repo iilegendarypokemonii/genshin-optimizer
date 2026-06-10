@@ -39,6 +39,8 @@ export type WishTrackerValue = {
   syncNow: () => Promise<void>
   approvePendingUid: () => Promise<void>
   dismissPendingUid: () => void
+  /** Create a wish profile for a UID (e.g. one previously dismissed) and full-fetch it. */
+  createProfileFor: (uid: string) => Promise<void>
   importJson: (text: string) => Promise<{ uid: string; added: number }>
 }
 
@@ -94,9 +96,11 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
         const outcome = await checkAndSync(opts)
         setLastOutcome(outcome)
         setKeyState(loadKeyState())
+        // A dismissed UID stays quiet on auto-ticks, but an explicit manual
+        // sync re-offers it — otherwise "Not now" is a dead end until relaunch.
         if (
           outcome.kind === 'new-uid' &&
-          !dismissedUids.current.has(outcome.uid)
+          (opts.force || !dismissedUids.current.has(outcome.uid))
         ) {
           setPendingUid(outcome.uid)
         }
@@ -143,6 +147,15 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
     setPendingUid(undefined)
   }, [pendingUid])
 
+  const createProfileFor = useCallback(
+    async (uid: string) => {
+      dismissedUids.current.delete(uid)
+      setPendingUid(undefined)
+      await runSync({ approvedNewUid: uid })
+    },
+    [runSync]
+  )
+
   const importJson = useCallback(
     async (text: string) => {
       const file = validateWishFile(JSON.parse(text))
@@ -172,6 +185,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
       syncNow,
       approvePendingUid,
       dismissPendingUid,
+      createProfileFor,
       importJson,
     }),
     [
@@ -185,6 +199,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
       syncNow,
       approvePendingUid,
       dismissPendingUid,
+      createProfileFor,
       importJson,
     ]
   )

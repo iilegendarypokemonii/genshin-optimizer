@@ -40,7 +40,7 @@ function outcomeText(outcome?: SyncOutcome): string | undefined {
     case 'no-wishes':
       return 'The account in cache has no wishes yet.'
     case 'new-uid':
-      return `Found wishes for new UID ${outcome.uid}.`
+      return `${outcome.uid} has no stored wish history yet.`
     case 'error':
       return outcome.message
     default:
@@ -52,8 +52,15 @@ function outcomeText(outcome?: SyncOutcome): string | undefined {
 export default function CacheStatusCard({
   compact = false,
 }: { compact?: boolean }) {
-  const { isDesktop, profiles, keyState, lastOutcome, syncing, syncNow } =
-    useWishTracker()
+  const {
+    isDesktop,
+    profiles,
+    keyState,
+    lastOutcome,
+    syncing,
+    syncNow,
+    createProfileFor,
+  } = useWishTracker()
   const dbInfos = useDatabaseInfos()
   const navigate = useNavigate()
   if (!isDesktop) return null
@@ -108,7 +115,24 @@ export default function CacheStatusCard({
           </Box>
         )}
 
-        <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mt: 1.5 }}
+          flexWrap="wrap"
+          useFlexGap
+        >
+          {lastOutcome?.kind === 'new-uid' && (
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              disabled={syncing}
+              onClick={() => void createProfileFor(lastOutcome.uid)}
+            >
+              {`Track wishes for ${slotLabel(dbInfos, lastOutcome.uid) ?? lastOutcome.uid}`}
+            </Button>
+          )}
           <Button
             size="small"
             variant="contained"

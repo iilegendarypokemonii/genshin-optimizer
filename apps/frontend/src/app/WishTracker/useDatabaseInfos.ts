@@ -4,19 +4,21 @@ import { useContext, useMemo } from 'react'
 
 export type DatabaseInfo = { name: string; uid: string }
 
-/** Name + UID of the GO database slots, for labeling wish profiles. */
+/** Name + UID of all 6 GO database slots, for labeling wish profiles. */
 export function useDatabaseInfos(): DatabaseInfo[] {
   const { databases } = useContext(DatabaseContext)
   const meta0 = useDataEntryBase(databases[0]?.dbMeta)
   const meta1 = useDataEntryBase(databases[1]?.dbMeta)
   const meta2 = useDataEntryBase(databases[2]?.dbMeta)
   const meta3 = useDataEntryBase(databases[3]?.dbMeta)
+  const meta4 = useDataEntryBase(databases[4]?.dbMeta)
+  const meta5 = useDataEntryBase(databases[5]?.dbMeta)
   return useMemo(
     () =>
-      [meta0, meta1, meta2, meta3]
+      [meta0, meta1, meta2, meta3, meta4, meta5]
         .filter(Boolean)
         .map((m) => ({ name: m.name, uid: m.uid ?? '' })),
-    [meta0, meta1, meta2, meta3]
+    [meta0, meta1, meta2, meta3, meta4, meta5]
   )
 }
 
