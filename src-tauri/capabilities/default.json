@@ -18,6 +18,10 @@
     "process:allow-restart",
     "opener:default",
     {
+      "identifier": "opener:allow-reveal-item-in-dir",
+      "allow": [{ "path": "$APPLOCALDATA/**" }]
+    },
+    {
       "identifier": "http:default",
       "allow": [
         { "url": "https://public-operation-hk4e-sg.hoyoverse.com/*" },

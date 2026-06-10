@@ -1,4 +1,9 @@
-import { UidMismatchError, mergeWishes, validateWishFile } from './storage'
+import {
+  UidMismatchError,
+  mergeWishes,
+  parseImport,
+  validateWishFile,
+} from './storage'
 import type { Wish } from './types'
 
 function wish(id: string, over: Partial<Wish> = {}): Wish {
@@ -86,5 +91,39 @@ describe('validateWishFile', () => {
     expect(() =>
       validateWishFile({ ...valid, wishes: [wish('1', { uid: '999999999' })] })
     ).toThrow('Mixed UIDs')
+  })
+})
+
+describe('parseImport', () => {
+  const single = {
+    uid: '100000001',
+    exported: '2025-01-01 00:00',
+    wishes: [wish('1')],
+  }
+  const other = {
+    uid: '999999999',
+    exported: '2025-01-01 00:00',
+    wishes: [wish('2', { uid: '999999999' })],
+  }
+
+  it('wraps a single wish file', () => {
+    expect(parseImport(single).map((f) => f.uid)).toEqual(['100000001'])
+  })
+
+  it('accepts a go-wish-backup bundle with multiple profiles', () => {
+    const bundle = {
+      format: 'go-wish-backup',
+      exported: '2025-01-01 00:00',
+      profiles: [single, other],
+    }
+    expect(parseImport(bundle).map((f) => f.uid)).toEqual([
+      '100000001',
+      '999999999',
+    ])
+  })
+
+  it('rejects empty bundles and invalid profiles inside a bundle', () => {
+    expect(() => parseImport({ profiles: [] })).toThrow('no profiles')
+    expect(() => parseImport({ profiles: [{ uid: 'x' }] })).toThrow('uid')
   })
 })

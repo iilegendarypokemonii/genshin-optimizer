@@ -9,11 +9,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { SyncOutcome } from './cacheWatch'
+import type { SyncOptions, SyncOutcome } from './cacheWatch'
 import { checkAndSync, getLastSyncMs, loadKeyState } from './cacheWatch'
 import type { BannerStats } from './pity'
 import { computeBannerStats } from './pity'
-import { getWishStore, mergeWishes, validateWishFile } from './storage'
+import { getWishStore, mergeWishes, parseImport } from './storage'
 import type { CacheKeyState, WishFile } from './types'
 
 const HOURLY_MS = 60 * 60 * 1000
@@ -43,7 +43,8 @@ export type WishTrackerValue = {
   dismissPendingUid: () => void
   /** Create a wish profile for a UID (e.g. one previously dismissed) and full-fetch it. */
   createProfileFor: (uid: string) => Promise<void>
-  importJson: (text: string) => Promise<{ uid: string; added: number }>
+  /** Accepts a single wishes_<uid>.json or an all-profiles backup bundle. */
+  importJson: (text: string) => Promise<{ uids: string[]; added: number }>
 }
 
 const WishTrackerContext = createContext<WishTrackerValue | undefined>(
@@ -92,7 +93,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const runSync = useCallback(
-    async (opts: { force?: boolean; approvedNewUid?: string }) => {
+    async (opts: SyncOptions) => {
       setSyncing(true)
       try {
         const outcome = await checkAndSync(opts)
@@ -164,17 +165,21 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
 
   const importJson = useCallback(
     async (text: string) => {
-      const file = validateWishFile(JSON.parse(text))
+      const files = parseImport(JSON.parse(text))
       const store = getWishStore()
-      const existing = await store.load(file.uid)
-      const { wishes, added } = mergeWishes(
-        existing?.wishes ?? [],
-        file.wishes,
-        file.uid
-      )
-      await store.save(file.uid, wishes)
+      let added = 0
+      for (const file of files) {
+        const existing = await store.load(file.uid)
+        const merged = mergeWishes(
+          existing?.wishes ?? [],
+          file.wishes,
+          file.uid
+        )
+        await store.save(file.uid, merged.wishes)
+        added += merged.added
+      }
       await reloadProfiles()
-      return { uid: file.uid, added }
+      return { uids: files.map((f) => f.uid), added }
     },
     [reloadProfiles]
   )

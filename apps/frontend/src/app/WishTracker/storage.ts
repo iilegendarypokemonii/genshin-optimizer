@@ -82,6 +82,67 @@ export function validateWishFile(obj: unknown): WishFile {
   }
 }
 
+/** All-profiles backup bundle; parseImport accepts it alongside single files. */
+export type WishBackupBundle = {
+  format: 'go-wish-backup'
+  exported: string
+  profiles: WishFile[]
+}
+
+/** Accepts a single wishes_<uid>.json or a go-wish-backup bundle. */
+export function parseImport(obj: unknown): WishFile[] {
+  if (
+    obj &&
+    typeof obj === 'object' &&
+    !Array.isArray(obj) &&
+    Array.isArray((obj as Partial<WishBackupBundle>).profiles)
+  ) {
+    const profiles = (obj as WishBackupBundle).profiles
+    if (!profiles.length) throw new Error('Backup bundle holds no profiles.')
+    return profiles.map(validateWishFile)
+  }
+  return [validateWishFile(obj)]
+}
+
+export async function buildBackupBundle(): Promise<WishBackupBundle> {
+  const store = getWishStore()
+  const profiles: WishFile[] = []
+  for (const uid of await store.listUids()) {
+    const file = await store.load(uid)
+    if (file) profiles.push(file)
+  }
+  return { format: 'go-wish-backup', exported: exportedNow(), profiles }
+}
+
+/**
+ * Write a bundle of all profiles. Desktop: into app-data wishes/exports/,
+ * returning the absolute path. Browser: triggers a download, returns the name.
+ */
+export async function exportBackup(): Promise<string> {
+  const bundle = await buildBackupBundle()
+  if (!bundle.profiles.length) throw new Error('No wish profiles to export.')
+  const json = JSON.stringify(bundle, null, 1)
+  const name = `wishes_backup_${timestamp()}.json`
+  if (isTauri()) {
+    const fs = await getFs()
+    const baseDir = await getBaseDir()
+    await fs.mkdir(`${WISH_DIR}/exports`, { baseDir, recursive: true })
+    const rel = `${WISH_DIR}/exports/${name}`
+    await fs.writeTextFile(rel, json, { baseDir })
+    const { appLocalDataDir, join } = await import('@tauri-apps/api/path')
+    return await join(await appLocalDataDir(), ...rel.split('/'))
+  }
+  const url = URL.createObjectURL(
+    new Blob([json], { type: 'application/json' })
+  )
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  a.click()
+  URL.revokeObjectURL(url)
+  return name
+}
+
 function timestamp(): string {
   return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 }

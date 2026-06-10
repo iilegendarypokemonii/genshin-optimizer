@@ -1,4 +1,5 @@
 import CasinoIcon from '@mui/icons-material/Casino'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
@@ -21,6 +22,7 @@ import CacheStatusCard from './CacheStatusCard'
 import HistoryTable from './HistoryTable'
 import { useWishTracker } from './WishTrackerContext'
 import { getGameDir, setGameDir } from './gameDirSetting'
+import { exportBackup } from './storage'
 import { bySlotLabel, slotLabel, useDatabaseInfos } from './useDatabaseInfos'
 
 export default function WishTrackerPage() {
@@ -43,14 +45,36 @@ export default function WishTrackerPage() {
   const active =
     sortedProfiles?.find((p) => p.uid === selectedUid) ?? sortedProfiles?.[0]
 
-  async function onImportFile(file: File) {
+  async function onExportBackup() {
     try {
-      const { uid, added } = await importJson(await file.text())
+      const location = await exportBackup()
       setNotice({
         severity: 'success',
-        text: `Imported ${added} new wishes into profile ${uid}.`,
+        text: `Backup of all profiles written to ${location}`,
       })
-      setSelectedUid(uid)
+      if (isDesktop) {
+        // best effort: show the file in Explorer
+        const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
+        await revealItemInDir(location).catch(() => undefined)
+      }
+    } catch (e) {
+      setNotice({
+        severity: 'error',
+        text: e instanceof Error ? e.message : String(e),
+      })
+    }
+  }
+
+  async function onImportFile(file: File) {
+    try {
+      const { uids, added } = await importJson(await file.text())
+      setNotice({
+        severity: 'success',
+        text: `Imported ${added} new wishes into ${
+          uids.length === 1 ? `profile ${uids[0]}` : `${uids.length} profiles`
+        }.`,
+      })
+      setSelectedUid(uids[0])
     } catch (e) {
       setNotice({
         severity: 'error',
@@ -72,6 +96,14 @@ export default function WishTrackerPage() {
           onClick={() => fileInput.current?.click()}
         >
           Import JSON
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<FileDownloadIcon />}
+          disabled={!profiles?.length}
+          onClick={() => void onExportBackup()}
+        >
+          Export backup
         </Button>
         {isDesktop && (
           <IconButton
