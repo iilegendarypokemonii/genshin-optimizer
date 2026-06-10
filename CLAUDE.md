@@ -110,6 +110,9 @@ yarn reload-dm            # update game data submodules
 
 ## Important notes
 
+- **Node 24 required for `yarn install`** (upstream pins it via `.nvmrc` + preinstall check).
+  System node is 22; use fnm: `"$LOCALAPPDATA/Microsoft/WinGet/Links/fnm.exe" exec --using=24 node .yarn/releases/yarn-3.4.1.cjs install`.
+  Building/running/tests work fine on either version — only install is gated.
 - Close the desktop exe before rebuilding (Windows locks the file)
 - Vite caches pre-bundled deps in `node_modules/.vite/` — delete if exports change and HMR doesn't pick them up
 - Cargo/Rust must be in PATH for Tauri builds: `export PATH="$HOME/.cargo/bin:$PATH"`
