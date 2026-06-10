@@ -87,7 +87,7 @@ export default function WishTrackerPage() {
         />
       </Stack>
 
-      <Collapse in={showSettings}>
+      <Collapse in={isDesktop && showSettings} unmountOnExit>
         <Stack direction="row" spacing={1} alignItems="center">
           <TextField
             size="small"
