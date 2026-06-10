@@ -93,33 +93,45 @@ export default defineConfig(() => ({
     // Nx executor for vite does not support `assets` prop for copying files.
     // So we need to do it with this plugin. This works for both `build` and `serve`.
     viteStaticCopy({
+      // Anchor to __dirname: bare resolve() depends on process.cwd(), which
+      // silently copies nothing when vite is invoked from the repo root
+      // (e.g. frontend:desktop:build) — leaving stale locales in dist.
       targets: [
         {
           src: normalizePath(
-            resolve('../../libs/common/localization/assets/locales/**/*')
+            resolve(
+              __dirname,
+              '../../libs/common/localization/assets/locales/**/*'
+            )
           ),
           dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/gi/localization/assets/locales/**/*')
+            resolve(__dirname, '../../libs/gi/localization/assets/locales/**/*')
           ),
           dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/gi/dm-localization/assets/locales/**/*')
+            resolve(
+              __dirname,
+              '../../libs/gi/dm-localization/assets/locales/**/*'
+            )
           ),
           dest: 'assets/locales',
         },
         {
           src: normalizePath(
-            resolve('../../libs/gi/silly-wisher-names/assets/locales/**/*')
+            resolve(
+              __dirname,
+              '../../libs/gi/silly-wisher-names/assets/locales/**/*'
+            )
           ),
           dest: 'assets/locales',
         },
         {
-          src: normalizePath(resolve('../../apps/frontend/assets/*')),
+          src: normalizePath(resolve(__dirname, 'assets/*')),
           dest: 'assets',
         },
       ],
@@ -143,6 +155,10 @@ export default defineConfig(() => ({
 
   build: {
     outDir: '../../dist/apps/frontend',
+    // outDir is outside root, so vite won't clear it by default — without
+    // this, stale hashed chunks and locale files accumulate across builds
+    // and get embedded into the desktop exe.
+    emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {
       transformMixedEsModules: true,
