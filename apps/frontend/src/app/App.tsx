@@ -49,7 +49,7 @@ const PageTools = lazy(loadPageTools)
 function App() {
   const dbIndex = parseInt(localStorage.getItem('dbIndex') || '1')
   const [databases, setDatabases] = useState(() => {
-    return ([1, 2, 3, 4] as const).map((index) => {
+    return ([1, 2, 3, 4, 5, 6] as const).map((index) => {
       if (index === dbIndex) {
         return new ArtCharDatabase(index, new DBLocalStorage(localStorage))
       } else {

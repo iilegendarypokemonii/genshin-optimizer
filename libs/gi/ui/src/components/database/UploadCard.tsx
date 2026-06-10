@@ -61,7 +61,7 @@ export function UploadCard({
         const copyStorage = new SandboxStorage()
         copyStorage.copyFrom(database.storage)
         const importedDatabase = new ArtCharDatabase(
-          (index + 1) as 1 | 2 | 3 | 4,
+          (index + 1) as 1 | 2 | 3 | 4 | 5 | 6,
           copyStorage
         )
         const importResult = importedDatabase.importGOOD(

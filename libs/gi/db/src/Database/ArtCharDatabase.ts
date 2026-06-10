@@ -41,10 +41,10 @@ export class ArtCharDatabase extends Database {
   displayArchive: DisplayArchiveEntry
   displayTool: DisplayToolEntry
   displayTeam: DisplayTeamEntry
-  dbIndex: 1 | 2 | 3 | 4
+  dbIndex: 1 | 2 | 3 | 4 | 5 | 6
   dbVer: number
 
-  constructor(dbIndex: 1 | 2 | 3 | 4, storage: DBStorage) {
+  constructor(dbIndex: 1 | 2 | 3 | 4 | 5 | 6, storage: DBStorage) {
     super(storage)
     migrate(storage)
     // Transfer non DataManager/DataEntry data from storage

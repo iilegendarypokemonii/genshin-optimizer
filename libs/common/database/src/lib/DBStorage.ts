@@ -24,6 +24,6 @@ export interface DBStorage {
   clear(): void
   getDBVersion(): number
   setDBVersion(version: number): void
-  getDBIndex(): 1 | 2 | 3 | 4
-  setDBIndex(ind: 1 | 2 | 3 | 4): void
+  getDBIndex(): 1 | 2 | 3 | 4 | 5 | 6
+  setDBIndex(ind: 1 | 2 | 3 | 4 | 5 | 6): void
 }

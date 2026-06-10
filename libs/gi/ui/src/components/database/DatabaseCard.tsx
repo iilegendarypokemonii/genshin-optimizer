@@ -36,7 +36,7 @@ export function DatabaseCard({ readOnly = false }: { readOnly?: boolean }) {
       <Divider />
       <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Grid container spacing={2} columns={{ xs: 1, md: 2 }}>
-          {range(0, 3).map((i) => (
+          {range(0, 5).map((i) => (
             <Grid key={i} item xs={1}>
               <DataCard index={i} readOnly={readOnly} />
             </Grid>
