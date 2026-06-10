@@ -1,27 +1,14 @@
-import { useDataEntryBase } from '@genshin-optimizer/common/database-ui'
-import { DatabaseContext } from '@genshin-optimizer/gi/db-ui'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import { Box, Grid, Typography } from '@mui/material'
-import { useContext, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import WishTrackerPage from '../WishTracker'
+import { useDatabaseInfos } from '../WishTracker/useDatabaseInfos'
 import ToolCard from './ToolCard'
 import ToolViewer from './ToolViewer'
-import type { DatabaseInfo } from './toolsManifest'
 import { toolsManifest } from './toolsManifest'
 
-function useDatabaseInfos(): DatabaseInfo[] {
-  const { databases } = useContext(DatabaseContext)
-  const meta0 = useDataEntryBase(databases[0]?.dbMeta)
-  const meta1 = useDataEntryBase(databases[1]?.dbMeta)
-  const meta2 = useDataEntryBase(databases[2]?.dbMeta)
-  const meta3 = useDataEntryBase(databases[3]?.dbMeta)
-  return useMemo(
-    () =>
-      [meta0, meta1, meta2, meta3]
-        .filter(Boolean)
-        .map((m) => ({ name: m.name, uid: m.uid ?? '' })),
-    [meta0, meta1, meta2, meta3]
-  )
+const internalPages: Record<string, () => JSX.Element> = {
+  'wish-tracker': WishTrackerPage,
 }
 
 export default function ToolsPage() {
@@ -31,18 +18,23 @@ export default function ToolsPage() {
   const dbInfos = useDatabaseInfos()
 
   const activeTool = toolId
-    ? toolsManifest.find((t) => t.id === toolId) ?? null
+    ? (toolsManifest.find((t) => t.id === toolId) ?? null)
     : null
 
   if (activeTool) {
-    const urlOverride = searchParams.get('url')
-    return (
-      <ToolViewer
-        tool={activeTool}
-        urlOverride={urlOverride}
-        onClose={() => navigate('/tools')}
-      />
-    )
+    if (activeTool.internal) {
+      const InternalPage = internalPages[activeTool.id]
+      if (InternalPage) return <InternalPage />
+    } else {
+      const urlOverride = searchParams.get('url')
+      return (
+        <ToolViewer
+          tool={activeTool}
+          urlOverride={urlOverride}
+          onClose={() => navigate('/tools')}
+        />
+      )
+    }
   }
 
   return (
@@ -64,9 +56,7 @@ export default function ToolsPage() {
                 if (url === tool.url) {
                   navigate(`/tools/${tool.id}`)
                 } else {
-                  navigate(
-                    `/tools/${tool.id}?url=${encodeURIComponent(url)}`
-                  )
+                  navigate(`/tools/${tool.id}?url=${encodeURIComponent(url)}`)
                 }
               }}
             />

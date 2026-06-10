@@ -16,6 +16,15 @@
     "fs:allow-applocaldata-read-recursive",
     "fs:allow-applocaldata-write-recursive",
     "process:allow-restart",
-    "opener:default"
+    "opener:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://public-operation-hk4e-sg.hoyoverse.com/*" },
+        { "url": "https://public-operation-hk4e.mihoyo.com/*" },
+        { "url": "https://hk4e-api-os.hoyoverse.com/*" },
+        { "url": "https://hk4e-api.mihoyo.com/*" }
+      ]
+    }
   ]
 }

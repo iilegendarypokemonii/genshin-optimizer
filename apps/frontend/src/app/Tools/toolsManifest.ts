@@ -19,9 +19,21 @@ export type ToolEntry = {
   /** MUI icon name hint (actual rendering uses a generic icon) */
   icon: string
   category: 'database' | 'planner' | 'wiki' | 'community' | 'calculator'
+  /** Renders a built-in React page at /tools/<id> instead of an external site */
+  internal?: boolean
 }
 
 export const toolsManifest: ToolEntry[] = [
+  {
+    id: 'wish-tracker',
+    name: 'Wish Tracker',
+    description:
+      'Native pity dashboard and wish history, synced from the game cache',
+    url: '',
+    icon: 'Casino',
+    category: 'planner',
+    internal: true,
+  },
   {
     id: 'enka-network',
     name: 'Enka.Network',
@@ -73,9 +85,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Lunaris',
     description: 'Character guides, team building, and endgame tools',
     url: 'https://lunaris.moe/',
-    links: [
-      { label: 'Endgame', url: 'https://lunaris.moe/endgame' },
-    ],
+    links: [{ label: 'Endgame', url: 'https://lunaris.moe/endgame' }],
     icon: 'AutoAwesome',
     category: 'wiki',
   },

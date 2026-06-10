@@ -4,9 +4,10 @@ import { timeZones } from '@genshin-optimizer/gi/db'
 import { useDatabase } from '@genshin-optimizer/gi/db-ui'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import { Box, Chip, Stack, Typography } from '@mui/material'
+import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
-export default function PageHome() {
+export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
   const database = useDatabase()
   const [time, setTime] = useState(new Date())
 
@@ -156,6 +157,9 @@ export default function PageHome() {
           </Box>
         </Box>
       </CardThemed>
+      {extraCard && (
+        <Box sx={{ width: '100%', maxWidth: 820, mt: 2 }}>{extraCard}</Box>
+      )}
     </Box>
   )
 }

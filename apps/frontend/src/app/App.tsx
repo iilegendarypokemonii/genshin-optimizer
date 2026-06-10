@@ -7,7 +7,12 @@ import { ArtCharDatabase } from '@genshin-optimizer/gi/db'
 import { DatabaseContext } from '@genshin-optimizer/gi/db-ui'
 import '@genshin-optimizer/gi/i18n' // import to load translations
 import { theme } from '@genshin-optimizer/gi/theme'
-import { SillyContext, SnowContext, useSilly, useSnow } from '@genshin-optimizer/gi/ui'
+import {
+  SillyContext,
+  SnowContext,
+  useSilly,
+  useSnow,
+} from '@genshin-optimizer/gi/ui'
 import {
   Box,
   Container,
@@ -16,13 +21,23 @@ import {
   StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material'
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import './App.scss'
 import ErrorBoundary from './ErrorBoundary'
 import Footer from './Footer'
 import Header from './Header'
 import Snow from './Snow'
+import CacheStatusCard from './WishTracker/CacheStatusCard'
+import NewUidDialog from './WishTracker/NewUidDialog'
+import { WishTrackerProvider } from './WishTracker/WishTrackerContext'
 
 const loadPageHome = () => import('@genshin-optimizer/gi/page-home')
 const loadPageArtifacts = () => import('@genshin-optimizer/gi/page-artifacts')
@@ -87,10 +102,13 @@ function App() {
           <SnowContext.Provider value={SnowContextObj}>
             <DatabaseContext.Provider value={dbContextObj}>
               <ErrorBoundary>
-                <HashRouter basename="/">
-                  <Content />
-                  <ScrollTop />
-                </HashRouter>
+                <WishTrackerProvider>
+                  <HashRouter basename="/">
+                    <Content />
+                    <ScrollTop />
+                    <NewUidDialog />
+                  </HashRouter>
+                </WishTrackerProvider>
               </ErrorBoundary>
             </DatabaseContext.Provider>
           </SnowContext.Provider>
@@ -114,7 +132,9 @@ function Content() {
 
     if (typeof window === 'undefined') return
     if ('requestIdleCallback' in window) {
-      const idleId = window.requestIdleCallback(preloadRoutes, { timeout: 1500 })
+      const idleId = window.requestIdleCallback(preloadRoutes, {
+        timeout: 1500,
+      })
       return () => window.cancelIdleCallback(idleId)
     }
 
@@ -146,7 +166,10 @@ function Content() {
           }
         >
           <Routes>
-            <Route index element={<PageHome />} />
+            <Route
+              index
+              element={<PageHome extraCard={<CacheStatusCard />} />}
+            />
             <Route path="/artifacts" element={<PageArtifacts />} />
             <Route path="/weapons" element={<PageWeapons />} />
             <Route path="/characters/*" element={<PageCharacters />} />

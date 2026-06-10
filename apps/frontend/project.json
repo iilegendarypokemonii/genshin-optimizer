@@ -8,6 +8,13 @@
   "targets": {
     "build": {
       "cache": false
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/frontend"
+      }
     }
   },
   "implicitDependencies": [

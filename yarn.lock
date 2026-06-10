@@ -6625,6 +6625,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tauri-apps/api@npm:^2.11.0":
+  version: 2.11.0
+  resolution: "@tauri-apps/api@npm:2.11.0"
+  checksum: fe825b626a64a77ea8e110638d0f72a90d0bf02ea7219c28696f074df616f55460bddf9f4432ec81ca04169e4e7da36f8c75a93522dc98104bf8adc702d7a550
+  languageName: node
+  linkType: hard
+
 "@tauri-apps/cli-darwin-arm64@npm:2.10.1":
   version: 2.10.1
   resolution: "@tauri-apps/cli-darwin-arm64@npm:2.10.1"
@@ -6761,6 +6768,15 @@ __metadata:
   dependencies:
     "@tauri-apps/api": ^2.8.0
   checksum: 31c4e9b21987d697194e092d0e7382c0a28a2230d40cc24fb4ecf60c5390343e9cfb09d97f8c9e50a1015dd1509219fc95e2a62d1dfe45d7a83991b20a823b55
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/plugin-http@npm:^2":
+  version: 2.5.9
+  resolution: "@tauri-apps/plugin-http@npm:2.5.9"
+  dependencies:
+    "@tauri-apps/api": ^2.11.0
+  checksum: e428dc1d90e572cd20648ac99bf846d6f4d391140143984f009ce5c1b8987a84db587951dfdbafcb9fac9577da9f667f2ca27287cb0375e22022df4f1735392d
   languageName: node
   linkType: hard
 
@@ -13539,6 +13555,7 @@ __metadata:
     "@tauri-apps/cli": ^2.10.1
     "@tauri-apps/plugin-dialog": ^2.6.0
     "@tauri-apps/plugin-fs": ^2.4.5
+    "@tauri-apps/plugin-http": ^2
     "@tauri-apps/plugin-opener": ^2.5.3
     "@tauri-apps/plugin-process": ^2.3.1
     "@tauri-apps/plugin-updater": ^2.10.0
