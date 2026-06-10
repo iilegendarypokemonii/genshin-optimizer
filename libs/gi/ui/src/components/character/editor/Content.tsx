@@ -1,3 +1,4 @@
+import { confirmAsync } from '../../../util/confirmAsync'
 import { useDataManagerEntries } from '@genshin-optimizer/common/database-ui'
 import { CardThemed, ImgIcon } from '@genshin-optimizer/common/ui'
 import { objKeyMap } from '@genshin-optimizer/common/util'
@@ -60,7 +61,7 @@ export function Content({ onClose }: { onClose?: () => void }) {
       }:${charKeyToLocGenderedCharKey(characterKey, gender)}`
     )
 
-    if (!window.confirm(t('removeCharacter', { value: name }))) return
+    if (!await confirmAsync(t('removeCharacter', { value: name }))) return
     database.chars.remove(characterKey)
     navigate('/characters')
   }, [database, navigate, characterKey, gender, silly, t])

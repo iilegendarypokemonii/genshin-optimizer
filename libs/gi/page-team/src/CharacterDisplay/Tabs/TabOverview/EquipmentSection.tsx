@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { objKeyMap } from '@genshin-optimizer/common/util'
 import {
@@ -151,11 +152,11 @@ function ArtifactSectionCard() {
   const hasEquipped = !!Object.values(equippedArtifacts).filter((i) => i).length
 
   const buildEquip = buildId && buildType === 'real'
-  const unequipArts = () => {
+  const unequipArts = async () => {
     const confirmMsg = buildEquip
       ? 'Do you want to unequip all artifacts in this build?'
       : 'Do you want to move all currently equipped artifacts to inventory?'
-    if (!window.confirm(confirmMsg)) return
+    if (!await confirmAsync(confirmMsg)) return
 
     if (buildEquip)
       database.builds.set(buildId, {

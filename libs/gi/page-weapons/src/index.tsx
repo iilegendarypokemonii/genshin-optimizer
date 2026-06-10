@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import {
   useDataEntryBase,
   useDataManagerValues,
@@ -63,7 +64,7 @@ export default function PageWeapon() {
       if (!weapon) return
       const name = t(`weaponNames_gen:${weapon.key}`)
 
-      if (!window.confirm(t('removeWeapon', { value: name }))) return
+      if (!await confirmAsync(t('removeWeapon', { value: name }))) return
       database.weapons.remove(key)
       if (displayWeapon.editWeaponId === key)
         database.displayWeapon.set({ editWeaponId: '' })

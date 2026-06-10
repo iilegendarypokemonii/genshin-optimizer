@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { useBoolState } from '@genshin-optimizer/common/react-util'
 import { arrayMove, clamp, deepClone } from '@genshin-optimizer/common/util'
 import type { CustomMultiTarget, CustomTarget } from '@genshin-optimizer/gi/db'
@@ -40,10 +41,10 @@ export default function TargetListEditor({
   )
 
   const deleteCustomTarget = useCallback(
-    (index: number) => () => {
+    (index: number) => async () => {
       if (
         Object.values(customMultiTarget.targets[index].bonusStats).length &&
-        !window.confirm(t('multiTarget.confirm'))
+        !await confirmAsync(t('multiTarget.confirm'))
       )
         return
       const targets = [...customMultiTarget.targets]
@@ -67,7 +68,7 @@ export default function TargetListEditor({
   )
 
   const dupCustomTarget = useCallback(
-    (index: number) => () => {
+    (index: number) => async () => {
       const targets = [...customMultiTarget.targets]
       targets.splice(index, 0, deepClone(targets[index]))
       setCustomMultiTarget({ ...customMultiTarget, targets })

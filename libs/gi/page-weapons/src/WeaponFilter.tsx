@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import {
   BootstrapTooltip,
   CardThemed,
@@ -283,19 +284,19 @@ function WeaponRedButtons({ weaponIds }: { weaponIds: string[] }) {
     return { numDelete, numUnlock, numLock }
   }, [weaponIds, database])
 
-  const deleteWeapons = () =>
-    window.confirm(`Are you sure you want to delete ${numDelete} weapons?`) &&
+  const deleteWeapons = async () =>
+    await confirmAsync(`Are you sure you want to delete ${numDelete} weapons?`) &&
     weaponIds.map((id) => {
       const weapon = database.weapons.get(id)
       if (!weapon?.lock && !weapon?.location) database.weapons.remove(id)
     })
 
-  const lockWeapons = () =>
-    window.confirm(`Are you sure you want to lock ${numUnlock} weapons ?`) &&
+  const lockWeapons = async () =>
+    await confirmAsync(`Are you sure you want to lock ${numUnlock} weapons ?`) &&
     weaponIds.map((id) => database.weapons.set(id, { lock: true }))
 
-  const unlockWeapons = () =>
-    window.confirm(`Are you sure you want to unlock ${numLock} weapons ?`) &&
+  const unlockWeapons = async () =>
+    await confirmAsync(`Are you sure you want to unlock ${numLock} weapons ?`) &&
     weaponIds.map((id) => database.weapons.set(id, { lock: false }))
 
   return (

@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { CardThemed, SqBadge } from '@genshin-optimizer/common/ui'
 import type { ICachedArtifact } from '@genshin-optimizer/gi/db'
 import { useDatabase, useDisplayArtifact } from '@genshin-optimizer/gi/db-ui'
@@ -104,23 +105,23 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
     return { numDelete, numUnequip, numUnlock, numLock }
   }, [artifactIds, database])
 
-  const unequipArtifacts = () =>
-    window.confirm(
+  const unequipArtifacts = async () =>
+    await confirmAsync(
       `Are you sure you want to unequip ${numUnequip} artifacts currently equipped on characters?`
     ) && artifactIds.map((id) => database.arts.set(id, { location: '' }))
 
-  const deleteArtifacts = () =>
-    window.confirm(`Are you sure you want to delete ${numDelete} artifacts?`) &&
+  const deleteArtifacts = async () =>
+    await confirmAsync(`Are you sure you want to delete ${numDelete} artifacts?`) &&
     artifactIds.map(
       (id) => !database.arts.get(id)?.lock && database.arts.remove(id)
     )
 
-  const lockArtifacts = () =>
-    window.confirm(`Are you sure you want to lock ${numUnlock} artifacts?`) &&
+  const lockArtifacts = async () =>
+    await confirmAsync(`Are you sure you want to lock ${numUnlock} artifacts?`) &&
     artifactIds.map((id) => database.arts.set(id, { lock: true }))
 
-  const unlockArtifacts = () =>
-    window.confirm(`Are you sure you want to unlock ${numLock} artifacts?`) &&
+  const unlockArtifacts = async () =>
+    await confirmAsync(`Are you sure you want to unlock ${numLock} artifacts?`) &&
     artifactIds.map((id) => database.arts.set(id, { lock: false }))
 
   return (

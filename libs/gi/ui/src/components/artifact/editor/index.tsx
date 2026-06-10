@@ -1,4 +1,5 @@
 import { useDataManagerValues } from '@genshin-optimizer/common/database-ui'
+import { confirmAsync } from '../../../util/confirmAsync'
 import {
   CardThemed,
   DropdownButton,
@@ -274,8 +275,8 @@ export function ArtifactEditor({
     [artifactDispatch]
   )
   const isValid = !errors.length
-  const canClearArtifact = (): boolean =>
-    window.confirm(t('editor.clearPrompt') as string)
+  const canClearArtifact = (): Promise<boolean> =>
+    confirmAsync(t('editor.clearPrompt') as string)
   const { rarity = 5, level = 0 } = artifact ?? {}
   // Same as above when assigning newValue.slotKey in update.
   const slotKey = useMemo(() => {
@@ -285,13 +286,14 @@ export function ArtifactEditor({
     ? getArtifactEfficiency(cArtifact, allSubstatFilter)
     : {}
   const onClose = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
+    async (e: React.MouseEvent<HTMLElement>) => {
+      // preventDefault must happen before any await — the event is stale after
+      e?.preventDefault()
       if (
         !artifactIdToEdit &&
         (queueTotal || artifact) &&
-        !window.confirm(t('editor.clearPrompt') as string)
+        !(await confirmAsync(t('editor.clearPrompt') as string))
       ) {
-        e?.preventDefault()
         return
       }
       setShow(false)
@@ -832,8 +834,8 @@ export function ArtifactEditor({
               <Button
                 startIcon={<Replay />}
                 disabled={!artifact}
-                onClick={() => {
-                  canClearArtifact() && reset()
+                onClick={async () => {
+                  ;(await canClearArtifact()) && reset()
                 }}
                 color="error"
               >
@@ -871,8 +873,8 @@ export function ArtifactEditor({
             {!!removeId && (
               <Button
                 startIcon={<DeleteForeverIcon />}
-                onClick={() => {
-                  if (!window.confirm(t('editor.confirmDelete'))) return
+                onClick={async () => {
+                  if (!(await confirmAsync(t('editor.confirmDelete')))) return
                   database.arts.remove(removeId)
                   reset()
                   if (!allowEmpty) setShow(false)

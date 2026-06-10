@@ -1,3 +1,4 @@
+import { confirmAsync } from '../../util/confirmAsync'
 import {
   useDataEntryBase,
   useDataManagerKeys,
@@ -77,8 +78,8 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
     [database]
   )
 
-  const onDelete = useCallback(() => {
-    if (!window.confirm(`Are you sure you want to delete "${name}"?`)) return
+  const onDelete = useCallback(async () => {
+    if (!await confirmAsync(`Are you sure you want to delete "${name}"?`)) return
     database.clear()
     database.toExtraLocalDB()
   }, [database, name])

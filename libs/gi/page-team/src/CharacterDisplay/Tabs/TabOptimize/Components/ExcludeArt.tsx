@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { useDataManagerValues } from '@genshin-optimizer/common/database-ui'
 import {
   useBoolState,
@@ -235,11 +236,11 @@ function ExcludeArtRedButtons({
     return { numExclude, numInclude }
   }, [artifactIds, artExclusion])
 
-  const excludeArtifacts = () =>
-    window.confirm(t('optExcludeModal.excludeMsg', { count: numExclude })) &&
+  const excludeArtifacts = async () =>
+    await confirmAsync(t('optExcludeModal.excludeMsg', { count: numExclude })) &&
     onExclude(artifactIds)
-  const includeArtifacts = () =>
-    window.confirm(t('optExcludeModal.includeMsg', { count: numInclude })) &&
+  const includeArtifacts = async () =>
+    await confirmAsync(t('optExcludeModal.includeMsg', { count: numInclude })) &&
     onInclude(artifactIds)
 
   return (

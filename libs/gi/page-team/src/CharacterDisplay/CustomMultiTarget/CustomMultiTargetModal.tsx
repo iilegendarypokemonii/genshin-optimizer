@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import {
   CardThemed,
   InfoTooltip,
@@ -61,10 +62,10 @@ export function CustomMultiTargetModal({
     [customMultiTargets, setCustomTargets]
   )
   const deleteCustomMultiTarget = useCallback(
-    (ind: number) => () => {
+    (ind: number) => async () => {
       if (
         customMultiTargets[ind].targets.length &&
-        !window.confirm(
+        !await confirmAsync(
           `Are you sure you want to delete "${customMultiTargets[ind].name}"?`
         )
       )
@@ -76,7 +77,7 @@ export function CustomMultiTargetModal({
     [customMultiTargets, setCustomTargets]
   )
   const dupCustomMultiTarget = useCallback(
-    (ind: number) => () => {
+    (ind: number) => async () => {
       const customTargets_ = [...customMultiTargets]
       const newTarget = deepClone(customMultiTargets[ind])
       newTarget.name = `${newTarget.name} (Duplicate)`

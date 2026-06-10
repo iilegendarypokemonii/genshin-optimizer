@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { ThemeProvider } from '@emotion/react'
 import { ReadOnlyTextArea } from '@genshin-optimizer/common/react-util'
 import { CardThemed } from '@genshin-optimizer/common/ui'
@@ -56,8 +57,8 @@ class ErrorBoundary extends Component<Props, State> {
       const errorStr = `Message: ${this.state.error.message}\nName: ${this.state.error.name}\nStack: ${this.state.error.stack}`
       const uploadStr = "**Don't forget to upload your JSON file!**"
       const textBoxVal = `${reproStr}\n\n${uploadStr}\n\n\`\`\`\n${errorStr}\n\`\`\``
-      const onNuke = () => {
-        if (!window.confirm(t`confirmNuke`)) return
+      const onNuke = async () => {
+        if (!await confirmAsync(t`confirmNuke`)) return
         localStorage.clear()
         window.alert(t`finishNuke`)
         document.location.reload()

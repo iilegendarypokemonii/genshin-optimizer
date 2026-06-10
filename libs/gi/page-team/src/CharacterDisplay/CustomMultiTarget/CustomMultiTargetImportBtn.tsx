@@ -1,3 +1,4 @@
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { useBoolState } from '@genshin-optimizer/common/react-util'
 import { CardThemed, ModalWrapper } from '@genshin-optimizer/common/ui'
 import type { CustomMultiTarget } from '@genshin-optimizer/gi/db'
@@ -30,14 +31,14 @@ export default function CustomMultiTargetImportBtn({
   const database = useDatabase()
   const navigate = useNavigate()
 
-  const importData = () => {
+  const importData = async () => {
     try {
       const dataObj = JSON.parse(data)
       const validated = validateCustomMultiTarget(dataObj)
       if (!validated) {
         const validatedTeam = database.teams.validate(dataObj) // The user is trying to import a team by accident
         if (validatedTeam) {
-          if (window.confirm(t('mTargetImport.team'))) {
+          if (await confirmAsync(t('mTargetImport.team'))) {
             navigate('/teams', {
               state: {
                 openImportModal: true,
