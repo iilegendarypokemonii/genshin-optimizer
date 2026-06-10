@@ -6,14 +6,21 @@ import {
   Card,
   CardContent,
   Chip,
+  IconButton,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useWishTracker } from './WishTrackerContext'
 import type { SyncOutcome } from './cacheWatch'
 import type { CacheKeyState } from './types'
-import { slotLabel, timeAgo, useDatabaseInfos } from './useDatabaseInfos'
+import {
+  bySlotLabel,
+  slotLabel,
+  timeAgo,
+  useDatabaseInfos,
+} from './useDatabaseInfos'
 
 function keyStatusChip(keyState?: CacheKeyState) {
   switch (keyState?.status) {
@@ -41,6 +48,8 @@ function outcomeText(outcome?: SyncOutcome): string | undefined {
       return 'The account in cache has no wishes yet.'
     case 'new-uid':
       return `${outcome.uid} has no stored wish history yet.`
+    case 'identified':
+      return undefined // the "Account in cache" line already shows it
     case 'error':
       return outcome.message
     default:
@@ -59,6 +68,7 @@ export default function CacheStatusCard({
     lastOutcome,
     syncing,
     syncNow,
+    checkCache,
     createProfileFor,
   } = useWishTracker()
   const dbInfos = useDatabaseInfos()
@@ -81,6 +91,17 @@ export default function CacheStatusCard({
             Game cache
           </Typography>
           {keyStatusChip(keyState)}
+          <Tooltip title="Re-check which account is in the cache (no wish sync)">
+            <span>
+              <IconButton
+                size="small"
+                disabled={syncing}
+                onClick={() => void checkCache()}
+              >
+                <RefreshIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
         </Stack>
 
         <Typography variant="body2" color="text.secondary">
@@ -103,7 +124,7 @@ export default function CacheStatusCard({
 
         {!compact && !!profiles?.length && (
           <Box sx={{ mt: 1 }}>
-            {profiles.map((p) => {
+            {[...profiles].sort(bySlotLabel(dbInfos)).map((p) => {
               const label = slotLabel(dbInfos, p.uid)
               return (
                 <Typography key={p.uid} variant="body2" color="text.secondary">

@@ -37,6 +37,8 @@ export type WishTrackerValue = {
   /** UID found in the cache with no profile yet */
   pendingUid?: string
   syncNow: () => Promise<void>
+  /** Re-read the cache and identify the account in it, without syncing wishes. */
+  checkCache: () => Promise<void>
   approvePendingUid: () => Promise<void>
   dismissPendingUid: () => void
   /** Create a wish profile for a UID (e.g. one previously dismissed) and full-fetch it. */
@@ -135,6 +137,10 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
     await runSync({ force: true })
   }, [runSync])
 
+  const checkCache = useCallback(async () => {
+    await runSync({ identifyOnly: true })
+  }, [runSync])
+
   const approvePendingUid = useCallback(async () => {
     if (!pendingUid) return
     const uid = pendingUid
@@ -183,6 +189,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
       error,
       pendingUid,
       syncNow,
+      checkCache,
       approvePendingUid,
       dismissPendingUid,
       createProfileFor,
@@ -197,6 +204,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
       error,
       pendingUid,
       syncNow,
+      checkCache,
       approvePendingUid,
       dismissPendingUid,
       createProfileFor,

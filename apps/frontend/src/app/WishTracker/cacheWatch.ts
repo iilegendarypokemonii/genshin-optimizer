@@ -28,6 +28,8 @@ export type SyncOutcome =
   | { kind: 'no-wishes' }
   /** Valid key for a UID with no profile — ask the user before full fetch. */
   | { kind: 'new-uid'; uid: string }
+  /** identifyOnly run: cache re-read and account identified, no wish sync. */
+  | { kind: 'identified'; uid: string }
   | { kind: 'error'; message: string }
 
 export function loadKeyState(): CacheKeyState | undefined {
@@ -68,6 +70,8 @@ export type SyncOptions = {
   force?: boolean
   /** User confirmed creating a profile for this UID — allows the full fetch. */
   approvedNewUid?: string
+  /** Re-read the cache and identify the account, but skip the wish sync. */
+  identifyOnly?: boolean
 }
 
 let inflight: Promise<SyncOutcome> | null = null
@@ -140,6 +144,8 @@ async function doCheckAndSync(opts: SyncOptions): Promise<SyncOutcome> {
     }
     if (!uid) return { kind: 'no-wishes' }
   }
+
+  if (opts.identifyOnly) return { kind: 'identified', uid }
 
   const store = getWishStore()
   const existing = await store.load(uid) // CorruptFileError propagates to caller

@@ -29,6 +29,18 @@ export function slotLabel(
   return infos.find((info) => info.uid === uid)?.name
 }
 
+/** Sort by slot name (named profiles first, then by UID). */
+export function bySlotLabel(infos: DatabaseInfo[]) {
+  return (a: { uid: string }, b: { uid: string }): number => {
+    const la = slotLabel(infos, a.uid)
+    const lb = slotLabel(infos, b.uid)
+    if (!!la !== !!lb) return la ? -1 : 1
+    return (la ?? a.uid).localeCompare(lb ?? b.uid, undefined, {
+      numeric: true,
+    })
+  }
+}
+
 export function timeAgo(ms: number | undefined): string {
   if (!ms) return 'never'
   const diff = Date.now() - ms

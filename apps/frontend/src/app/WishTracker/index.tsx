@@ -15,13 +15,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import BannerStatsCard from './BannerStatsCard'
 import CacheStatusCard from './CacheStatusCard'
 import HistoryTable from './HistoryTable'
 import { useWishTracker } from './WishTrackerContext'
 import { getGameDir, setGameDir } from './gameDirSetting'
-import { slotLabel, useDatabaseInfos } from './useDatabaseInfos'
+import { bySlotLabel, slotLabel, useDatabaseInfos } from './useDatabaseInfos'
 
 export default function WishTrackerPage() {
   const { isDesktop, profiles, error, importJson } = useWishTracker()
@@ -34,7 +34,14 @@ export default function WishTrackerPage() {
   const [gameDirDraft, setGameDirDraft] = useState(() => getGameDir() ?? '')
   const fileInput = useRef<HTMLInputElement>(null)
 
-  const active = profiles?.find((p) => p.uid === selectedUid) ?? profiles?.[0]
+  // Tabs ordered by database-slot name (unnamed profiles last, by UID)
+  const sortedProfiles = useMemo(
+    () => profiles && [...profiles].sort(bySlotLabel(dbInfos)),
+    [profiles, dbInfos]
+  )
+
+  const active =
+    sortedProfiles?.find((p) => p.uid === selectedUid) ?? sortedProfiles?.[0]
 
   async function onImportFile(file: File) {
     try {
@@ -134,7 +141,7 @@ export default function WishTrackerPage() {
               value={active?.uid ?? false}
               onChange={(_, uid: string) => setSelectedUid(uid)}
             >
-              {profiles.map((p) => {
+              {sortedProfiles?.map((p) => {
                 const label = slotLabel(dbInfos, p.uid)
                 return (
                   <Tab
