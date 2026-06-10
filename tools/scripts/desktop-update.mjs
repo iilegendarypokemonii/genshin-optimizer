@@ -30,6 +30,9 @@ const build = spawnSync(
 )
 if (build.status !== 0) process.exit(build.status ?? 1)
 
-const app = spawn(exePath, [], { detached: true, stdio: 'ignore' })
-app.unref()
-console.log(`Launched ${exePath}`)
+console.log(`Launching ${exePath}`)
+// Launch via explorer.exe (ShellExecute): a direct spawn — even detached or
+// through `cmd /c start` — leaks the parent's inheritable pipe handles into
+// the app, so `yarn desktop:update` appears to keep running until the app
+// is closed. Explorer launches it with no inherited handles.
+spawn('explorer.exe', [exePath], { detached: true, stdio: 'ignore' }).unref()
