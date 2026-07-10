@@ -6,6 +6,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import { UpdateReminder } from './UpdateReminder'
 
 export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
   const database = useDatabase()
@@ -155,6 +156,8 @@ export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
             <SummaryStat label="Weapons" value={`${summary.weapons}`} />
             <SummaryStat label="Builds" value={`${summary.builds}`} />
           </Box>
+
+          <UpdateReminder />
         </Box>
       </CardThemed>
       {extraCard && (

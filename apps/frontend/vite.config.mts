@@ -145,6 +145,7 @@ export default defineConfig(() => ({
   define: {
     'process.env': process.env,
     __VERSION__: `"${pkg.version}"`,
+    __BUILD_DATE__: `"${new Date().toISOString().slice(0, 10)}"`,
   },
 
   // Uncomment this if you are using workers.

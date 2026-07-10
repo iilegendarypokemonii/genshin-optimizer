@@ -48,6 +48,19 @@ git rebase master
 
 If rebase conflicts occur, resolve them on `desktop` — never modify `master`.
 
+### Game-patch data updates
+
+Genshin ships a version every 42 days with a banner-phase swap at day 21; a new region lands yearly (7.0 Snezhnaya: 2026-08-12). Upstream adds new character/weapon data in PRs named like "Add Luna VII first half content" / "Add <char> + Sig". Measured lag from patch day to data on `upstream/master` (6.0–6.6): usually **0–3 days**, one 9-day outlier in December (Luna III). Phase-2 characters sometimes land a day *before* their banner.
+
+Routine after each patch or phase date (+2–3 days):
+
+```bash
+git fetch upstream
+git log master..upstream/master --oneline -- libs/gi/stats   # new data commits pending?
+```
+
+If new data is there, run the upstream sync above, then `yarn desktop:update` to rebuild the exe. If nothing landed after ~4 days, check open PRs on frzyc/genshin-optimizer — the data is usually in review there.
+
 ## Features exclusive to this fork
 
 1. **Tauri desktop app** — `src-tauri/`, standalone exe wrapping the web frontend
