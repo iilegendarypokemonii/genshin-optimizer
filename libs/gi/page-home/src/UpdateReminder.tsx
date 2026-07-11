@@ -93,33 +93,48 @@ export function UpdateReminder() {
     <Box
       sx={{
         px: 1.75,
-        py: 1.5,
+        py: 1,
         borderRadius: 1.25,
         bgcolor: 'rgba(255,255,255,0.04)',
         border: '1px solid rgba(255,255,255,0.06)',
         display: 'grid',
-        gap: 1,
+        gap: 0.5,
       }}
     >
       <Stack
         direction="row"
-        justifyContent="space-between"
         alignItems="center"
-        spacing={1}
+        spacing={1.5}
+        flexWrap="wrap"
+        useFlexGap
       >
-        <Typography variant="caption" sx={{ color: 'neutral300.main' }}>
-          Game data
-        </Typography>
         <Chip
           size="small"
           icon={<UpdateIcon />}
-          label={`GO v${VERSION}${BUILD_DATE ? ` · synced ${BUILD_DATE}` : ''}`}
+          label={`GO v${VERSION}${BUILD_DATE ? ` · synced ${BUILD_DATE}` : ''}${
+            upstream && !behind ? ' · up to date' : ''
+          }`}
           sx={{
             bgcolor: 'rgba(255,255,255,0.06)',
             color: 'neutral100.main',
             borderRadius: 999,
           }}
         />
+        {upcoming.map(({ label, date }) => {
+          const days = Math.ceil((date - Date.now()) / DAY_MS)
+          return (
+            <Typography
+              key={label}
+              variant="body2"
+              sx={{ color: 'neutral300.main' }}
+            >
+              <Box component="span" sx={{ color: 'neutral100.main' }}>
+                {label}
+              </Box>
+              {` in ${days}d`}
+            </Typography>
+          )
+        })}
       </Stack>
       {behind && (
         <Typography
@@ -128,11 +143,6 @@ export function UpdateReminder() {
         >
           Upstream is at v{upstream} — this build is behind, time to sync the
           fork.
-        </Typography>
-      )}
-      {upstream && !behind && (
-        <Typography variant="body2" sx={{ color: 'neutral300.main' }}>
-          Up to date with upstream (v{upstream})
         </Typography>
       )}
       {pending.map(({ label, date }) => (
@@ -145,21 +155,6 @@ export function UpdateReminder() {
           within 0–3 days, time to sync the fork.
         </Typography>
       ))}
-      {upcoming.map(({ label, date }) => {
-        const days = Math.ceil((date - Date.now()) / DAY_MS)
-        return (
-          <Typography
-            key={label}
-            variant="body2"
-            sx={{ color: 'neutral300.main' }}
-          >
-            <Box component="span" sx={{ color: 'neutral100.main' }}>
-              {label}
-            </Box>
-            {` — ${fmtDate(date)} (in ${days} day${days === 1 ? '' : 's'})`}
-          </Typography>
-        )
-      })}
     </Box>
   )
 }
