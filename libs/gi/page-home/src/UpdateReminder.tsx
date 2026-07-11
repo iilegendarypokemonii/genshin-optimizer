@@ -1,6 +1,6 @@
 import UpdateIcon from '@mui/icons-material/Update'
 import { Box, Chip, Stack, Typography } from '@mui/material'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 declare const __VERSION__: string
 declare const __BUILD_DATE__: string
@@ -39,6 +39,33 @@ function buildEvents(): GameEvent[] {
     .sort((a, b) => a.date - b.date)
 }
 
+const UPSTREAM_PKG_URL =
+  'https://raw.githubusercontent.com/frzyc/genshin-optimizer/master/package.json'
+
+function cmpVersions(a: string, b: string) {
+  const pa = a.split('.').map(Number)
+  const pb = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0)
+    if (d) return d
+  }
+  return 0
+}
+
+/** Latest upstream version, or null while loading / on fetch failure. */
+function useUpstreamVersion() {
+  const [version, setVersion] = useState<string | null>(null)
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetch(UPSTREAM_PKG_URL, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((pkg) => pkg?.version && setVersion(pkg.version))
+      .catch(() => undefined)
+    return () => ctrl.abort()
+  }, [])
+  return version
+}
+
 function fmtDate(date: number) {
   return new Date(date).toLocaleDateString([], {
     timeZone: 'UTC',
@@ -49,6 +76,8 @@ function fmtDate(date: number) {
 }
 
 export function UpdateReminder() {
+  const upstream = useUpstreamVersion()
+  const behind = !!upstream && !!VERSION && cmpVersions(upstream, VERSION) > 0
   const { pending, upcoming } = useMemo(() => {
     const events = buildEvents()
     const now = Date.now()
@@ -92,6 +121,20 @@ export function UpdateReminder() {
           }}
         />
       </Stack>
+      {behind && (
+        <Typography
+          variant="body2"
+          sx={{ color: 'warning.main', fontWeight: 600 }}
+        >
+          Upstream is at v{upstream} — this build is behind, time to sync the
+          fork.
+        </Typography>
+      )}
+      {upstream && !behind && (
+        <Typography variant="body2" sx={{ color: 'neutral300.main' }}>
+          Up to date with upstream (v{upstream})
+        </Typography>
+      )}
       {pending.map(({ label, date }) => (
         <Typography
           key={label}
