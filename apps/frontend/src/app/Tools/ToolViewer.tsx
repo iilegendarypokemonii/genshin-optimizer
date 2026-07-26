@@ -5,6 +5,45 @@ import { Button, IconButton, Toolbar, Typography } from '@mui/material'
 import { isTauri } from '@genshin-optimizer/common/util'
 import type { ToolEntry } from './toolsManifest'
 
+export async function openToolWindow(
+  tool: ToolEntry,
+  activeUrl: string
+): Promise<boolean> {
+  if (!isTauri()) return false
+
+  try {
+    const { WebviewWindow } = await import(
+      '@tauri-apps/api/webviewWindow'
+    )
+
+    const label = `tool-${tool.id}`
+    const existing = await WebviewWindow.getByLabel(label)
+    if (existing) {
+      await existing.setFocus()
+      return true
+    }
+
+    const webview = new WebviewWindow(label, {
+      url: activeUrl,
+      title: `${tool.name} - Genshin Optimizer`,
+      width: 1280,
+      height: 900,
+      center: true,
+      zoomHotkeysEnabled: true,
+      dataDirectory: tool.id,
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      webview.once('tauri://created', () => resolve())
+      webview.once('tauri://error', (e) => reject(e))
+    })
+    return true
+  } catch (err) {
+    console.error('Failed to open Tauri window:', err)
+    return false
+  }
+}
+
 export default function ToolViewer({
   tool,
   urlOverride,
@@ -19,40 +58,7 @@ export default function ToolViewer({
   const activeUrl = urlOverride || tool.url
 
   const handleOpenInWindow = async () => {
-    if (!isTauri()) return
-    try {
-      const { WebviewWindow } = await import(
-        '@tauri-apps/api/webviewWindow'
-      )
-
-      // Check if window already exists — just focus it
-      const existing = await WebviewWindow.getByLabel(`tool-${tool.id}`)
-      if (existing) {
-        await existing.setFocus()
-        onClose()
-        return
-      }
-
-      const webview = new WebviewWindow(`tool-${tool.id}`, {
-        url: activeUrl,
-        title: `${tool.name} - Genshin Optimizer`,
-        width: 1280,
-        height: 900,
-        center: true,
-        zoomHotkeysEnabled: true,
-        browserExtensionsEnabled: false,
-      })
-
-      await new Promise<void>((resolve, reject) => {
-        webview.once('tauri://created', () => resolve())
-        webview.once('tauri://error', (e) => reject(e))
-      })
-
-      // Window opened — go back to tools grid
-      onClose()
-    } catch (err) {
-      console.error('Failed to open Tauri window:', err)
-    }
+    if (await openToolWindow(tool, activeUrl)) onClose()
   }
 
   const handleOpenExternal = async () => {

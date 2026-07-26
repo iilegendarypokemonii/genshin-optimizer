@@ -45,6 +45,12 @@ export type WishTrackerValue = {
   createProfileFor: (uid: string) => Promise<void>
   /** Accepts a single wishes_<uid>.json or an all-profiles backup bundle. */
   importJson: (text: string) => Promise<{ uids: string[]; added: number }>
+  /** Store or remove a player-confirmed Capturing Radiance annotation. */
+  setCapturingRadiance: (
+    uid: string,
+    wishId: string,
+    confirmed: boolean
+  ) => Promise<void>
 }
 
 const WishTrackerContext = createContext<WishTrackerValue | undefined>(
@@ -184,6 +190,49 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
     [reloadProfiles]
   )
 
+  const setCapturingRadiance = useCallback(
+    async (uid: string, wishId: string, confirmed: boolean) => {
+      const store = getWishStore()
+      const file = await store.load(uid)
+      if (!file) throw new Error(`Wish profile ${uid} was not found.`)
+
+      let found = false
+      const wishes = file.wishes.map((wish) => {
+        if (wish.id !== wishId) return wish
+        found = true
+        if (
+          wish.rank_type !== '5' ||
+          wish.item_type !== 'Character' ||
+          (wish.gacha_type !== '301' && wish.gacha_type !== '400')
+        ) {
+          throw new Error(
+            'Capturing Radiance can only be marked on a 5-star Character Event Wish result.'
+          )
+        }
+
+        if (confirmed) {
+          return {
+            ...wish,
+            capturingRadiance: {
+              source: 'player-confirmed' as const,
+              confirmedAt: new Date().toISOString(),
+            },
+          }
+        }
+
+        const withoutAnnotation = { ...wish }
+        delete withoutAnnotation.capturingRadiance
+        return withoutAnnotation
+      })
+
+      if (!found)
+        throw new Error(`Wish ${wishId} was not found in profile ${uid}.`)
+      await store.save(uid, wishes)
+      await reloadProfiles()
+    },
+    [reloadProfiles]
+  )
+
   const value = useMemo<WishTrackerValue>(
     () => ({
       isDesktop: desktop,
@@ -199,6 +248,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
       dismissPendingUid,
       createProfileFor,
       importJson,
+      setCapturingRadiance,
     }),
     [
       desktop,
@@ -214,6 +264,7 @@ export function WishTrackerProvider({ children }: { children: ReactNode }) {
       dismissPendingUid,
       createProfileFor,
       importJson,
+      setCapturingRadiance,
     ]
   )
 

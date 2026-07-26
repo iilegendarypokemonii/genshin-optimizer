@@ -42,8 +42,17 @@ describe('mergeWishes', () => {
     expect(twice.wishes).toEqual(once.wishes)
   })
 
-  it('keeps the existing record on id collision (preserves source field)', () => {
-    const existing = [wish('1', { source: 'paimonmoe', name: 'Original' })]
+  it('keeps the existing record on id collision (preserves local fields)', () => {
+    const existing = [
+      wish('1', {
+        source: 'paimonmoe',
+        name: 'Original',
+        capturingRadiance: {
+          source: 'player-confirmed',
+          confirmedAt: '2026-07-26T00:00:00.000Z',
+        },
+      }),
+    ]
     const { wishes } = mergeWishes(
       existing,
       [wish('1', { name: 'Refetched' })],
@@ -51,6 +60,25 @@ describe('mergeWishes', () => {
     )
     expect(wishes[0].name).toBe('Original')
     expect(wishes[0].source).toBe('paimonmoe')
+    expect(wishes[0].capturingRadiance?.source).toBe('player-confirmed')
+  })
+
+  it('restores a missing Radiance annotation from an imported backup', () => {
+    const existing = [wish('1', { name: 'Stored name' })]
+    const incoming = [
+      wish('1', {
+        name: 'Backup name',
+        capturingRadiance: {
+          source: 'player-confirmed',
+          confirmedAt: '2026-07-26T00:00:00.000Z',
+        },
+      }),
+    ]
+
+    const { wishes, added } = mergeWishes(existing, incoming, '100000001')
+    expect(added).toBe(0)
+    expect(wishes[0].name).toBe('Stored name')
+    expect(wishes[0].capturingRadiance).toEqual(incoming[0].capturingRadiance)
   })
 
   it('rejects any record from a different uid without partial effects', () => {

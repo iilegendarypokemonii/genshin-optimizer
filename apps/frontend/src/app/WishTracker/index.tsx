@@ -1,3 +1,4 @@
+import { useDBMeta } from '@genshin-optimizer/gi/db-ui'
 import CasinoIcon from '@mui/icons-material/Casino'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
@@ -26,8 +27,10 @@ import { exportBackup } from './storage'
 import { bySlotLabel, slotLabel, useDatabaseInfos } from './useDatabaseInfos'
 
 export default function WishTrackerPage() {
-  const { isDesktop, profiles, error, importJson } = useWishTracker()
+  const { isDesktop, profiles, error, importJson, setCapturingRadiance } =
+    useWishTracker()
   const dbInfos = useDatabaseInfos()
+  const activeDbMeta = useDBMeta()
   const [selectedUid, setSelectedUid] = useState<string | undefined>(undefined)
   const [notice, setNotice] = useState<
     { severity: 'success' | 'error'; text: string } | undefined
@@ -42,8 +45,22 @@ export default function WishTrackerPage() {
     [profiles, dbInfos]
   )
 
-  const active =
-    sortedProfiles?.find((p) => p.uid === selectedUid) ?? sortedProfiles?.[0]
+  const defaultUid = sortedProfiles?.some((p) => p.uid === activeDbMeta.uid)
+    ? activeDbMeta.uid
+    : sortedProfiles?.[0]?.uid
+  const active = sortedProfiles?.find(
+    (p) => p.uid === (selectedUid ?? defaultUid)
+  )
+
+  const characterEventStats = active?.stats.find((stats) => stats.key === '301')
+  const chronicledStats = active?.stats.find((stats) => stats.key === '500')
+  const secondaryStats = active?.stats
+    .filter((stats) => stats.key !== '301' && stats.key !== '500')
+    .sort(
+      (a, b) =>
+        ['302', '200', '100'].indexOf(a.key) -
+        ['302', '200', '100'].indexOf(b.key)
+    )
 
   async function onExportBackup() {
     try {
@@ -192,11 +209,39 @@ export default function WishTrackerPage() {
                 wishes · last export {active.file.exported || 'unknown'}
               </Typography>
               <Grid container spacing={2}>
-                {active.stats.map((stats) => (
-                  <Grid item xs={12} md={6} lg={4} key={stats.key}>
-                    <BannerStatsCard stats={stats} />
+                {(characterEventStats || chronicledStats) && (
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={2}>
+                      {characterEventStats && (
+                        <BannerStatsCard
+                          key={`${active.uid}-${characterEventStats.key}`}
+                          stats={characterEventStats}
+                          onSetCapturingRadiance={(wishId, confirmed) =>
+                            setCapturingRadiance(active.uid, wishId, confirmed)
+                          }
+                        />
+                      )}
+                      {chronicledStats && (
+                        <BannerStatsCard
+                          key={`${active.uid}-${chronicledStats.key}`}
+                          stats={chronicledStats}
+                        />
+                      )}
+                    </Stack>
                   </Grid>
-                ))}
+                )}
+                {!!secondaryStats?.length && (
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={2}>
+                      {secondaryStats.map((stats) => (
+                        <BannerStatsCard
+                          stats={stats}
+                          key={`${active.uid}-${stats.key}`}
+                        />
+                      ))}
+                    </Stack>
+                  </Grid>
+                )}
               </Grid>
               <HistoryTable wishes={active.file.wishes} />
             </>

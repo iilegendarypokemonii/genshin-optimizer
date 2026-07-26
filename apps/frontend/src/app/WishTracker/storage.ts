@@ -26,8 +26,9 @@ export class CorruptFileError extends Error {
 }
 
 /**
- * Merge-by-id: never removes or overwrites an existing record (preserves
- * fields like source='paimonmoe'), refuses any record from another UID.
+ * Merge-by-id: never removes or overwrites source data from an existing
+ * record, but restores a missing local annotation from an imported backup.
+ * Refuses any record from another UID.
  */
 export function mergeWishes(
   existing: Wish[],
@@ -38,9 +39,15 @@ export function mergeWishes(
   let added = 0
   for (const w of incoming) {
     if (w.uid !== uid) throw new UidMismatchError(uid, w.uid)
-    if (!byId.has(w.id)) {
+    const stored = byId.get(w.id)
+    if (!stored) {
       byId.set(w.id, w)
       added += 1
+    } else if (!stored.capturingRadiance && w.capturingRadiance) {
+      byId.set(w.id, {
+        ...stored,
+        capturingRadiance: w.capturingRadiance,
+      })
     }
   }
   return { wishes: sortWishes([...byId.values()]), added }

@@ -13,6 +13,15 @@ export type Wish = {
   id: string
   /** 'paimonmoe' on rows imported from a paimon.moe xlsx (synthetic ids) */
   source?: string
+  /**
+   * Local-only annotation. The HoYoverse Wish History API does not expose
+   * whether Capturing Radiance triggered, so this can only be set when the
+   * player confirms seeing the in-game effect.
+   */
+  capturingRadiance?: {
+    source: 'player-confirmed'
+    confirmedAt: string
+  }
 }
 
 /** On-disk file shape, identical to the standalone pipeline's wishes_<uid>.json */

@@ -1,10 +1,11 @@
 import ExtensionIcon from '@mui/icons-material/Extension'
 import { Box, Grid, Typography } from '@mui/material'
+import { isTauri } from '@genshin-optimizer/common/util'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import WishTrackerPage from '../WishTracker'
 import { useDatabaseInfos } from '../WishTracker/useDatabaseInfos'
 import ToolCard from './ToolCard'
-import ToolViewer from './ToolViewer'
+import ToolViewer, { openToolWindow } from './ToolViewer'
 import { toolsManifest } from './toolsManifest'
 
 const internalPages: Record<string, () => JSX.Element> = {
@@ -52,12 +53,22 @@ export default function ToolsPage() {
             <ToolCard
               tool={tool}
               extraLinks={tool.dynamicLinks?.(dbInfos)}
-              onOpen={(url) => {
-                if (url === tool.url) {
-                  navigate(`/tools/${tool.id}`)
-                } else {
-                  navigate(`/tools/${tool.id}?url=${encodeURIComponent(url)}`)
+              onOpenInApp={(url) => {
+                const route =
+                  url === tool.url
+                    ? `/tools/${tool.id}`
+                    : `/tools/${tool.id}?url=${encodeURIComponent(url)}`
+                navigate(route)
+              }}
+              onOpenInWindow={(url) => {
+                if (isTauri()) {
+                  void openToolWindow(tool, url).then((opened) => {
+                    if (!opened)
+                      window.open(url, '_blank', 'noopener,noreferrer')
+                  })
+                  return
                 }
+                window.open(url, '_blank', 'noopener,noreferrer')
               }}
             />
           </Grid>

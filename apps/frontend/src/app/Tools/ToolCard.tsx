@@ -24,11 +24,13 @@ const categoryColors: Record<
 export default function ToolCard({
   tool,
   extraLinks,
-  onOpen,
+  onOpenInApp,
+  onOpenInWindow,
 }: {
   tool: ToolEntry
   extraLinks?: ToolLink[]
-  onOpen: (url: string) => void
+  onOpenInApp: (url: string) => void
+  onOpenInWindow: (url: string) => void
 }) {
   const allLinks = [...(tool.links ?? []), ...(extraLinks ?? [])]
 
@@ -65,17 +67,26 @@ export default function ToolCard({
           <Button
             size="small"
             variant="contained"
-            endIcon={<OpenInNewIcon />}
-            onClick={() => onOpen(tool.url)}
+            onClick={() => onOpenInApp(tool.url)}
           >
-            Open
+            Open in app
           </Button>
+          {!tool.internal && (
+            <Button
+              size="small"
+              variant="outlined"
+              endIcon={<OpenInNewIcon />}
+              onClick={() => onOpenInWindow(tool.url)}
+            >
+              New window
+            </Button>
+          )}
           {allLinks.map((link) => (
             <Button
               key={link.label}
               size="small"
               variant="outlined"
-              onClick={() => onOpen(link.url)}
+              onClick={() => onOpenInApp(link.url)}
             >
               {link.label}
             </Button>

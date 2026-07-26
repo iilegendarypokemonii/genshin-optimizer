@@ -12,6 +12,8 @@
     "desktop:dev": "node tools/scripts/desktop-dev.mjs",
     "desktop:build": "node tools/scripts/desktop-build.mjs",
     "desktop:update": "node tools/scripts/desktop-update.mjs",
+    "gacha:plan": "node tools/gacha-planner/cli.mjs",
+    "gacha:plan:test": "node --test tools/gacha-planner/model.test.mjs",
     "build-all": "nx run-many -t build",
     "biome:local": "biome check --write --changed --no-errors-on-unmatched && biome check --write --staged --no-errors-on-unmatched",
     "mini-ci": "yarn biome:local && nx affected -t typecheck && nx affected -t eslint:lint --max-warnings=0 && CI=true nx affected -t test",

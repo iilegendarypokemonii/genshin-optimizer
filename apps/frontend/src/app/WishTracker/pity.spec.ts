@@ -1,4 +1,9 @@
-import { computeBannerStats, sortWishes } from './pity'
+import {
+  capturingRadianceWinChance,
+  computeBannerStats,
+  computeCapturingRadianceScore,
+  sortWishes,
+} from './pity'
 import type { Wish } from './types'
 
 let seq = 0
@@ -97,6 +102,27 @@ describe('computeBannerStats', () => {
     expect(stats.fiveStars[0].pity).toBe(1)
     expect(stats.currentPity5).toBe(0)
   })
+
+  it('tracks the normal featured guarantee separately from Radiance', () => {
+    const [afterLoss] = run([
+      wish({ rank_type: '5', name: 'Dehya', gacha_type: '301' }),
+    ])
+    expect(afterLoss.featuredCharacterGuaranteed).toBe(true)
+    expect(afterLoss.capturingRadianceScore).toBe(2)
+
+    const [, standard] = run([
+      wish({ rank_type: '5', name: 'Dehya', gacha_type: '301' }),
+      wish({ rank_type: '5', name: 'Qiqi', gacha_type: '200' }),
+    ])
+    expect(standard.featuredCharacterGuaranteed).toBeUndefined()
+
+    const [afterGuaranteedWin] = run([
+      wish({ rank_type: '5', name: 'Dehya', gacha_type: '301' }),
+      wish({ rank_type: '5', name: 'Columbina', gacha_type: '301' }),
+    ])
+    expect(afterGuaranteedWin.featuredCharacterGuaranteed).toBe(false)
+    expect(afterGuaranteedWin.capturingRadianceScore).toBe(2)
+  })
 })
 
 describe('sortWishes', () => {
@@ -108,5 +134,96 @@ describe('sortWishes', () => {
     const sorted = sortWishes(input)
     expect(sorted.map((w) => w.id)).toEqual(['3', '9', '2'])
     expect(input.map((w) => w.id)).toEqual(['2', '9', '3'])
+  })
+})
+
+describe('computeCapturingRadianceScore', () => {
+  beforeEach(() => {
+    seq = 0
+  })
+
+  it('starts at 1 and counts a standard-character event pull as a loss', () => {
+    expect(computeCapturingRadianceScore([])).toBe(1)
+    expect(
+      computeCapturingRadianceScore([wish({ rank_type: '5', name: 'Dehya' })])
+    ).toBe(2)
+  })
+
+  it('does not change the score for the guaranteed featured pull after a loss', () => {
+    expect(
+      computeCapturingRadianceScore([
+        wish({ rank_type: '5', name: 'Dehya' }),
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({ rank_type: '5', name: 'Diluc', gacha_type: '400' }),
+        wish({ rank_type: '5', name: 'Columbina', gacha_type: '400' }),
+      ])
+    ).toBe(3)
+  })
+
+  it('reduces the score for non-guaranteed featured wins with a minimum of 0', () => {
+    expect(
+      computeCapturingRadianceScore([
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({ rank_type: '5', name: 'Furina' }),
+        wish({ rank_type: '5', name: 'Nahida' }),
+      ])
+    ).toBe(0)
+  })
+
+  it('caps the score at 3 after repeated tracked losses', () => {
+    expect(
+      computeCapturingRadianceScore([
+        wish({ rank_type: '5', name: 'Dehya' }),
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({ rank_type: '5', name: 'Diluc' }),
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({ rank_type: '5', name: 'Qiqi' }),
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({ rank_type: '5', name: 'Mona' }),
+      ])
+    ).toBe(3)
+  })
+
+  it('resets the score to 1 after player-confirmed Capturing Radiance', () => {
+    expect(
+      computeCapturingRadianceScore([
+        wish({ rank_type: '5', name: 'Dehya' }),
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({ rank_type: '5', name: 'Diluc' }),
+        wish({ rank_type: '5', name: 'Columbina' }),
+        wish({
+          rank_type: '5',
+          name: 'Columbina',
+          capturingRadiance: {
+            source: 'player-confirmed',
+            confirmedAt: '2026-07-26T00:00:00.000Z',
+          },
+        }),
+      ])
+    ).toBe(1)
+  })
+
+  it('ignores wishes before Version 5.0 and outside Character Event', () => {
+    expect(
+      computeCapturingRadianceScore([
+        wish({
+          rank_type: '5',
+          name: 'Dehya',
+          time: '2024-08-27 23:59:59',
+        }),
+        wish({ rank_type: '5', name: 'Diluc', gacha_type: '200' }),
+      ])
+    ).toBe(1)
+  })
+})
+
+describe('capturingRadianceWinChance', () => {
+  it.each([
+    [0, 50],
+    [1, 50],
+    [2, 55],
+    [3, 100],
+  ])('maps score %i to a %i%% modeled win chance', (score, chance) => {
+    expect(capturingRadianceWinChance(score)).toBe(chance)
   })
 })

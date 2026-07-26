@@ -58,6 +58,15 @@ export const toolsManifest: ToolEntry[] = [
     category: 'planner',
   },
   {
+    id: 'hu-tao-gacha-calculator',
+    name: 'Hu Tao Gacha Calculator',
+    description:
+      'Pull probability calculator with pity, guarantees, constellations, and Capturing Radiance state',
+    url: 'https://hutaobot.moe/tools/gachacalc',
+    icon: 'Calculate',
+    category: 'calculator',
+  },
+  {
     id: 'genshin-interactive-map',
     name: 'Genshin Interactive Map',
     description: 'Official interactive map from HoYoLAB',
