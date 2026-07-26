@@ -114,9 +114,13 @@ export default function useCompareData(): undefined | UIData {
       gender,
       teamCharId,
       0,
-      overrideArt,
-      overrideWeapon,
-      overrideCharacter
+      {
+        [teamCharId]: {
+          art: overrideArt,
+          weapon: overrideWeapon,
+          char: overrideCharacter,
+        },
+      }
     )
     if (!teamData) return undefined
     const charUIData = teamData[characterKey]!.target
