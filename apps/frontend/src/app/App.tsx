@@ -21,9 +21,10 @@ import {
   StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material'
+import type { ComponentType } from 'react'
 import {
-  Suspense,
   lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -39,16 +40,27 @@ import CacheStatusCard from './WishTracker/CacheStatusCard'
 import NewUidDialog from './WishTracker/NewUidDialog'
 import { WishTrackerProvider } from './WishTracker/WishTrackerContext'
 
-const loadPageHome = () => import('@genshin-optimizer/gi/page-home')
-const loadPageArtifacts = () => import('@genshin-optimizer/gi/page-artifacts')
-const loadPageSettings = () => import('@genshin-optimizer/gi/page-settings')
-const loadPageWeapons = () => import('@genshin-optimizer/gi/page-weapons')
-const loadPageArchive = () => import('@genshin-optimizer/gi/page-archive')
-const loadPageDocumentation = () => import('@genshin-optimizer/gi/page-doc')
-const loadPageCharacters = () => import('@genshin-optimizer/gi/page-characters')
-const loadPageTeams = () => import('@genshin-optimizer/gi/page-teams')
-const loadPageTeam = () => import('@genshin-optimizer/gi/page-team')
-const loadPageTools = () => import('./Tools')
+type PageModule = Promise<{ default: ComponentType<any> }>
+
+const loadPageHome = () =>
+  import('@genshin-optimizer/gi/page-home') as unknown as PageModule
+const loadPageArtifacts = () =>
+  import('@genshin-optimizer/gi/page-artifacts') as unknown as PageModule
+const loadPageSettings = () =>
+  import('@genshin-optimizer/gi/page-settings') as unknown as PageModule
+const loadPageWeapons = () =>
+  import('@genshin-optimizer/gi/page-weapons') as unknown as PageModule
+const loadPageArchive = () =>
+  import('@genshin-optimizer/gi/page-archive') as unknown as PageModule
+const loadPageDocumentation = () =>
+  import('@genshin-optimizer/gi/page-doc') as unknown as PageModule
+const loadPageCharacters = () =>
+  import('@genshin-optimizer/gi/page-characters') as unknown as PageModule
+const loadPageTeams = () =>
+  import('@genshin-optimizer/gi/page-teams') as unknown as PageModule
+const loadPageTeam = () =>
+  import('@genshin-optimizer/gi/page-team') as unknown as PageModule
+const loadPageTools = () => import('./Tools') as unknown as PageModule
 
 const PageHome = lazy(loadPageHome)
 const PageArtifacts = lazy(loadPageArtifacts)
@@ -62,7 +74,7 @@ const PageTeam = lazy(loadPageTeam)
 const PageTools = lazy(loadPageTools)
 
 function App() {
-  const dbIndex = parseInt(localStorage.getItem('dbIndex') || '1')
+  const dbIndex = Number.parseInt(localStorage.getItem('dbIndex') || '1')
   const [databases, setDatabases] = useState(() => {
     return ([1, 2, 3, 4, 5, 6] as const).map((index) => {
       if (index === dbIndex) {
@@ -138,8 +150,8 @@ function Content() {
       return () => window.cancelIdleCallback(idleId)
     }
 
-    const timeout = window.setTimeout(preloadRoutes, 800)
-    return () => window.clearTimeout(timeout)
+    const timeout = globalThis.setTimeout(preloadRoutes, 800)
+    return () => globalThis.clearTimeout(timeout)
   }, [])
 
   return (

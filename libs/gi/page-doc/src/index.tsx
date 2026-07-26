@@ -5,7 +5,7 @@ import {
   allWeaponKeys,
   charKeyToLocGenderedCharKey,
 } from '@genshin-optimizer/gi/consts'
-import { useDBMeta, useDatabase } from '@genshin-optimizer/gi/db-ui'
+import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
 import { allStats } from '@genshin-optimizer/gi/stats'
 import { statPercent } from '@genshin-optimizer/gi/ui'
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt'
@@ -295,7 +295,7 @@ function StatKeyPane() {
   ] as const
   const statKeysCode = `type StatKey\n  = ${statKeys
     .map((k) => `"${k}" //${tk(k)}${statPercent(k)}`)
-    .join(`\n  | `)}`
+    .join('\n  | ')}`
   return (
     <>
       <Typography gutterBottom variant="h4">
@@ -312,7 +312,7 @@ function ArtifactSetKeyPane() {
   ]
     .sort()
     .map((k) => `"${k}" //${t(`artifactNames_gen:${k}`)}`)
-    .join(`\n  | `)}`
+    .join('\n  | ')}`
   return (
     <>
       <Typography gutterBottom variant="h4">
@@ -339,7 +339,7 @@ function CharacterKeyPane() {
           )}`
         )}`
     )
-    .join(`\n  | `)}`
+    .join('\n  | ')}`
   return (
     <>
       <Typography gutterBottom variant="h4">
@@ -354,7 +354,7 @@ function WeaponKeyPane() {
   const weaponKeysCode = `type WeaponKey\n  = ${[...new Set(allWeaponKeys)]
     .sort()
     .map((k) => `"${k}" //${t(`weaponNames_gen:${k}`)}`)
-    .join(`\n  | `)}`
+    .join('\n  | ')}`
   return (
     <>
       <Typography gutterBottom variant="h4">
@@ -369,7 +369,7 @@ function MaterialKeyPane() {
   const weaponKeysCode = `type MaterialKey\n  = ${Object.keys(allStats.material)
     .sort()
     .map((k) => `"${k}" // ${t(`${k}.name`)}`)
-    .join(`\n  | `)}`
+    .join('\n  | ')}`
   return (
     <>
       <Typography gutterBottom variant="h4">

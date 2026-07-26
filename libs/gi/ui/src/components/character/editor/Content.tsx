@@ -11,8 +11,8 @@ import {
 import type { LoadoutDatum } from '@genshin-optimizer/gi/db'
 import {
   CharacterContext,
-  useDBMeta,
   useDatabase,
+  useDBMeta,
 } from '@genshin-optimizer/gi/db-ui'
 import { getCharSheet } from '@genshin-optimizer/gi/sheets'
 import { getCharStat } from '@genshin-optimizer/gi/stats'
@@ -31,10 +31,10 @@ import {
   CharacterCompactConstSelector,
   CharacterCoverArea,
 } from '../CharacterProfilePieces'
+import { CharacterCardStats } from '../card/CharacterCardStats'
 import { EquippedGrid } from '../EquippedGrid'
 import { TalentDropdown } from '../TalentDropdown'
 import { CharacterConstellationName, CharacterName } from '../Trans'
-import { CharacterCardStats } from '../card/CharacterCardStats'
 import { LoadoutCard } from './LoadoutCard'
 import { TravelerGenderSelect } from './TravelerGenderSelect'
 
@@ -295,7 +295,7 @@ function InTeam() {
       >
         {t('charContentModal.addLoAndTeam')}
       </Button>
-      <CardThemed bgt="light"></CardThemed>
+      <CardThemed bgt="light" />
     </Box>
   )
 }

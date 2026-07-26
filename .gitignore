@@ -74,3 +74,9 @@ vitest.config.*.timestamp*
 # playwright artifacts
 playwright-report/
 test-results/
+
+# Nx tooling
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+.nx/polygraph
+.nx/self-healing

@@ -153,7 +153,7 @@ export default function CustomMultiTargetCard({
                         try {
                           JSON.parse(description)
                           return true
-                        } catch (e) {
+                        } catch (_e) {
                           return false
                         }
                       })()

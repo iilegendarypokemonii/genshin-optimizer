@@ -1,13 +1,13 @@
 import { useBoolState } from '@genshin-optimizer/common/react-util'
 import type { CharacterKey } from '@genshin-optimizer/gi/consts'
 import type { LoadoutDatum } from '@genshin-optimizer/gi/db'
-import { useDBMeta, useDatabase } from '@genshin-optimizer/gi/db-ui'
-import type { TeamData, dataContextObj } from '@genshin-optimizer/gi/ui'
+import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
+import type { dataContextObj, TeamData } from '@genshin-optimizer/gi/ui'
 import {
-  CharIconSide,
   CharacterMultiSelectionModal,
   CharacterName,
   CharacterSingleSelectionModal,
+  CharIconSide,
   EnemyExpandCard,
   TeamDelModal,
   TeamInfoAlert,
@@ -53,7 +53,7 @@ export default function TeamSetting({
 
   const onDelNoChars = () => {
     database.teams.remove(teamId)
-    navigate(`/teams`)
+    navigate('/teams')
   }
 
   const onDup = () => {
@@ -88,7 +88,7 @@ export default function TeamSetting({
           teamId={teamId}
           show={showDel}
           onHide={onHideDel}
-          onDel={() => navigate(`/teams`)}
+          onDel={() => navigate('/teams')}
         />
         <Button
           color="error"

@@ -93,7 +93,12 @@ async function checkForUpdates() {
 
     const yes = await ask(
       `Version ${update.version} is available. Update and restart now?`,
-      { title: 'Update Available', kind: 'info', okLabel: 'Update', cancelLabel: 'Later' }
+      {
+        title: 'Update Available',
+        kind: 'info',
+        okLabel: 'Update',
+        cancelLabel: 'Later',
+      }
     )
     if (!yes) return
 

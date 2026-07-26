@@ -1,8 +1,8 @@
+import { isTauri } from '@genshin-optimizer/common/util'
 import CloseIcon from '@mui/icons-material/Close'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { Button, IconButton, Toolbar, Typography } from '@mui/material'
-import { isTauri } from '@genshin-optimizer/common/util'
 import type { ToolEntry } from './toolsManifest'
 
 export async function openToolWindow(
@@ -12,14 +12,13 @@ export async function openToolWindow(
   if (!isTauri()) return false
 
   try {
-    const { WebviewWindow } = await import(
-      '@tauri-apps/api/webviewWindow'
-    )
+    const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow')
 
     const label = `tool-${tool.id}`
     const existing = await WebviewWindow.getByLabel(label)
     if (existing) {
-      await existing.setFocus()
+      const { Window } = await import('@tauri-apps/api/window')
+      await (await Window.getByLabel(label))?.setFocus()
       return true
     }
 
@@ -64,9 +63,7 @@ export default function ToolViewer({
   const handleOpenExternal = async () => {
     if (isTauri()) {
       try {
-        const mod = await import(
-          /* @vite-ignore */ '@tauri-apps/plugin-opener'
-        )
+        const mod = await import(/* @vite-ignore */ '@tauri-apps/plugin-opener')
         await mod.openUrl(activeUrl)
         return
       } catch {
