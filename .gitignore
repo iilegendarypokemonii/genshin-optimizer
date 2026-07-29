@@ -80,3 +80,6 @@ test-results/
 .github/instructions/nx.instructions.md
 .nx/polygraph
 .nx/self-healing
+
+# Local theorycrafting research and downloaded source material
+/scratch/
