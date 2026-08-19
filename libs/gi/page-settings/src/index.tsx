@@ -1,10 +1,8 @@
-import { LocalStorageUsageCard } from '@genshin-optimizer/common/react-util'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { DatabaseCard } from '@genshin-optimizer/gi/ui'
 import { CardContent, Divider, Grid, Typography } from '@mui/material'
 import { Trans, useTranslation } from 'react-i18next'
 import LanguageCard from './LanguageCard'
-import SillyCard from './SillyCard'
 import { SnowToggle } from './SnowToggle'
 
 export default function PageSettings() {
@@ -25,14 +23,6 @@ export default function PageSettings() {
           </Grid>
           <Grid item xs={6}>
             <SnowToggle />
-          </Grid>
-        </Grid>
-        <Grid container direction="row" spacing={1}>
-          <Grid item sm={12} md={6}>
-            <SillyCard />
-          </Grid>
-          <Grid item sm={12} md={6}>
-            <LocalStorageUsageCard />
           </Grid>
         </Grid>
         <DatabaseCard />
