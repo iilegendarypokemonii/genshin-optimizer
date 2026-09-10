@@ -1,15 +1,18 @@
+import { useDataManagerKeys } from '@genshin-optimizer/common/database-ui'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { SECOND_MS } from '@genshin-optimizer/common/util'
 import { timeZones } from '@genshin-optimizer/gi/db'
 import { useDatabase } from '@genshin-optimizer/gi/db-ui'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
-import { Box, Chip, Stack, Typography } from '@mui/material'
+import { Box, ButtonBase, Chip, Stack, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { UpdateReminder } from './UpdateReminder'
 
 export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
   const database = useDatabase()
+  const teamDpsCount = useDataManagerKeys(database.teamDpsSims).length
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -146,7 +149,7 @@ export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: 'repeat(4, minmax(0, 1fr))',
+                md: 'repeat(5, minmax(0, 1fr))',
               },
               gap: 1,
             }}
@@ -155,6 +158,11 @@ export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
             <SummaryStat label="Artifacts" value={`${summary.artifacts}`} />
             <SummaryStat label="Weapons" value={`${summary.weapons}`} />
             <SummaryStat label="Builds" value={`${summary.builds}`} />
+            <SummaryStatLink
+              label="Team DPS"
+              value={`${teamDpsCount}`}
+              to="/tools/team-dps"
+            />
           </Box>
 
           <UpdateReminder />
@@ -164,6 +172,43 @@ export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
         <Box sx={{ width: '100%', maxWidth: 820, mt: 2 }}>{extraCard}</Box>
       )}
     </Box>
+  )
+}
+
+function SummaryStatLink({
+  label,
+  value,
+  to,
+}: {
+  label: string
+  value: string
+  to: string
+}) {
+  const navigate = useNavigate()
+  return (
+    <ButtonBase
+      onClick={() => navigate(to)}
+      sx={{
+        px: 1.75,
+        py: 1.5,
+        borderRadius: 1.25,
+        bgcolor: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        display: 'block',
+        textAlign: 'left',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.08)',
+          border: '1px solid rgba(255,255,255,0.16)',
+        },
+      }}
+    >
+      <Typography variant="caption" sx={{ color: 'neutral300.main' }}>
+        {label}
+      </Typography>
+      <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+        {value}
+      </Typography>
+    </ButtonBase>
   )
 }
 

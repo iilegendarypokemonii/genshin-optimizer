@@ -151,8 +151,8 @@ export function UpdateReminder() {
           variant="body2"
           sx={{ color: 'warning.main', fontWeight: 600 }}
         >
-          {label} went live {fmtDate(date)} — upstream data usually lands
-          within 0–3 days, time to sync the fork.
+          {label} went live {fmtDate(date)} — upstream data usually lands within
+          0–3 days, time to sync the fork.
         </Typography>
       ))}
     </Box>

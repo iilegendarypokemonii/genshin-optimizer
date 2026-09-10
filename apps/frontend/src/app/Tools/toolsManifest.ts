@@ -25,6 +25,15 @@ export type ToolEntry = {
 
 export const toolsManifest: ToolEntry[] = [
   {
+    id: 'team-dps',
+    name: 'Team DPS',
+    description: 'Track DPS-dummy team damage from screenshots, per account',
+    url: '',
+    icon: 'Speed',
+    category: 'planner',
+    internal: true,
+  },
+  {
     id: 'wish-tracker',
     name: 'Wish Tracker',
     description:

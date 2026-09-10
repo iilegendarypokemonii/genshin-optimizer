@@ -15,10 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
-import {
-  capturingRadianceWinChance,
-  type BannerStats,
-} from './pity'
+import { capturingRadianceWinChance, type BannerStats } from './pity'
 
 function pityColor(pity: number): string {
   if (pity <= 40) return '#7fe08a'
@@ -60,10 +57,10 @@ function radianceTooltip(stats: BannerStats): string {
   }
 
   if (radianceChance === 55) {
-    return 'Current featured-character chance: 55% in the Hu Tao calculator\'s theoretical radiance model. HoYoverse does not publish this per-state rate.'
+    return "Current featured-character chance: 55% in the Hu Tao calculator's theoretical radiance model. HoYoverse does not publish this per-state rate."
   }
 
-  return 'Current featured-character chance: 50% in the Hu Tao calculator\'s theoretical radiance model. HoYoverse publishes a 55% consolidated long-run rate, not a per-state table.'
+  return "Current featured-character chance: 50% in the Hu Tao calculator's theoretical radiance model. HoYoverse publishes a 55% consolidated long-run rate, not a per-state table."
 }
 
 export default function BannerStatsCard({
@@ -123,10 +120,7 @@ export default function BannerStatsCard({
             stats.capturingRadianceScore !== undefined && (
               <Tooltip title={radianceTooltip(stats)}>
                 <Box component="span" sx={{ display: 'inline-flex' }}>
-                  <Stat
-                    label="radiance"
-                    value={stats.capturingRadianceScore}
-                  />
+                  <Stat label="radiance" value={stats.capturingRadianceScore} />
                 </Box>
               </Tooltip>
             )}
@@ -254,7 +248,7 @@ export default function BannerStatsCard({
             onPageChange={(_, nextPage) => setPage(nextPage)}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={(event) => {
-              setRowsPerPage(parseInt(event.target.value, 10))
+              setRowsPerPage(Number.parseInt(event.target.value, 10))
               setPage(0)
             }}
             rowsPerPageOptions={[5, 10, 25, 50]}

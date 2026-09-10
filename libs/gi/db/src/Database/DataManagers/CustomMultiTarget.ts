@@ -111,7 +111,7 @@ const tes = (
   symbol: string,
   {
     precedence = 3,
-    arity = { min: 1, max: Infinity },
+    arity = { min: 1, max: Number.POSITIVE_INFINITY },
     enclosing = { left: '(', right: ')' },
     description = null,
   }: Partial<EnclosingOperationSpec> = {}

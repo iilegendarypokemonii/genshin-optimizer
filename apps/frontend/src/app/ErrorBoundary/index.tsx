@@ -58,7 +58,7 @@ class ErrorBoundary extends Component<Props, State> {
       const uploadStr = "**Don't forget to upload your JSON file!**"
       const textBoxVal = `${reproStr}\n\n${uploadStr}\n\n\`\`\`\n${errorStr}\n\`\`\``
       const onNuke = async () => {
-        if (!await confirmAsync(t`confirmNuke`)) return
+        if (!(await confirmAsync(t`confirmNuke`))) return
         localStorage.clear()
         window.alert(t`finishNuke`)
         document.location.reload()

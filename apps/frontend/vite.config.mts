@@ -9,7 +9,8 @@ import { defineConfig, normalizePath } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import pkg from '../../package.json' with { type: 'json' }
 
-const isDesktopBuild = process.env.npm_lifecycle_event === 'frontend:desktop:build'
+const isDesktopBuild =
+  process.env.npm_lifecycle_event === 'frontend:desktop:build'
 
 function manualChunks(id: string) {
   const path = normalizePath(id)

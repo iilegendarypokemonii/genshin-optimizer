@@ -149,9 +149,7 @@ describe('parseOcrLines', () => {
       ],
       nameMap
     )
-    expect(
-      res.warnings.some((w) => w.includes('does not add up'))
-    ).toBe(true)
+    expect(res.warnings.some((w) => w.includes('does not add up'))).toBe(true)
   })
 
   test('handles empty input', () => {

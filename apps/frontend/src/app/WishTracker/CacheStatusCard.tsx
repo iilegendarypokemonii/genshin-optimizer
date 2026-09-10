@@ -60,7 +60,9 @@ function outcomeText(outcome?: SyncOutcome): string | undefined {
 /** Game-cache status + per-profile staleness; shown on Home and the tracker page. */
 export default function CacheStatusCard({
   compact = false,
-}: { compact?: boolean }) {
+}: {
+  compact?: boolean
+}) {
   const {
     isDesktop,
     profiles,

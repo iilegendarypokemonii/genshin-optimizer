@@ -24,7 +24,9 @@ class DesktopPersistentStorage implements Storage {
 
   constructor(
     initialData: StorageSnapshot,
-    private readonly persistSnapshot: (snapshot: StorageSnapshot) => Promise<void>,
+    private readonly persistSnapshot: (
+      snapshot: StorageSnapshot
+    ) => Promise<void>,
     private readonly mirrorStorage?: Storage
   ) {
     for (const [key, value] of Object.entries(initialData)) {
