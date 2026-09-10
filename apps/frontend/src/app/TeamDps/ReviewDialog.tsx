@@ -48,6 +48,7 @@ export default function ReviewDialog({
   parsed,
   ocrErrorText,
   nameMap,
+  accountUid,
   onCancel,
   onSave,
 }: {
@@ -56,6 +57,8 @@ export default function ReviewDialog({
   parsed?: ParsedScreenshot
   ocrErrorText?: string
   nameMap: CharNameMap
+  /** UID of the loaded optimizer account; used when the screenshot has none. */
+  accountUid?: string
   onCancel: () => void
   onSave: (result: ReviewResult) => void
 }) {
@@ -80,7 +83,7 @@ export default function ReviewDialog({
     setStrongestHit(
       parsed?.strongestHit !== undefined ? String(parsed.strongestHit) : ''
     )
-    setUid(parsed?.uid ?? '')
+    setUid(parsed?.uid ?? accountUid ?? '')
     setNotes('')
     const initial: Row[] = []
     for (let i = 0; i < TEAM_SIZE; i++) {
@@ -92,15 +95,16 @@ export default function ReviewDialog({
       })
     }
     setRows(initial)
-  }, [open, parsed])
+  }, [open, parsed, accountUid])
 
   const characters = rows
     .map((r) => r.character)
     .filter((c): c is CharacterKey => !!c)
-  const distinct = new Set(characters).size === TEAM_SIZE
+  const hasDuplicates = new Set(characters).size !== characters.length
+  const validTeam = characters.length >= 1 && !hasDuplicates
   const dpsNum = toNum(dps)
   const totalNum = toNum(totalDamage)
-  const canSave = distinct && dpsNum !== undefined && dpsNum > 0
+  const canSave = validTeam && dpsNum !== undefined && dpsNum > 0
 
   const sumWarning = useMemo(() => {
     if (totalNum === undefined) return undefined
@@ -214,8 +218,12 @@ export default function ReviewDialog({
                 </Stack>
               )
             })}
-            {!distinct && (
-              <Alert severity="error">Pick 4 distinct characters.</Alert>
+            {!validTeam && (
+              <Alert severity="error">
+                {hasDuplicates
+                  ? 'Each character can only appear once.'
+                  : 'Pick at least one character.'}
+              </Alert>
             )}
             {sumWarning && <Alert severity="warning">{sumWarning}</Alert>}
             <Stack direction="row" spacing={1}>

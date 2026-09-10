@@ -56,7 +56,7 @@ export interface TeamDpsRun {
   notes?: string
 }
 
-/** All recorded runs for one unique 4-character team. */
+/** All recorded runs for one unique team (1-4 characters). */
 export interface TeamDpsSim {
   /** Sorted characters joined by '_'; recomputed on validation. */
   teamKey: string
@@ -85,7 +85,8 @@ export class TeamDpsDataManager extends DataManager<
     if (!parsed.success) return undefined
 
     const characters = [...new Set(parsed.data.characters)].sort()
-    if (characters.length !== TEAM_DPS_TEAM_SIZE) return undefined
+    if (!characters.length || characters.length > TEAM_DPS_TEAM_SIZE)
+      return undefined
     const teamKey = characters.join('_')
     const charSet = new Set<CharacterKey>(characters)
 

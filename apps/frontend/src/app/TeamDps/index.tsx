@@ -42,7 +42,7 @@ export default function TeamDpsPage() {
   // ensure the charNames_gen namespace is loaded before building the name map
   useTranslation('charNames_gen')
   const database = useDatabase()
-  const { gender } = useDBMeta()
+  const { gender, uid: accountUid } = useDBMeta()
   const nameMap = useMemo(() => getCharNameMap(gender), [gender])
   const entries = useDataManagerEntries(database.teamDpsSims)
   const isDesktop = isTauri()
@@ -227,6 +227,7 @@ export default function TeamDpsPage() {
         parsed={pending?.parsed}
         ocrErrorText={pending?.ocrErrorText}
         nameMap={nameMap}
+        accountUid={accountUid || undefined}
         onCancel={onCancel}
         onSave={onSave}
       />

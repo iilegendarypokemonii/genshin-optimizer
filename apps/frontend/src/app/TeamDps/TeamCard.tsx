@@ -6,9 +6,9 @@ import {
   latestTeamDpsRun,
   teamDpsCharacter,
 } from '@genshin-optimizer/gi/db'
-import { useDatabase } from '@genshin-optimizer/gi/db-ui'
+import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
 import { getCharEle } from '@genshin-optimizer/gi/stats'
-import { CharIconSide } from '@genshin-optimizer/gi/ui'
+import { iconAsset, SillyContext } from '@genshin-optimizer/gi/ui'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
@@ -27,7 +27,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import type { CharNameMap } from './parse'
 import ScreenshotModal from './ScreenshotModal'
 import { deleteScreenshot } from './store'
@@ -146,6 +146,8 @@ export default function TeamCard({
   nameMap: CharNameMap
 }) {
   const database = useDatabase()
+  const { gender } = useDBMeta()
+  const { silly } = useContext(SillyContext)
   const [expanded, setExpanded] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState(sim.name ?? '')
@@ -189,13 +191,28 @@ export default function TeamCard({
     <CardThemed bgt="light" data-testid="team-dps-card">
       <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Stack direction="row" spacing={1} alignItems="center">
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            {ordered.map((ck) => (
-              <Box key={ck} sx={{ fontSize: 32, lineHeight: 0 }}>
-                <CharIconSide characterKey={ck} />
-              </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {ordered.map((ck, i) => (
+              <Box
+                key={ck}
+                component="img"
+                src={iconAsset(ck, gender, silly)}
+                alt={nameMap[ck] ?? ck}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid',
+                  borderColor: ELEMENT_HEX[getCharEle(ck)] ?? '#888888',
+                  bgcolor: 'contentDark.main',
+                  ml: i ? -1 : 0,
+                  zIndex: ordered.length - i,
+                  position: 'relative',
+                }}
+              />
             ))}
-          </Stack>
+          </Box>
           {dpsChar && (
             <Chip
               size="small"

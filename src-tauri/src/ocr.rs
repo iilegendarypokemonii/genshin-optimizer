@@ -200,6 +200,22 @@ mod tests {
         ));
     }
 
+    /// Manual helper: OCR_DUMP="p1;p2" cargo test dump_ocr_from_env -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn dump_ocr_from_env() {
+        ensure_winrt_init();
+        let paths = std::env::var("OCR_DUMP").expect("set OCR_DUMP to ;-separated image paths");
+        for p in paths.split(';') {
+            let bytes = std::fs::read(p).expect("readable image path");
+            let out = ocr_image_bytes(&bytes).expect("ocr");
+            println!("=== {p} ({}x{})", out.image_w, out.image_h);
+            for l in out.lines {
+                println!("[{:.0},{:.0},{:.0},{:.0}] {}", l.x, l.y, l.w, l.h, l.text);
+            }
+        }
+    }
+
     #[test]
     fn ocr_rejects_garbage_bytes() {
         ensure_winrt_init();

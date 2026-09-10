@@ -17,16 +17,18 @@ export interface ParsedScreenshot {
   timeElapsedSec?: number
   strongestHit?: number
   uid?: string
-  /** Up to 4 team members: contribution characters first, then right-rail names. */
+  /** Up to 4 team members: contribution characters first, then other recognized names. */
   team: (CharacterKey | undefined)[]
   warnings: string[]
 }
 
 export const TEAM_SIZE = 4
 
-/** Normalize an OCR line: exotic spaces, fullwidth colon, collapsed whitespace. */
+/** Normalize an OCR line: diacritics, exotic spaces, fullwidth colon, collapsed whitespace. */
 function normalizeLine(text: string): string {
   return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036F]/g, '')
     .replace(/[\u2000-\u200B\u202F\u205F\u2060\u00A0\uFEFF]/g, ' ')
     .replace(/\uFF1A/g, ':')
     .replace(/\s+/g, ' ')
@@ -138,8 +140,68 @@ function matchName(raw: string, candidates: NameCandidate[]): NameMatch {
   }
 }
 
-const CONTRIBUTION_RE =
-  /^(.{2,40}?)\s*:\s*([\d][\d ,]*)\s*\(\s*(\d{1,3})\s*%\s*\)$/
+interface Row {
+  text: string
+  x: number
+  y: number
+}
+
+/**
+ * Windows OCR returns HUD labels and their values as separate lines
+ * ("DPS :" and "589 311"). Rebuild visual rows: cluster lines whose vertical
+ * ranges overlap by more than half the smaller height, then split clusters at
+ * large horizontal gaps (left HUD vs right character rail).
+ */
+function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
+  interface Cluster {
+    y0: number
+    y1: number
+    members: OcrLine[]
+  }
+  const clusters: Cluster[] = []
+  for (const line of [...lines].sort((a, b) => a.y - b.y)) {
+    const y0 = line.y
+    const y1 = line.y + line.h
+    const host = clusters.find((c) => {
+      const overlap = Math.min(c.y1, y1) - Math.max(c.y0, y0)
+      return overlap > 0.5 * Math.min(y1 - y0, c.y1 - c.y0)
+    })
+    if (host) {
+      host.members.push(line)
+      host.y0 = Math.min(host.y0, y0)
+      host.y1 = Math.max(host.y1, y1)
+    } else {
+      clusters.push({ y0, y1, members: [line] })
+    }
+  }
+  const rows: Row[] = []
+  for (const cluster of clusters) {
+    const members = [...cluster.members].sort((a, b) => a.x - b.x)
+    let segment: OcrLine[] = []
+    const flush = () => {
+      if (!segment.length) return
+      rows.push({
+        text: segment.map((l) => l.text).join(' '),
+        x: segment[0].x,
+        y: cluster.y0,
+      })
+      segment = []
+    }
+    for (const member of members) {
+      const last = segment[segment.length - 1]
+      if (last && member.x - (last.x + last.w) > gapThreshold) flush()
+      segment.push(member)
+    }
+    flush()
+  }
+  return rows.sort((a, b) => a.y - b.y || a.x - b.x)
+}
+
+// "Chasca : 23498282(76%)" / 'Mona 264923 (2")' / "Citlali : 101493 (1%" (broken paren)
+const CONTRIB_WITH_PCT =
+  /^(.{2,30}?)\s*[:.]?\s*(\d[\d,]{2,})\s*\(\s*(\d{1,3})[^)]*(?:\)[^\d]{0,6})?$/
+// "Durin : 3242493" - only trusted when the name matches a character
+const CONTRIB_NO_PCT = /^(.{2,30}?)\s*[:.]\s*(\d[\d,]{3,})\s*$/
 
 export function parseOcrLines(
   rawLines: OcrLine[],
@@ -147,11 +209,13 @@ export function parseOcrLines(
 ): ParsedScreenshot {
   const warnings: string[] = []
   const candidates = buildCandidates(nameMap)
-  // reading order
-  const lines = [...rawLines]
-    .sort((a, b) => a.y - b.y || a.x - b.x)
+  const lines = rawLines
     .map((l) => ({ ...l, text: normalizeLine(l.text) }))
     .filter((l) => l.text)
+    .sort((a, b) => a.y - b.y || a.x - b.x)
+
+  const maxX = lines.length ? Math.max(...lines.map((l) => l.x + l.w)) : 0
+  const rows = buildRows(lines, Math.max(250, maxX * 0.12))
 
   let dps: number | undefined
   let totalDamage: number | undefined
@@ -160,27 +224,32 @@ export function parseOcrLines(
   let uid: string | undefined
   const contributions: ParsedContribution[] = []
 
-  for (const line of lines) {
-    const { text } = line
+  for (const row of rows) {
+    const { text } = row
     // Rotation-results rows ("DPS: 559K" / "Dmg: ... Time: ...") are per-rotation
-    // stats; the headline numbers already average them. Skip anything K/M-ish.
+    // stats; the headline numbers already average them.
     const isRotationRow =
-      /\bDmg\s*:/.test(text) || /\bDPS\s*:\s*[\d ,.]+[KM]\b/i.test(text)
+      /\bDmg\s*:/.test(text) || /\bDPS\s*[:.]?\s*[\d ,.]+[KM]\b/i.test(text)
 
     if (dps === undefined && !isRotationRow) {
-      const m = text.match(/\bDPS\s*:\s*([\d][\d ,]*)(?![\d ,]*[KM])/)
+      const m = text.match(/\bDPS\s*[:.]?\s*(\d{1,3}(?:[ ,]\d{3})+|\d{2,})/)
       if (m) dps = num(m[1])
     }
-    if (totalDamage === undefined && !isRotationRow) {
-      const m = text.match(/\bDamage\s*:\s*([\d][\d ,]*)$/)
+    if (
+      totalDamage === undefined &&
+      !isRotationRow &&
+      !/CRIT|Bonus/i.test(text)
+    ) {
+      // tolerate garbled labels ("Damagae.") and merged trailing text
+      const m = text.match(/\bDamag\w{0,2}[^\d]{0,6}(\d[\d,]{3,})/)
       if (m) totalDamage = num(m[1])
     }
     if (timeElapsedSec === undefined) {
-      const m = text.match(/Time Elapsed\s*:\s*([\d]+(?:[.,]\d+)?)\s*s?/i)
+      const m = text.match(/Time\s*Elapsed[^\d]{0,4}(\d+(?:[.,]\d+)?)/i)
       if (m) timeElapsedSec = Number.parseFloat(m[1].replace(',', '.'))
     }
     if (strongestHit === undefined) {
-      const m = text.match(/Strongest Hit\s*:\s*([\d][\d ,]*)/i)
+      const m = text.match(/\bHit\s*[:.]?\s*(\d[\d ,]*)/i)
       if (m) strongestHit = num(m[1])
     }
     if (uid === undefined) {
@@ -189,56 +258,69 @@ export function parseOcrLines(
       if (m) uid = m[1]
     }
     if (contributions.length < TEAM_SIZE && !isRotationRow) {
-      const m = text.match(CONTRIBUTION_RE)
-      if (m) {
-        const damage = num(m[2])
-        if (damage !== undefined) {
-          const rawName = m[1].trim()
-          const match = matchName(rawName, candidates)
-          const duplicate = contributions.some(
-            (c) =>
-              c.rawName === rawName ||
-              (match.character && c.character === match.character)
-          )
-          if (!duplicate) {
-            if (!match.character)
-              warnings.push(
-                match.ambiguous
-                  ? `"${rawName}" matches multiple characters - pick one manually`
-                  : `Could not recognize character "${rawName}"`
-              )
-            contributions.push({
-              character: match.character,
-              rawName,
-              damage,
-              pct: Number.parseInt(m[3], 10),
-            })
+      let rawName: string | undefined
+      let damage: number | undefined
+      let pct: number | undefined
+      let match: NameMatch | undefined
+      const withPct = text.match(CONTRIB_WITH_PCT)
+      if (withPct) {
+        rawName = withPct[1].trim()
+        damage = num(withPct[2])
+        pct = Number.parseInt(withPct[3], 10)
+        match = matchName(rawName, candidates)
+      } else {
+        const noPct = text.match(CONTRIB_NO_PCT)
+        if (noPct) {
+          const m = matchName(noPct[1].trim(), candidates)
+          // without a percent, only trust rows naming a known character
+          if (m.character) {
+            rawName = noPct[1].trim()
+            damage = num(noPct[2])
+            match = m
           }
+        }
+      }
+      if (rawName !== undefined && damage !== undefined && match) {
+        const matchedCharacter = match.character
+        const duplicate = contributions.some(
+          (c) =>
+            c.rawName === rawName ||
+            (matchedCharacter && c.character === matchedCharacter)
+        )
+        if (!duplicate) {
+          if (!matchedCharacter)
+            warnings.push(
+              match.ambiguous
+                ? `"${rawName}" matches multiple characters - pick one manually`
+                : `Could not recognize character "${rawName}"`
+            )
+          contributions.push({
+            character: matchedCharacter,
+            rawName,
+            damage,
+            ...(pct !== undefined ? { pct } : {}),
+          })
         }
       }
     }
   }
 
-  // Team: contribution characters first, then names on the right rail.
+  // Team: contribution characters first, then any short line that names a
+  // character (left damage panel, reaction tracker, right rail).
   const team: (CharacterKey | undefined)[] = []
   for (const c of contributions)
     if (c.character && !team.includes(c.character)) team.push(c.character)
 
-  if (team.length < TEAM_SIZE && lines.length) {
-    const maxX = Math.max(...lines.map((l) => l.x + l.w))
-    const railLines = lines.filter((l) => l.x > maxX * 0.7)
-    for (const line of railLines) {
-      if (team.length >= TEAM_SIZE) break
-      const match = matchName(line.text, candidates)
-      if (match.character && !team.includes(match.character))
-        team.push(match.character)
-    }
+  for (const line of lines) {
+    if (team.length >= TEAM_SIZE) break
+    if (line.text.length > 30) continue
+    const match = matchName(line.text, candidates)
+    if (match.character && !team.includes(match.character))
+      team.push(match.character)
   }
   while (team.length < TEAM_SIZE) team.push(undefined)
-  if (team.some((t) => t === undefined))
-    warnings.push(
-      'Could not identify all 4 team members - fill them in manually'
-    )
+  if (team.every((t) => t === undefined))
+    warnings.push('No team members recognized - fill them in manually')
 
   if (dps === undefined) warnings.push('DPS not found in the screenshot')
   if (totalDamage === undefined)

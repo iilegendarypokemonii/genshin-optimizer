@@ -82,15 +82,35 @@ describe('TeamDpsDataManager', () => {
     expect(database.teamDpsSims.keys.length).toEqual(2)
   })
 
-  test('rejects teams without 4 distinct characters', () => {
+  test('dedupes duplicate characters and allows teams smaller than 4', () => {
     const dup: CharacterKey[] = [
       'RaidenShogun',
       'RaidenShogun',
       'Bennett',
       'Xingqiu',
     ]
-    expect(database.teamDpsSims.addRun(dup, makeRun('run1'))).toEqual('')
-    expect(database.teamDpsSims.keys.length).toEqual(0)
+    const simId = database.teamDpsSims.addRun(dup, makeRun('run1'))
+    expect(simId).toBeTruthy()
+    const sim = database.teamDpsSims.get(simId)!
+    expect(sim.characters).toEqual(['Bennett', 'RaidenShogun', 'Xingqiu'])
+    expect(sim.teamKey).toEqual('Bennett_RaidenShogun_Xingqiu')
+    // Xiangling is not on this team; her contribution is dropped
+    expect(sim.runs[0].contributions.map((c) => c.character).sort()).toEqual([
+      'Bennett',
+      'RaidenShogun',
+      'Xingqiu',
+    ])
+
+    const soloId = database.teamDpsSims.addRun(
+      ['RaidenShogun'],
+      makeRun('run2', {
+        contributions: [{ character: 'RaidenShogun', damage: 5 }],
+      })
+    )
+    expect(soloId).toBeTruthy()
+    expect(soloId).not.toEqual(simId)
+
+    expect(database.teamDpsSims.addRun([], makeRun('run3'))).toEqual('')
   })
 
   test('deduplicates run ids and drops foreign contributions', () => {
