@@ -22,6 +22,15 @@ tauri-plugin-http = "2"
 regex = "1"
 tauri-plugin-process = "2"
 tauri-plugin-opener = "2"
+windows = { version = "0.61", features = [
+  "Media_Ocr",
+  "Graphics_Imaging",
+  "Storage_Streams",
+  "Globalization",
+  "Foundation",
+  "Foundation_Collections",
+  "Win32_System_WinRT",
+] }
 
 [profile.release]
 opt-level = 1
