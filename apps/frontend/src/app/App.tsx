@@ -1,5 +1,6 @@
 import {
   DBLocalStorage,
+  loadJsonOrB64GzipFromStorage,
   SandboxStorage,
 } from '@genshin-optimizer/common/database'
 import { ScrollTop, useTitle } from '@genshin-optimizer/common/ui'
@@ -78,11 +79,11 @@ function App() {
   const [databases, setDatabases] = useState(() => {
     return ([1, 2, 3, 4, 5, 6] as const).map((index) => {
       if (index === dbIndex) {
-        return new ArtCharDatabase(index, new DBLocalStorage(localStorage))
+        const db = new ArtCharDatabase(index, new DBLocalStorage(localStorage))
+        db.toExtraLocalDB()
+        return db
       } else {
-        const dbName = `extraDatabase_${index}`
-        const eDB = localStorage.getItem(dbName)
-        const dbObj = eDB ? JSON.parse(eDB) : {}
+        const dbObj = loadJsonOrB64GzipFromStorage(`extraDatabase_${index}`)
         const db = new ArtCharDatabase(index, new SandboxStorage(dbObj))
         db.toExtraLocalDB()
         return db
