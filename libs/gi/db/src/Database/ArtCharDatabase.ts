@@ -19,6 +19,7 @@ import { GeneratedBuildListDataManager } from './DataManagers/GeneratedBuildList
 import { OptConfigDataManager } from './DataManagers/OptConfigDataManager'
 import { TeamCharacterDataManager } from './DataManagers/TeamCharacterDataManager'
 import { TeamDataManager } from './DataManagers/TeamDataManager'
+import { TeamDpsDataManager } from './DataManagers/TeamDpsDataManager'
 import { WeaponDataManager } from './DataManagers/WeaponDataManager'
 import type { IGO, ImportResult } from './exim'
 import { GOSource, newImportResult } from './exim'
@@ -34,6 +35,7 @@ export class ArtCharDatabase extends Database {
   builds: BuildDataManager
   teamChars: TeamCharacterDataManager
   teams: TeamDataManager
+  teamDpsSims: TeamDpsDataManager
 
   dbMeta: DBMetaEntry
   displayWeapon: DisplayWeaponEntry
@@ -81,6 +83,9 @@ export class ArtCharDatabase extends Database {
     // Depends on TeamChar
     this.teams = new TeamDataManager(this)
 
+    // Standalone: DPS-dummy screenshot simulations per team
+    this.teamDpsSims = new TeamDpsDataManager(this)
+
     // Handle DataEntries
     this.dbMeta = new DBMetaEntry(this)
     this.displayWeapon = new DisplayWeaponEntry(this)
@@ -104,6 +109,7 @@ export class ArtCharDatabase extends Database {
     this.builds.followAny(updateLastEdit)
     this.teamChars.followAny(updateLastEdit)
     this.teams.followAny(updateLastEdit)
+    this.teamDpsSims.followAny(updateLastEdit)
     this.displayWeapon.follow(updateLastEdit)
     this.displayArtifact.follow(updateLastEdit)
     this.displayCharacter.follow(updateLastEdit)
@@ -124,6 +130,7 @@ export class ArtCharDatabase extends Database {
       this.builds,
       this.teamChars,
       this.teams,
+      this.teamDpsSims,
     ] as const
   }
   get dataEntries() {
