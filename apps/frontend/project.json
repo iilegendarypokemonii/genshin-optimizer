@@ -10,10 +10,10 @@
       "cache": false
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "@nx/vitest:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "reportsDirectory": "../../coverage/apps/frontend"
+        "reportsDirectory": "{projectRoot}/../../coverage/apps/frontend"
       }
     }
   },
