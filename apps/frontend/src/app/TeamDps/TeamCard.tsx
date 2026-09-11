@@ -19,7 +19,6 @@ import {
   Box,
   Button,
   CardContent,
-  Chip,
   Collapse,
   Divider,
   IconButton,
@@ -41,13 +40,16 @@ const ELEMENT_HEX: Record<ElementKey, string> = {
   cryo: '#77a2e6',
   dendro: '#a5c83b',
 }
+const DPS_GOLD = '#ffb300'
 
 function ContributionBar({
   run,
   nameMap,
+  height = 8,
 }: {
   run: TeamDpsRun
   nameMap: CharNameMap
+  height?: number
 }) {
   const total = run.contributions.reduce((a, c) => a + c.damage, 0)
   if (!total) return null
@@ -57,7 +59,7 @@ function ContributionBar({
       sx={{
         display: 'flex',
         width: '100%',
-        height: 12,
+        height,
         borderRadius: 1,
         overflow: 'hidden',
       }}
@@ -189,84 +191,120 @@ export default function TeamCard({
 
   return (
     <CardThemed bgt="light" data-testid="team-dps-card">
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <CardContent
+        sx={{
+          py: 0.75,
+          px: 1.5,
+          '&:last-child': { pb: 0.75 },
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             {ordered.map((ck, i) => (
-              <Box
+              <BootstrapTooltip
                 key={ck}
-                component="img"
-                src={iconAsset(ck, gender, silly)}
-                alt={nameMap[ck] ?? ck}
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: '2px solid',
-                  borderColor: ELEMENT_HEX[getCharEle(ck)] ?? '#888888',
-                  bgcolor: 'contentDark.main',
-                  ml: i ? -1 : 0,
-                  zIndex: ordered.length - i,
-                  position: 'relative',
-                }}
-              />
+                title={`${nameMap[ck] ?? ck}${ck === dpsChar ? ' (DPS)' : ''}`}
+              >
+                <Box
+                  component="img"
+                  src={iconAsset(ck, gender, silly)}
+                  alt={nameMap[ck] ?? ck}
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '2px solid',
+                    borderColor:
+                      ck === dpsChar
+                        ? DPS_GOLD
+                        : (ELEMENT_HEX[getCharEle(ck)] ?? '#888888'),
+                    bgcolor: 'contentDark.main',
+                    ml: i ? -0.75 : 0,
+                    zIndex: ordered.length - i,
+                    position: 'relative',
+                  }}
+                />
+              </BootstrapTooltip>
             ))}
           </Box>
-          {dpsChar && (
-            <Chip
-              size="small"
-              color="warning"
-              label={`DPS: ${nameMap[dpsChar] ?? dpsChar}`}
-            />
-          )}
-          <Box sx={{ flexGrow: 1 }} />
-          {editingName ? (
-            <TextField
-              size="small"
-              value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
-              onBlur={saveName}
-              onKeyDown={(e) => e.key === 'Enter' && saveName()}
-              autoFocus
-              placeholder="Team label"
-            />
-          ) : (
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              {sim.name && (
-                <Typography color="text.secondary">{sim.name}</Typography>
-              )}
-              <IconButton size="small" onClick={() => setEditingName(true)}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Stack>
-          )}
-          <IconButton size="small" color="error" onClick={deleteTeam}>
-            <DeleteForeverIcon />
-          </IconButton>
-        </Stack>
-        <Stack direction="row" spacing={2} alignItems="baseline">
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              minWidth: 96,
+              textAlign: 'right',
+              lineHeight: 1,
+              flexShrink: 0,
+            }}
+          >
             {best ? best.dps.toLocaleString() : '-'}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            best DPS of {sim.runs.length} run{sim.runs.length === 1 ? '' : 's'}
-            {latest
-              ? `, last ${new Date(latest.date).toLocaleDateString()}`
-              : ''}
+          <Box sx={{ flexGrow: 1, minWidth: 60 }}>
+            {best && <ContributionBar run={best} nameMap={nameMap} />}
+          </Box>
+          {sim.name && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{ maxWidth: 140 }}
+            >
+              {sim.name}
+            </Typography>
+          )}
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            noWrap
+            sx={{ flexShrink: 0 }}
+          >
+            {sim.runs.length} run{sim.runs.length === 1 ? '' : 's'}
+            {latest ? `, ${new Date(latest.date).toLocaleDateString()}` : ''}
           </Typography>
+          <IconButton size="small" onClick={() => setExpanded((e) => !e)}>
+            {expanded ? (
+              <ExpandLessIcon fontSize="small" />
+            ) : (
+              <ExpandMoreIcon fontSize="small" />
+            )}
+          </IconButton>
         </Stack>
-        {best && <ContributionBar run={best} nameMap={nameMap} />}
-        <Button
-          size="small"
-          onClick={() => setExpanded((e) => !e)}
-          startIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          sx={{ alignSelf: 'flex-start' }}
-        >
-          Runs
-        </Button>
         <Collapse in={expanded}>
-          <Stack spacing={1} divider={<Divider flexItem />}>
+          <Stack spacing={1} sx={{ pt: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              {editingName ? (
+                <TextField
+                  size="small"
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  onBlur={saveName}
+                  onKeyDown={(e) => e.key === 'Enter' && saveName()}
+                  autoFocus
+                  placeholder="Team label"
+                />
+              ) : (
+                <Button
+                  size="small"
+                  startIcon={<EditIcon fontSize="small" />}
+                  onClick={() => setEditingName(true)}
+                >
+                  {sim.name || 'Add label'}
+                </Button>
+              )}
+              <Box sx={{ flexGrow: 1 }} />
+              <Button
+                size="small"
+                color="error"
+                startIcon={<DeleteForeverIcon fontSize="small" />}
+                onClick={deleteTeam}
+              >
+                Delete team
+              </Button>
+            </Stack>
+            <Divider />
             {[...sim.runs]
               .sort((a, b) => b.date - a.date)
               .map((run) => (

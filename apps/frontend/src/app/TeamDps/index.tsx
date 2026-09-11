@@ -1,13 +1,20 @@
 import { useDataManagerEntries } from '@genshin-optimizer/common/database-ui'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { isTauri } from '@genshin-optimizer/common/util'
+import type { CharacterKey } from '@genshin-optimizer/gi/consts'
 import type { TeamDpsRun } from '@genshin-optimizer/gi/db'
-import { bestTeamDpsRun, latestTeamDpsRun } from '@genshin-optimizer/gi/db'
+import {
+  bestTeamDpsRun,
+  latestTeamDpsRun,
+  teamDpsCharacter,
+} from '@genshin-optimizer/gi/db'
 import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
+import { iconAsset, SillyContext } from '@genshin-optimizer/gi/ui'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import SpeedIcon from '@mui/icons-material/Speed'
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   CardContent,
@@ -18,7 +25,14 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { getCharNameMap } from './nameMap'
 import { ocrScreenshot } from './ocr'
@@ -43,11 +57,15 @@ export default function TeamDpsPage() {
   useTranslation('charNames_gen')
   const database = useDatabase()
   const { gender, uid: accountUid } = useDBMeta()
+  const { silly } = useContext(SillyContext)
   const nameMap = useMemo(() => getCharNameMap(gender), [gender])
   const entries = useDataManagerEntries(database.teamDpsSims)
   const isDesktop = isTauri()
 
   const [sortKey, setSortKey] = useState<SortKey>('best')
+  const [dpsFilter, setDpsFilter] = useState<CharacterKey | undefined>(
+    undefined
+  )
   const [pending, setPending] = useState<Pending | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
@@ -63,6 +81,26 @@ export default function TeamDpsPage() {
       ([, a], [, b]) => metric(pick(b)) - metric(pick(a))
     )
   }, [entries, sortKey])
+
+  const dpsCharacters = useMemo(() => {
+    const set = new Set<CharacterKey>()
+    for (const [, sim] of entries) {
+      const best = bestTeamDpsRun(sim)
+      const ck = best && teamDpsCharacter(best)
+      if (ck) set.add(ck)
+    }
+    return [...set].sort()
+  }, [entries])
+
+  const filtered = useMemo(
+    () =>
+      sorted.filter(([, sim]) => {
+        if (!dpsFilter) return true
+        const best = bestTeamDpsRun(sim)
+        return (best && teamDpsCharacter(best)) === dpsFilter
+      }),
+    [sorted, dpsFilter]
+  )
 
   const handleFiles = useCallback(
     async (files: ArrayLike<File>) => {
@@ -195,6 +233,30 @@ export default function TeamDpsPage() {
           }}
         />
       </Stack>
+      {dpsCharacters.length > 1 && (
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          flexWrap="wrap"
+          useFlexGap
+        >
+          <Typography variant="caption" color="text.secondary">
+            DPS
+          </Typography>
+          {dpsCharacters.map((ck) => (
+            <Chip
+              key={ck}
+              clickable
+              size="small"
+              avatar={<Avatar src={iconAsset(ck, gender, silly)} />}
+              label={nameMap[ck] ?? ck}
+              color={dpsFilter === ck ? 'primary' : 'default'}
+              onClick={() => setDpsFilter((f) => (f === ck ? undefined : ck))}
+            />
+          ))}
+        </Stack>
+      )}
       {!isDesktop && (
         <Alert severity="info">
           Screenshot upload and OCR are only available in the desktop app.
@@ -217,7 +279,7 @@ export default function TeamDpsPage() {
         </CardThemed>
       )}
       <Stack spacing={1}>
-        {sorted.map(([simId, sim]) => (
+        {filtered.map(([simId, sim]) => (
           <TeamCard key={simId} simId={simId} sim={sim} nameMap={nameMap} />
         ))}
       </Stack>

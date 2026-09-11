@@ -199,7 +199,7 @@ function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
 
 // "Chasca : 23498282(76%)" / 'Mona 264923 (2")' / "Citlali : 101493 (1%" (broken paren)
 const CONTRIB_WITH_PCT =
-  /^(.{2,30}?)\s*[:.]?\s*(\d[\d,]{2,})\s*\(\s*(\d{1,3})[^)]*(?:\)[^\d]{0,6})?$/
+  /^(.{2,30}?)\s*[:.]?\s*(\d[\d,]{2,})\s*\(\s*(\d{1,3})[^)]*(?:\).{0,6})?$/
 // "Durin : 3242493" - only trusted when the name matches a character
 const CONTRIB_NO_PCT = /^(.{2,30}?)\s*[:.]\s*(\d[\d,]{3,})\s*$/
 
@@ -229,10 +229,12 @@ export function parseOcrLines(
     // Rotation-results rows ("DPS: 559K" / "Dmg: ... Time: ...") are per-rotation
     // stats; the headline numbers already average them.
     const isRotationRow =
-      /\bDmg\s*:/.test(text) || /\bDPS\s*[:.]?\s*[\d ,.]+[KM]\b/i.test(text)
+      /\bDmg\s*:/.test(text) ||
+      /\bDPS\b[^\d]{0,4}[\d ,.]+[KM]\b/i.test(text) ||
+      (/\bTime\s*:/i.test(text) && !/Elapsed/i.test(text))
 
     if (dps === undefined && !isRotationRow) {
-      const m = text.match(/\bDPS\s*[:.]?\s*(\d{1,3}(?:[ ,]\d{3})+|\d{2,})/)
+      const m = text.match(/\bDPS\b[^\d]{0,4}(\d{1,3}(?:[ ,]\d{3})+|\d{2,})/)
       if (m) dps = num(m[1])
     }
     if (
@@ -249,27 +251,36 @@ export function parseOcrLines(
       if (m) timeElapsedSec = Number.parseFloat(m[1].replace(',', '.'))
     }
     if (strongestHit === undefined) {
-      const m = text.match(/\bHit\s*[:.]?\s*(\d[\d ,]*)/i)
+      const m = text.match(/\bHit\b[^\d]{0,4}(\d[\d ,]*)/i)
       if (m) strongestHit = num(m[1])
     }
     if (uid === undefined) {
-      const withoutGuid = text.replace(/Stage GUID\s*:?\s*\d+/i, '')
-      const m = withoutGuid.match(/\bUID\s*:?\s*(\d{5,12})\b/i)
+      const withoutGuid = text.replace(/Stage GUID\b[^\d]{0,4}\d+/i, '')
+      const m = withoutGuid.match(/\bUID\b[^\d]{0,4}(\d{5,12})\b/i)
       if (m) uid = m[1]
     }
-    if (contributions.length < TEAM_SIZE && !isRotationRow) {
+    // rotation-results fragments can merge into contribution rows when OCR
+    // boxes span both columns; excise them instead of skipping the whole row
+    const contribText = text
+      .replace(/\bDPS\b[^\d]{0,4}[\d ,.]+[KM]\b.*$/i, '')
+      .replace(/\bDmg\s*:.*$/i, '')
+      .replace(/\bTime\s*:\s*[\d.,]+s?.*$/i, '')
+      .trim()
+    if (contributions.length < TEAM_SIZE && contribText) {
       let rawName: string | undefined
       let damage: number | undefined
       let pct: number | undefined
       let match: NameMatch | undefined
-      const withPct = text.match(CONTRIB_WITH_PCT)
-      if (withPct) {
+      const withPct = contribText.match(CONTRIB_WITH_PCT)
+      // a digits-only "name" is an orphaned value line whose label was
+      // missed by OCR; do not guess which character it belongs to
+      if (withPct && !/^[\d ,.]*$/.test(withPct[1])) {
         rawName = withPct[1].trim()
         damage = num(withPct[2])
         pct = Number.parseInt(withPct[3], 10)
         match = matchName(rawName, candidates)
       } else {
-        const noPct = text.match(CONTRIB_NO_PCT)
+        const noPct = contribText.match(CONTRIB_NO_PCT)
         if (noPct) {
           const m = matchName(noPct[1].trim(), candidates)
           // without a percent, only trust rows naming a known character

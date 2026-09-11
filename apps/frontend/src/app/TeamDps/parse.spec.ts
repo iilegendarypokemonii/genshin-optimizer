@@ -105,6 +105,41 @@ describe('parseOcrLines', () => {
     expect(res.team).toEqual(['Chasca', 'Nicole', 'Durin', 'Citlali'])
   })
 
+  test('parses the multi-pass dump with bullet separators (dump 1 v2)', () => {
+    // actual cargo dump after the high-resolution crop passes were added
+    const res = parseOcrLines(
+      [
+        at(35, 252, 84, 26, 'DPS :'),
+        at(191, 241, 215, 50, '589 311'),
+        at(5, 328, 180, 34, '+ Damage :'),
+        at(279, 324, 490, 32, '31061996 4. Rotation Results :'),
+        at(527, 506, 120, 18, 'DPS: 587K'),
+        at(528, 378, 119, 18, 'DPS•. 559K'),
+        at(592, 404, 263, 19, '10324258 Time: 18.48s'),
+        at(70, 396, 100, 20, 'Chasca :'),
+        at(244, 384, 254, 37, '23498282 (76%) 3'),
+        at(70, 425, 98, 21, 'Nicole :'),
+        at(287, 429, 128, 25, '197781 (1%)'),
+        at(70, 455, 86, 21, 'Durin :'),
+        at(274, 496, 147, 24, '578232 (2%)'), // orphan: Citlali label missed
+        at(4, 600, 400, 33, "+ Stron e'€Hit+856556"),
+        at(2238, 339, 100, 24, 'Chasca'),
+        at(2251, 704, 86, 24, 'Citlali'),
+        at(1848, 1402, 620, 29, 'stage GUID•. 24801105423 UID•. 757970926'),
+      ],
+      nameMap
+    )
+    expect(res.dps).toEqual(589311)
+    expect(res.totalDamage).toEqual(31061996)
+    expect(res.strongestHit).toEqual(856556)
+    expect(res.uid).toEqual('757970926')
+    expect(res.contributions).toEqual([
+      { character: 'Chasca', rawName: 'Chasca', damage: 23498282, pct: 76 },
+      { character: 'Nicole', rawName: 'Nicole', damage: 197781, pct: 1 },
+    ])
+    expect(res.team).toEqual(['Chasca', 'Nicole', 'Durin', 'Citlali'])
+  })
+
   test('parses real OCR output with per-character damage (dump 2)', () => {
     // subset of an actual cargo dump of a 2546x1427 screenshot
     const res = parseOcrLines(
