@@ -26,6 +26,7 @@ import {
   CircularProgress,
   ListItemText,
   MenuItem,
+  Pagination,
   Select,
   Stack,
   Typography,
@@ -57,6 +58,9 @@ interface Pending {
 }
 
 type SortKey = 'best' | 'recent' | 'total' | 'runs'
+
+/** 2 columns of 10 teams; more teams paginate. */
+const PAGE_SIZE = 20
 
 interface TeamDpsEntryItem {
   db: ArtCharDatabase
@@ -106,6 +110,7 @@ export default function TeamDpsPage() {
     Partial<Record<CharacterKey, 'in' | 'out'>>
   >({})
   const [selectedDbs, setSelectedDbs] = useState<number[]>([database.dbIndex])
+  const [page, setPage] = useState(1)
   const [pending, setPending] = useState<Pending | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
@@ -161,6 +166,17 @@ export default function TeamDpsPage() {
       ),
     [sorted, charFilter]
   )
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const clampedPage = Math.min(page, pageCount)
+  const paged = useMemo(
+    () =>
+      filtered.slice((clampedPage - 1) * PAGE_SIZE, clampedPage * PAGE_SIZE),
+    [filtered, clampedPage]
+  )
+
+  // jump back to the first page whenever the view changes
+  useEffect(() => setPage(1), [sortKey, charFilter, selectedDbs])
 
   const dbLabel = useCallback((db: ArtCharDatabase) => {
     const name = (db.dbMeta.get() as { name?: string } | undefined)?.name
@@ -409,10 +425,20 @@ export default function TeamDpsPage() {
           Nothing matches the current account selection and filters.
         </Typography>
       )}
-      <Stack spacing={1}>
-        {filtered.map(({ db, id, sim }) => (
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 1,
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+          gridTemplateRows: { lg: 'repeat(10, auto)' },
+          gridAutoFlow: { xs: 'row', lg: 'column' },
+          alignItems: 'start',
+        }}
+      >
+        {paged.map(({ db, id, sim }, i) => (
           <TeamCard
             key={`${db.dbIndex}_${id}`}
+            rank={(clampedPage - 1) * PAGE_SIZE + i + 1}
             simId={id}
             sim={sim}
             nameMap={nameMap}
@@ -422,7 +448,15 @@ export default function TeamDpsPage() {
             }
           />
         ))}
-      </Stack>
+      </Box>
+      {pageCount > 1 && (
+        <Pagination
+          count={pageCount}
+          page={clampedPage}
+          onChange={(_, p) => setPage(p)}
+          sx={{ alignSelf: 'center' }}
+        />
+      )}
       <ReviewDialog
         open={!!pending}
         imageUrl={pending?.imageUrl}

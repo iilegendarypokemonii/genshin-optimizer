@@ -91,12 +91,16 @@ function RunRow({
   run,
   nameMap,
   onDelete,
+  onSaveNotes,
 }: {
   run: TeamDpsRun
   nameMap: CharNameMap
   onDelete: () => void
+  onSaveNotes: (notes: string) => void
 }) {
   const [showShot, setShowShot] = useState(false)
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [notesDraft, setNotesDraft] = useState('')
   return (
     <Stack spacing={0.25}>
       <Stack direction="row" spacing={1} alignItems="center">
@@ -131,6 +135,15 @@ function RunRow({
         )}
         <IconButton
           size="small"
+          onClick={() => {
+            setNotesDraft(run.notes ?? '')
+            setEditingNotes(true)
+          }}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          size="small"
           disabled={!run.hasScreenshot}
           onClick={() => setShowShot(true)}
         >
@@ -149,22 +162,42 @@ function RunRow({
           onClose={() => setShowShot(false)}
         />
       </Stack>
-      {run.reactions && (
-        <Typography variant="caption" color="text.secondary">
-          {run.reactions}
-        </Typography>
+      {editingNotes ? (
+        <TextField
+          size="small"
+          fullWidth
+          multiline
+          maxRows={3}
+          value={notesDraft}
+          onChange={(e) => setNotesDraft(e.target.value)}
+          onBlur={() => {
+            onSaveNotes(notesDraft)
+            setEditingNotes(false)
+          }}
+          autoFocus
+          placeholder="Run notes - e.g. good vs a Stygian boss, or what to improve"
+        />
+      ) : (
+        (run.notes || run.reactions) && (
+          <Typography variant="caption" color="text.secondary">
+            {[run.notes, run.reactions].filter(Boolean).join('  |  ')}
+          </Typography>
+        )
       )}
     </Stack>
   )
 }
 
 export default function TeamCard({
+  rank,
   simId,
   sim,
   nameMap,
   database,
   sourceLabel,
 }: {
+  /** Position in the currently sorted and filtered list. */
+  rank: number
   simId: string
   sim: TeamDpsSim
   nameMap: CharNameMap
@@ -176,8 +209,6 @@ export default function TeamCard({
   const { gender } = useDBMeta()
   const { silly } = useContext(SillyContext)
   const [expanded, setExpanded] = useState(false)
-  const [editingName, setEditingName] = useState(false)
-  const [nameDraft, setNameDraft] = useState(sim.name ?? '')
 
   const best = bestTeamDpsRun(sim)
   const latest = latestTeamDpsRun(sim)
@@ -209,9 +240,13 @@ export default function TeamCard({
       if (run.hasScreenshot) await deleteScreenshot(run.id)
   }
 
-  const saveName = () => {
-    database.teamDpsSims.set(simId, { name: nameDraft.trim() })
-    setEditingName(false)
+  const saveRunNotes = (runId: string, notes: string) => {
+    database.teamDpsSims.set(simId, {
+      runs: sim.runs.map((r) =>
+        r.id === runId ? { ...r, notes: notes.trim() || undefined } : r
+      ),
+      lastEdit: Date.now(),
+    })
   }
 
   return (
@@ -226,6 +261,13 @@ export default function TeamCard({
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ minWidth: 22, textAlign: 'right', fontWeight: 700 }}
+          >
+            {rank}
+          </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             {ordered.map((ck, i) => (
               <BootstrapTooltip
@@ -278,20 +320,7 @@ export default function TeamCard({
           <Box sx={{ width: 200, flexShrink: 0 }}>
             {best && <ContributionBar run={best} nameMap={nameMap} />}
           </Box>
-          {sim.name ? (
-            <BootstrapTooltip title={sim.name}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
-                sx={{ flexGrow: 1, minWidth: 0 }}
-              >
-                {sim.name}
-              </Typography>
-            </BootstrapTooltip>
-          ) : (
-            <Box sx={{ flexGrow: 1 }} />
-          )}
+          <Box sx={{ flexGrow: 1 }} />
           <Typography
             variant="caption"
             color="text.secondary"
@@ -312,39 +341,13 @@ export default function TeamCard({
         <Collapse in={expanded}>
           <Stack spacing={1} sx={{ pt: 1 }}>
             <Stack direction="row" spacing={1} alignItems="center">
-              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                {editingName ? (
-                  <TextField
-                    size="small"
-                    fullWidth
-                    multiline
-                    maxRows={4}
-                    value={nameDraft}
-                    onChange={(e) => setNameDraft(e.target.value)}
-                    onBlur={saveName}
-                    autoFocus
-                    placeholder="Notes - e.g. good vs a Stygian boss, or what this team should improve"
-                  />
-                ) : (
-                  <Button
-                    size="small"
-                    startIcon={<EditIcon fontSize="small" />}
-                    onClick={() => setEditingName(true)}
-                  >
-                    {sim.name ? 'Edit notes' : 'Add notes'}
-                  </Button>
-                )}
-              </Box>
+              <Box sx={{ flexGrow: 1 }} />
               <Button
                 size="small"
                 color="error"
                 startIcon={<DeleteForeverIcon fontSize="small" />}
                 onClick={deleteTeam}
-                sx={{
-                  flexShrink: 0,
-                  whiteSpace: 'nowrap',
-                  alignSelf: 'center',
-                }}
+                sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
               >
                 Delete team
               </Button>
@@ -358,6 +361,7 @@ export default function TeamCard({
                   run={run}
                   nameMap={nameMap}
                   onDelete={() => deleteRun(run)}
+                  onSaveNotes={(notes) => saveRunNotes(run.id, notes)}
                 />
               ))}
           </Stack>
