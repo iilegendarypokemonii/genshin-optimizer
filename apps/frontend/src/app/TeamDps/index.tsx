@@ -1,10 +1,17 @@
-import { useDataManagerEntries } from '@genshin-optimizer/common/database-ui'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { isTauri } from '@genshin-optimizer/common/util'
 import type { CharacterKey } from '@genshin-optimizer/gi/consts'
-import type { TeamDpsRun, TeamDpsSim } from '@genshin-optimizer/gi/db'
+import type {
+  ArtCharDatabase,
+  TeamDpsRun,
+  TeamDpsSim,
+} from '@genshin-optimizer/gi/db'
 import { bestTeamDpsRun, latestTeamDpsRun } from '@genshin-optimizer/gi/db'
-import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
+import {
+  DatabaseContext,
+  useDatabase,
+  useDBMeta,
+} from '@genshin-optimizer/gi/db-ui'
 import { iconAsset, SillyContext } from '@genshin-optimizer/gi/ui'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import SpeedIcon from '@mui/icons-material/Speed'
@@ -14,8 +21,10 @@ import {
   Box,
   Button,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
+  ListItemText,
   MenuItem,
   Select,
   Stack,
@@ -28,6 +37,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getCharNameMap } from './nameMap'
@@ -48,24 +58,63 @@ interface Pending {
 
 type SortKey = 'best' | 'recent' | 'total' | 'runs'
 
+interface TeamDpsEntryItem {
+  db: ArtCharDatabase
+  id: string
+  sim: TeamDpsSim
+}
+
+/** Combined, reactive teamDps entries across every database slot. */
+function useTeamDpsEntriesAll(databases: readonly ArtCharDatabase[]) {
+  const store = useMemo(() => {
+    const build = (): TeamDpsEntryItem[] =>
+      databases.flatMap((db) =>
+        db.teamDpsSims.entries.map(([id, sim]) => ({ db, id, sim }))
+      )
+    let cache = build()
+    return {
+      subscribe: (cb: () => void) => {
+        const unsubs = databases.map((db) =>
+          db.teamDpsSims.followAny(() => {
+            cache = build()
+            cb()
+          })
+        )
+        return () => {
+          for (const unsub of unsubs) unsub()
+        }
+      },
+      get: () => cache,
+    }
+  }, [databases])
+  return useSyncExternalStore(store.subscribe, store.get)
+}
+
 export default function TeamDpsPage() {
   // ensure the charNames_gen namespace is loaded before building the name map
   useTranslation('charNames_gen')
   const database = useDatabase()
+  const { databases } = useContext(DatabaseContext)
   const { gender, uid: accountUid } = useDBMeta()
   const { silly } = useContext(SillyContext)
   const nameMap = useMemo(() => getCharNameMap(gender), [gender])
-  const entries = useDataManagerEntries(database.teamDpsSims)
+  const allEntries = useTeamDpsEntriesAll(databases)
   const isDesktop = isTauri()
 
   const [sortKey, setSortKey] = useState<SortKey>('best')
   const [charFilter, setCharFilter] = useState<
     Partial<Record<CharacterKey, 'in' | 'out'>>
   >({})
+  const [selectedDbs, setSelectedDbs] = useState<number[]>([database.dbIndex])
   const [pending, setPending] = useState<Pending | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
   const fileInput = useRef<HTMLInputElement>(null)
+
+  const visible = useMemo(
+    () => allEntries.filter((e) => selectedDbs.includes(e.db.dbIndex)),
+    [allEntries, selectedDbs]
+  )
 
   const sorted = useMemo(() => {
     const metric = (sim: TeamDpsSim): number => {
@@ -80,16 +129,16 @@ export default function TeamDpsPage() {
           return bestTeamDpsRun(sim)?.dps ?? 0
       }
     }
-    return [...entries].sort(([, a], [, b]) => metric(b) - metric(a))
-  }, [entries, sortKey])
+    return [...visible].sort((a, b) => metric(b.sim) - metric(a.sim))
+  }, [visible, sortKey])
 
   const teamCharacters = useMemo(() => {
     const set = new Set<CharacterKey>()
-    for (const [, sim] of entries) for (const ck of sim.characters) set.add(ck)
+    for (const { sim } of visible) for (const ck of sim.characters) set.add(ck)
     return [...set].sort((a, b) =>
       (nameMap[a] ?? a).localeCompare(nameMap[b] ?? b)
     )
-  }, [entries, nameMap])
+  }, [visible, nameMap])
 
   const cycleFilter = useCallback((ck: CharacterKey) => {
     setCharFilter((f) => {
@@ -103,7 +152,7 @@ export default function TeamDpsPage() {
 
   const filtered = useMemo(
     () =>
-      sorted.filter(([, sim]) =>
+      sorted.filter(({ sim }) =>
         Object.entries(charFilter).every(([ck, mode]) =>
           mode === 'in'
             ? sim.characters.includes(ck as CharacterKey)
@@ -112,6 +161,11 @@ export default function TeamDpsPage() {
       ),
     [sorted, charFilter]
   )
+
+  const dbLabel = useCallback((db: ArtCharDatabase) => {
+    const name = (db.dbMeta.get() as { name?: string } | undefined)?.name
+    return name?.trim() || `Database ${db.dbIndex}`
+  }, [])
 
   const handleFiles = useCallback(
     async (files: ArrayLike<File>) => {
@@ -212,8 +266,44 @@ export default function TeamDpsPage() {
       <Stack direction="row" alignItems="center" spacing={1}>
         <SpeedIcon fontSize="large" />
         <Typography variant="h4">Team DPS</Typography>
-        <Chip size="small" label={`${entries.length} teams`} />
+        <Chip size="small" label={`${visible.length} teams`} />
         <Box sx={{ flexGrow: 1 }} />
+        <Select
+          size="small"
+          multiple
+          value={selectedDbs}
+          onChange={(e) => {
+            const v = e.target.value
+            setSelectedDbs(
+              typeof v === 'string' ? v.split(',').map(Number) : (v as number[])
+            )
+          }}
+          displayEmpty
+          renderValue={(v) =>
+            v.length === 0
+              ? 'No accounts'
+              : v.length === 1
+                ? dbLabel(
+                    databases.find((db) => db.dbIndex === v[0]) ?? database
+                  )
+                : `${v.length} accounts`
+          }
+          sx={{ minWidth: 150 }}
+        >
+          {databases.map((db) => (
+            <MenuItem key={db.dbIndex} value={db.dbIndex}>
+              <Checkbox
+                size="small"
+                checked={selectedDbs.includes(db.dbIndex)}
+              />
+              <ListItemText
+                primary={`${dbLabel(db)}${
+                  db.dbIndex === database.dbIndex ? ' (active)' : ''
+                }`}
+              />
+            </MenuItem>
+          ))}
+        </Select>
         <Select
           size="small"
           value={sortKey}
@@ -303,7 +393,7 @@ export default function TeamDpsPage() {
           {error}
         </Alert>
       )}
-      {!entries.length && (
+      {!allEntries.length && (
         <CardThemed>
           <CardContent>
             <Typography color="text.secondary">
@@ -314,9 +404,23 @@ export default function TeamDpsPage() {
           </CardContent>
         </CardThemed>
       )}
+      {!!allEntries.length && !filtered.length && (
+        <Typography color="text.secondary">
+          Nothing matches the current account selection and filters.
+        </Typography>
+      )}
       <Stack spacing={1}>
-        {filtered.map(([simId, sim]) => (
-          <TeamCard key={simId} simId={simId} sim={sim} nameMap={nameMap} />
+        {filtered.map(({ db, id, sim }) => (
+          <TeamCard
+            key={`${db.dbIndex}_${id}`}
+            simId={id}
+            sim={sim}
+            nameMap={nameMap}
+            database={db}
+            sourceLabel={
+              db.dbIndex === database.dbIndex ? undefined : dbLabel(db)
+            }
+          />
         ))}
       </Stack>
       <ReviewDialog

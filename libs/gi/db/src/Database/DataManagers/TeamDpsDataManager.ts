@@ -28,6 +28,8 @@ const runSchema = z.object({
   notes: z.string().optional(),
   /** e.g. "Chasca: Melt x23, Swirl x15; Durin: Melt x10" */
   reactions: z.string().optional(),
+  /** Game version the run was recorded on, e.g. "7.0" */
+  patch: z.string().optional(),
 })
 
 const simSchema = z.object({
@@ -58,6 +60,8 @@ export interface TeamDpsRun {
   notes?: string
   /** Reaction tracker summary, e.g. "Chasca: Melt x23, Swirl x15" */
   reactions?: string
+  /** Game version the run was recorded on, e.g. "7.0" */
+  patch?: string
 }
 
 /** All recorded runs for one unique team (1-4 characters). */
@@ -111,6 +115,7 @@ export class TeamDpsDataManager extends DataManager<
         hasScreenshot,
         notes,
         reactions,
+        patch,
       } = runParsed.data
       if (seenRunIds.has(id)) continue
       seenRunIds.add(id)
@@ -138,6 +143,7 @@ export class TeamDpsDataManager extends DataManager<
         ...(uid ? { uid } : {}),
         ...(notes ? { notes } : {}),
         ...(reactions ? { reactions } : {}),
+        ...(patch ? { patch } : {}),
       })
     }
 

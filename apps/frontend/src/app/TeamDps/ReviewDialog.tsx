@@ -18,6 +18,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import type { CharNameMap, ParsedScreenshot } from './parse'
 import { TEAM_SIZE } from './parse'
+import { patchForDate } from './patch'
 
 export interface ReviewResult {
   characters: CharacterKey[]
@@ -29,6 +30,7 @@ export interface ReviewResult {
   uid?: string
   notes?: string
   reactions?: string
+  patch?: string
 }
 
 interface Row {
@@ -70,6 +72,7 @@ export default function ReviewDialog({
   const [uid, setUid] = useState('')
   const [notes, setNotes] = useState('')
   const [reactions, setReactions] = useState('')
+  const [patch, setPatch] = useState('')
   const [rows, setRows] = useState<Row[]>([])
   const [pickerSlot, setPickerSlot] = useState<number | undefined>(undefined)
 
@@ -88,6 +91,7 @@ export default function ReviewDialog({
     setUid(parsed?.uid ?? accountUid ?? '')
     setNotes('')
     setReactions(parsed?.reactions ?? '')
+    setPatch(patchForDate(Date.now()) ?? '')
     // rows follow the parsed team (party) order; damages are attached by
     // character so a missing value line cannot shuffle members around
     const remaining = [...(parsed?.contributions ?? [])]
@@ -146,6 +150,7 @@ export default function ReviewDialog({
       uid: uid.trim() || undefined,
       notes: notes.trim() || undefined,
       reactions: reactions.trim() || undefined,
+      patch: patch.trim() || undefined,
     })
   }
 
@@ -251,6 +256,13 @@ export default function ReviewDialog({
               fullWidth
             />
             <Stack direction="row" spacing={1}>
+              <TextField
+                label="Patch"
+                value={patch}
+                onChange={(e) => setPatch(e.target.value)}
+                size="small"
+                sx={{ width: 90 }}
+              />
               <TextField
                 label="Strongest Hit"
                 value={strongestHit}

@@ -1,12 +1,16 @@
 import { BootstrapTooltip, CardThemed } from '@genshin-optimizer/common/ui'
 import type { CharacterKey, ElementKey } from '@genshin-optimizer/gi/consts'
-import type { TeamDpsRun, TeamDpsSim } from '@genshin-optimizer/gi/db'
+import type {
+  ArtCharDatabase,
+  TeamDpsRun,
+  TeamDpsSim,
+} from '@genshin-optimizer/gi/db'
 import {
   bestTeamDpsRun,
   latestTeamDpsRun,
   teamDpsCharacter,
 } from '@genshin-optimizer/gi/db'
-import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
+import { useDBMeta } from '@genshin-optimizer/gi/db-ui'
 import { getCharEle } from '@genshin-optimizer/gi/stats'
 import { iconAsset, SillyContext } from '@genshin-optimizer/gi/ui'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
@@ -19,6 +23,7 @@ import {
   Box,
   Button,
   CardContent,
+  Chip,
   Collapse,
   Divider,
   IconButton,
@@ -28,6 +33,7 @@ import {
 } from '@mui/material'
 import { useContext, useState } from 'react'
 import type { CharNameMap } from './parse'
+import { patchForDate } from './patch'
 import ScreenshotModal from './ScreenshotModal'
 import { confirmDialog, deleteScreenshot } from './store'
 
@@ -97,6 +103,13 @@ function RunRow({
         <Typography
           variant="caption"
           color="text.secondary"
+          sx={{ minWidth: 28, fontWeight: 600 }}
+        >
+          {run.patch ?? patchForDate(run.date) ?? '-'}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
           sx={{ minWidth: 110 }}
         >
           {new Date(run.date).toLocaleDateString()}{' '}
@@ -149,12 +162,17 @@ export default function TeamCard({
   simId,
   sim,
   nameMap,
+  database,
+  sourceLabel,
 }: {
   simId: string
   sim: TeamDpsSim
   nameMap: CharNameMap
+  /** The database slot owning this sim; edits and deletes route here. */
+  database: ArtCharDatabase
+  /** Shown when the sim comes from a non-active database slot. */
+  sourceLabel?: string
 }) {
-  const database = useDatabase()
   const { gender } = useDBMeta()
   const { silly } = useContext(SillyContext)
   const [expanded, setExpanded] = useState(false)
@@ -237,6 +255,14 @@ export default function TeamCard({
               </BootstrapTooltip>
             ))}
           </Box>
+          {sourceLabel && (
+            <Chip
+              size="small"
+              variant="outlined"
+              label={sourceLabel}
+              sx={{ flexShrink: 0 }}
+            />
+          )}
           <Typography
             variant="h6"
             sx={{
