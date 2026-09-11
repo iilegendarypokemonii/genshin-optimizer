@@ -81,20 +81,37 @@ fn scale_for(w: u32, h: u32, max_dim: u32, want: f64) -> f64 {
     want.min(cap).max(0.0)
 }
 
-/// Intersection-over-union of two boxes, for deduping lines across passes.
-fn iou(a: &OcrLine, b: &OcrLine) -> f32 {
+/// Intersection over the SMALLER box's area: near-duplicate reads from
+/// different passes have shifted/wider boxes, so plain IoU misses them.
+fn overlap(a: &OcrLine, b: &OcrLine) -> f32 {
     let ix = (a.x + a.w).min(b.x + b.w) - a.x.max(b.x);
     let iy = (a.y + a.h).min(b.y + b.h) - a.y.max(b.y);
     if ix <= 0.0 || iy <= 0.0 {
         return 0.0;
     }
     let inter = ix * iy;
-    let union = a.w * a.h + b.w * b.h - inter;
-    if union <= 0.0 {
+    let smaller = (a.w * a.h).min(b.w * b.h);
+    if smaller <= 0.0 {
         0.0
     } else {
-        inter / union
+        inter / smaller
     }
+}
+
+/// Reading quality: a long unbroken digit run beats fragmented digits
+/// ("9883860" over "98 8 3 86 0"), then more alphanumeric content wins.
+fn read_quality(s: &str) -> (usize, usize) {
+    let mut longest = 0usize;
+    let mut run = 0usize;
+    for c in s.chars() {
+        if c.is_ascii_digit() {
+            run += 1;
+            longest = longest.max(run);
+        } else {
+            run = 0;
+        }
+    }
+    (longest, s.chars().filter(|c| c.is_ascii_alphanumeric()).count())
 }
 
 /// A region of the source image to recognize, at a given upscale factor.
@@ -252,14 +269,10 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
         (full_w as f64 * 0.30) as u32,
         full_h,
     ));
+    // plain crops first; binarized variants recover text the plain passes miss
+    // on bright maps. Overlapping reads keep whichever text is richer, so a
+    // binarized misread cannot clobber a good plain read (or vice versa).
     let passes = [
-        // binarized crops first: they read white HUD text over bright maps
-        // that the plain passes misread, and win the overlap dedupe
-        Pass {
-            bounds: left,
-            scale: 2.5,
-            threshold: true,
-        },
         Pass {
             bounds: left,
             scale: 2.5,
@@ -268,12 +281,17 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
         Pass {
             bounds: right,
             scale: 2.5,
+            threshold: false,
+        },
+        Pass {
+            bounds: left,
+            scale: 2.5,
             threshold: true,
         },
         Pass {
             bounds: right,
             scale: 2.5,
-            threshold: false,
+            threshold: true,
         },
         Pass {
             bounds: None,
@@ -288,7 +306,14 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
         match recognize_pass(&engine, &decoder, full_w, full_h, max_dim, pass) {
             Ok(lines) => {
                 for line in lines {
-                    if !merged.iter().any(|kept| iou(kept, &line) > 0.5) {
+                    if let Some(kept) =
+                        merged.iter_mut().find(|kept| overlap(kept, &line) > 0.55)
+                    {
+                        // same spot read by several passes: keep the better read
+                        if read_quality(&line.text) > read_quality(&kept.text) {
+                            *kept = line;
+                        }
+                    } else {
                         merged.push(line);
                     }
                 }
@@ -368,7 +393,7 @@ mod tests {
     }
 
     #[test]
-    fn iou_dedupes_overlapping_boxes() {
+    fn overlap_dedupes_near_duplicate_boxes() {
         let a = OcrLine {
             text: "a".into(),
             x: 0.0,
@@ -383,6 +408,14 @@ mod tests {
             w: 100.0,
             h: 20.0,
         };
+        // wider box over the same spot (typical binarized re-read)
+        let wider = OcrLine {
+            text: "a3".into(),
+            x: 0.0,
+            y: 2.0,
+            w: 200.0,
+            h: 24.0,
+        };
         let other = OcrLine {
             text: "b".into(),
             x: 300.0,
@@ -390,8 +423,16 @@ mod tests {
             w: 100.0,
             h: 20.0,
         };
-        assert!(iou(&a, &same) > 0.5);
-        assert!(iou(&a, &other) < 0.01);
+        assert!(overlap(&a, &same) > 0.55);
+        assert!(overlap(&a, &wider) > 0.55);
+        assert!(overlap(&a, &other) < 0.01);
+    }
+
+    #[test]
+    fn read_quality_prefers_unbroken_digit_runs() {
+        assert!(read_quality("9883860") > read_quality("98 8 3 86 0"));
+        assert!(read_quality("578232 (2%)") > read_quality("5782ooO/o)O"));
+        assert!(read_quality("Chasca :") > read_quality("asca :"));
     }
 
     /// Manual helper: OCR_DUMP="p1;p2" cargo test dump_ocr_from_env -- --ignored --nocapture

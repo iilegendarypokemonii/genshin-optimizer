@@ -167,8 +167,9 @@ describe('parseOcrLines', () => {
       nameMap
     )
     expect(res.dps).toEqual(208077)
-    // no "Damage :" label was recognized; a bare number is not trusted
-    expect(res.totalDamage).toBeUndefined()
+    // no "Damage :" label was recognized; the bare large number directly
+    // under the DPS row is trusted as the total instead
+    expect(res.totalDamage).toEqual(13492769)
     expect(res.timeElapsedSec).toBeCloseTo(64.85)
     expect(res.strongestHit).toEqual(367910)
     expect(res.uid).toEqual('757970926')
@@ -179,7 +180,7 @@ describe('parseOcrLines', () => {
       { character: 'Citlali', rawName: 'Citlali', damage: 101493, pct: 1 },
     ])
     expect(res.team).toEqual(['Chasca', 'Mona', 'Durin', 'Citlali'])
-    expect(res.warnings).toEqual(['Total damage not found in the screenshot'])
+    expect(res.warnings).toEqual([])
   })
 
   test('ignores rotation rows and does not mistake 559K for the DPS', () => {
@@ -231,13 +232,16 @@ describe('parseOcrLines', () => {
     ])
   })
 
-  test('refuses genuinely ambiguous rail names', () => {
-    // OCR reads "Iansan" as "lansan": 1 edit from both Iansan and Lan Yan
+  test('resolves the common capital-I-as-lowercase-L misread', () => {
+    // OCR reads "Iansan" as "lansan"; the leading-letter swap makes it exact
     const res = parseOcrLines([line('lansan', { x: 2300, w: 120 })], nameMap)
-    expect(res.team).toEqual([undefined, undefined, undefined, undefined])
+    expect(res.team).toEqual(['Iansan', undefined, undefined, undefined])
+  })
+
+  test('refuses genuinely ambiguous rail names', () => {
     // cropped "urin" is a substring of both Durin and Furina
-    const res2 = parseOcrLines([line('urin', { x: 2300, w: 120 })], nameMap)
-    expect(res2.team).toEqual([undefined, undefined, undefined, undefined])
+    const res = parseOcrLines([line('urin', { x: 2300, w: 120 })], nameMap)
+    expect(res.team).toEqual([undefined, undefined, undefined, undefined])
   })
 
   test('fuzzy-matches OCR typos in contribution rows', () => {

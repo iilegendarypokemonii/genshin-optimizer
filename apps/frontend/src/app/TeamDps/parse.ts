@@ -37,9 +37,17 @@ function normalizeLine(text: string): string {
 
 /** "589 311" / "23,498,282" -> integer. Returns undefined when not a clean digit run. */
 function num(raw: string): number | undefined {
-  const cleaned = raw.replace(/[\s,]/g, '')
-  if (!/^\d+$/.test(cleaned)) return undefined
-  const n = Number(cleaned)
+  let digits = raw.replace(/[\s,]/g, '')
+  if (!/^\d+$/.test(digits)) return undefined
+  // two passes reading the same number side by side concatenate it
+  // ("262 047 262 047" -> "262047262047"); collapse exact doubles
+  if (
+    digits.length >= 8 &&
+    digits.length % 2 === 0 &&
+    digits.slice(0, digits.length / 2) === digits.slice(digits.length / 2)
+  )
+    digits = digits.slice(0, digits.length / 2)
+  const n = Number(digits)
   return Number.isSafeInteger(n) ? n : undefined
 }
 
@@ -107,6 +115,15 @@ function matchName(raw: string, candidates: NameCandidate[]): NameMatch {
   if (exact.length === 1) return { character: exact[0] }
   if (exact.length > 1) return { character: undefined, ambiguous: true }
 
+  // Windows OCR frequently reads a capital I as a lowercase L ("lansan")
+  if (target.startsWith('l')) {
+    const swapped = 'i' + target.slice(1)
+    const swapExact = uniq(
+      candidates.filter((c) => c.norm === swapped).map((c) => c.character)
+    )
+    if (swapExact.length === 1) return { character: swapExact[0] }
+  }
+
   if (target.length >= 4) {
     const substr = uniq(
       candidates
@@ -152,27 +169,24 @@ interface Row {
  * ranges overlap by more than half the smaller height, then split clusters at
  * large horizontal gaps (left HUD vs right character rail).
  */
-function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
+/** Exported for the dump-debug harness only. */
+export function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
+  // Cluster by vertical-center distance against a fixed anchor (the first
+  // member). Anchored centers cannot drift, so one tall OCR box spanning two
+  // visual rows can no longer chain adjacent rows together.
   interface Cluster {
-    y0: number
-    y1: number
+    cy: number
+    h: number
     members: OcrLine[]
   }
   const clusters: Cluster[] = []
   for (const line of [...lines].sort((a, b) => a.y - b.y)) {
-    const y0 = line.y
-    const y1 = line.y + line.h
-    const host = clusters.find((c) => {
-      const overlap = Math.min(c.y1, y1) - Math.max(c.y0, y0)
-      return overlap > 0.5 * Math.min(y1 - y0, c.y1 - c.y0)
-    })
-    if (host) {
-      host.members.push(line)
-      host.y0 = Math.min(host.y0, y0)
-      host.y1 = Math.max(host.y1, y1)
-    } else {
-      clusters.push({ y0, y1, members: [line] })
-    }
+    const cy = line.y + line.h / 2
+    const host = clusters.find(
+      (c) => Math.abs(cy - c.cy) <= 0.7 * Math.min(line.h, c.h)
+    )
+    if (host) host.members.push(line)
+    else clusters.push({ cy, h: line.h, members: [line] })
   }
   const rows: Row[] = []
   for (const cluster of clusters) {
@@ -183,7 +197,7 @@ function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
       rows.push({
         text: segment.map((l) => l.text).join(' '),
         x: segment[0].x,
-        y: cluster.y0,
+        y: Math.min(...segment.map((l) => l.y)),
       })
       segment = []
     }
@@ -197,9 +211,10 @@ function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
   return rows.sort((a, b) => a.y - b.y || a.x - b.x)
 }
 
-// "Chasca : 23498282(76%)" / 'Mona 264923 (2")' / "Citlali : 101493 (1%" (broken paren)
-const CONTRIB_WITH_PCT =
-  /^(.{2,30}?)\s*[:.]?\s*(\d[\d,]{2,})\s*\(\s*(\d{1,3})[^)]*(?:\).{0,6})?$/
+// "Chasca : 23498282(76%)" / 'Mona 264923 (2")' / "Citlali : 101493 (1%".
+// Deliberately not end-anchored: OCR boxes spanning two visual rows can glue
+// rotation fragments after the percent, which must not invalidate the row.
+const CONTRIB_WITH_PCT = /^(.{2,30}?)\s*[:.]?\s*(\d[\d,]{2,})\s*\(\s*(\d{1,3})/
 // "Durin : 3242493" - only trusted when the name matches a character
 const CONTRIB_NO_PCT = /^(.{2,30}?)\s*[:.]\s*(\d[\d,]{3,})\s*$/
 
@@ -222,6 +237,10 @@ export function parseOcrLines(
   let timeElapsedSec: number | undefined
   let strongestHit: number | undefined
   let uid: string | undefined
+  let dpsRowY: number | undefined
+  let timeLabelRowY: number | undefined
+  const bareNumberRows: { y: number; value: number }[] = []
+  const secondsRows: { y: number; value: number }[] = []
   const contributions: ParsedContribution[] = []
   const teamCandidates: {
     character: CharacterKey
@@ -240,7 +259,10 @@ export function parseOcrLines(
 
     if (dps === undefined && !isRotationRow) {
       const m = text.match(/\bDPS\b[^\d]{0,4}(\d{1,3}(?:[ ,]\d{3})+|\d{2,})/)
-      if (m) dps = num(m[1])
+      if (m) {
+        dps = num(m[1])
+        dpsRowY = row.y
+      }
     }
     if (
       totalDamage === undefined &&
@@ -252,11 +274,39 @@ export function parseOcrLines(
       if (m) totalDamage = num(m[1])
     }
     if (timeElapsedSec === undefined) {
-      const m = text.match(/Time\s*Elapsed[^\d]{0,4}(\d+(?:[.,]\d+)?)/i)
+      // tolerate garbled labels: "Time Eltap-sgd", "jPiine Elapsed", bullets
+      const m = text.match(
+        /\b(?:Time\s*E\w*|Elapsed)[^\d]{0,10}(\d{1,3}(?:[.,]\d{1,2})?)/i
+      )
       if (m) timeElapsedSec = Number.parseFloat(m[1].replace(',', '.'))
+      else if (/\b(?:Time\s*E\w+|Elapsed)/i.test(text)) timeLabelRowY = row.y
+    }
+    {
+      // lone decimal-seconds rows ("52.7*", "64.85 s") for the time fallback
+      const secs = text.match(
+        /^[^A-Za-z]{0,2}(\d{1,3}[.,]\d{1,2})\s*s?\W{0,3}$/
+      )
+      if (secs)
+        secondsRows.push({
+          y: row.y,
+          value: Number.parseFloat(secs[1].replace(',', '.')),
+        })
+      // bare large numbers ("13492769") for the total-damage fallback
+      if (
+        !isRotationRow &&
+        !/\(\s*\d{1,3}\s*[%")]/.test(text) &&
+        !/UID/i.test(text)
+      ) {
+        // a >=7-digit run survives even when the "Damage :" label is garbled
+        const bare = text.match(/(\d{7,})/)
+        if (bare) {
+          const value = num(bare[1])
+          if (value !== undefined) bareNumberRows.push({ y: row.y, value })
+        }
+      }
     }
     if (strongestHit === undefined) {
-      const m = text.match(/\bHit\b[^\d]{0,4}(\d[\d ,]*)/i)
+      const m = text.match(/\bHits?\b[^\d]{0,4}(\d[\d ,]*)/i)
       if (m) strongestHit = num(m[1])
     }
     if (uid === undefined) {
@@ -352,6 +402,30 @@ export function parseOcrLines(
   while (team.length < TEAM_SIZE) team.push(undefined)
   if (team.every((t) => t === undefined))
     warnings.push('No team members recognized - fill them in manually')
+
+  // The total-damage value sits directly under the DPS row; when its label is
+  // garbled or lost, trust the first bare large number below the DPS row.
+  if (totalDamage === undefined && bareNumberRows.length) {
+    const below =
+      dpsRowY !== undefined
+        ? bareNumberRows.filter(
+            (r) => r.y > (dpsRowY as number) && r.y - (dpsRowY as number) < 220
+          )
+        : bareNumberRows
+    const first = [...below].sort((a, b) => a.y - b.y)[0]
+    if (first) totalDamage = first.value
+  }
+  // Same for elapsed time: a lone decimal-seconds row next to its label.
+  if (timeElapsedSec === undefined && timeLabelRowY !== undefined) {
+    const near = secondsRows
+      .filter((r) => Math.abs(r.y - (timeLabelRowY as number)) <= 45)
+      .sort(
+        (a, b) =>
+          Math.abs(a.y - (timeLabelRowY as number)) -
+          Math.abs(b.y - (timeLabelRowY as number))
+      )[0]
+    if (near) timeElapsedSec = near.value
+  }
 
   if (dps === undefined) warnings.push('DPS not found in the screenshot')
   if (totalDamage === undefined)
