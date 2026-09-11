@@ -17,6 +17,8 @@ export interface ParsedScreenshot {
   timeElapsedSec?: number
   strongestHit?: number
   uid?: string
+  /** Reaction tracker summary, e.g. "Chasca: Melt x23, Swirl x15; Durin: Melt x10" */
+  reactions?: string
   /** Up to 4 team members: contribution characters first, then other recognized names. */
   team: (CharacterKey | undefined)[]
   warnings: string[]
@@ -211,12 +213,105 @@ export function buildRows(lines: OcrLine[], gapThreshold: number): Row[] {
   return rows.sort((a, b) => a.y - b.y || a.x - b.x)
 }
 
+const REACTION_WORDS = [
+  'Melt',
+  'Vaporize',
+  'Swirl',
+  'Frozen',
+  'Superconduct',
+  'Overloaded',
+  'Electro-Charged',
+  'Crystallize',
+  'Burning',
+  'Bloom',
+  'Hyperbloom',
+  'Burgeon',
+  'Aggravate',
+  'Spread',
+  'Quicken',
+  'Shatter',
+  'Lunar-Charged',
+  'Lunar Bloom',
+] as const
+
+function matchReactionWord(token: string): string | undefined {
+  const t = normName(token)
+  if (t.length < 4) return undefined
+  for (const word of REACTION_WORDS) {
+    const w = normName(word)
+    if (t === w) return word
+    if (w.length >= 4 && levenshtein(t, w) <= 1) return word
+  }
+  return undefined
+}
+
+/** "x15", "XIO" (x10), "XII" (x11) -> count. Requires the x prefix. */
+function reactionCount(token: string): number | undefined {
+  if (!/^[xX×]/.test(token)) return undefined
+  const m = token.match(/^[xX×]([0-9IlOo]{1,4})$/)
+  if (!m) return undefined
+  const digits = m[1].replace(/[Il]/g, '1').replace(/[Oo]/g, '0')
+  const n = Number(digits)
+  return Number.isFinite(n) && n > 0 && n < 1000 ? n : undefined
+}
+
+/** Read the Reaction Tracker panel into a compact per-character summary. */
+function extractReactions(
+  rows: Row[],
+  candidates: NameCandidate[],
+  nameMap: CharNameMap
+): string | undefined {
+  const perChar = new Map<CharacterKey, Map<string, number | undefined>>()
+  for (const row of rows) {
+    const colon = row.text.indexOf(':')
+    if (colon < 2 || colon > 20) continue
+    const nameMatch = matchName(row.text.slice(0, colon), candidates)
+    if (!nameMatch.character) continue
+    const tokens = row.text
+      .slice(colon + 1)
+      .trim()
+      .split(/\s+/)
+    const found =
+      perChar.get(nameMatch.character) ?? new Map<string, number | undefined>()
+    let current: string | undefined
+    for (const token of tokens) {
+      const word = matchReactionWord(token)
+      if (word) {
+        current = word
+        if (!found.has(word)) found.set(word, undefined)
+        continue
+      }
+      const count = reactionCount(token)
+      if (count !== undefined && current) {
+        const prev = found.get(current)
+        found.set(current, prev === undefined ? count : Math.max(prev, count))
+        current = undefined
+      }
+    }
+    if (found.size) perChar.set(nameMatch.character, found)
+  }
+  if (!perChar.size) return undefined
+  const parts: string[] = []
+  for (const [ck, reactions] of perChar) {
+    const list = [...reactions]
+      .map(([word, count]) =>
+        count !== undefined ? `${word} x${count}` : word
+      )
+      .join(', ')
+    parts.push(`${nameMap[ck] ?? ck}: ${list}`)
+  }
+  return parts.join('; ')
+}
+
 // "Chasca : 23498282(76%)" / 'Mona 264923 (2")' / "Citlali : 101493 (1%".
 // Deliberately not end-anchored: OCR boxes spanning two visual rows can glue
 // rotation fragments after the percent, which must not invalidate the row.
 const CONTRIB_WITH_PCT = /^(.{2,30}?)\s*[:.]?\s*(\d[\d,]{2,})\s*\(\s*(\d{1,3})/
 // "Durin : 3242493" - only trusted when the name matches a character
 const CONTRIB_NO_PCT = /^(.{2,30}?)\s*[:.]\s*(\d[\d,]{3,})\s*$/
+// "Citlali 1014930%)-": the percent glued onto the damage when "(" is lost;
+// resolved later by validating the split against the total damage
+const CONTRIB_GLUED = /^(.{2,30}?)\s*[:.]?\s*(\d{5,9})\s*[%o)]/
 
 export function parseOcrLines(
   rawLines: OcrLine[],
@@ -242,6 +337,7 @@ export function parseOcrLines(
   const bareNumberRows: { y: number; value: number }[] = []
   const secondsRows: { y: number; value: number }[] = []
   const contributions: ParsedContribution[] = []
+  const gluedRows: { character: CharacterKey; digits: string }[] = []
   const teamCandidates: {
     character: CharacterKey
     y: number
@@ -345,6 +441,14 @@ export function parseOcrLines(
             match = m
           }
         }
+        if (rawName === undefined) {
+          const glued = contribText.match(CONTRIB_GLUED)
+          if (glued) {
+            const m = matchName(glued[1].trim(), candidates)
+            if (m.character)
+              gluedRows.push({ character: m.character, digits: glued[2] })
+          }
+        }
       }
       if (rawName !== undefined && damage !== undefined && match) {
         const matchedCharacter = match.character
@@ -427,6 +531,36 @@ export function parseOcrLines(
     if (near) timeElapsedSec = near.value
   }
 
+  // Resolve glued damage+percent reads ("1014930%") by trying both splits
+  // and validating the implied percentage against the total damage.
+  if (totalDamage !== undefined && totalDamage > 0) {
+    for (const glued of gluedRows) {
+      if (contributions.length >= TEAM_SIZE) break
+      if (contributions.some((c) => c.character === glued.character)) continue
+      let best: { damage: number; pct: number; diff: number } | undefined
+      for (const take of [1, 2]) {
+        const dmgStr = glued.digits.slice(0, -take)
+        if (dmgStr.length < 3) continue
+        const damage = Number(dmgStr)
+        const pct = Number(glued.digits.slice(-take))
+        const diff = Math.abs((damage / totalDamage) * 100 - pct)
+        if (pct <= 100 && diff <= 1.6 && (!best || diff < best.diff))
+          best = { damage, pct, diff }
+      }
+      if (best)
+        contributions.push({
+          character: glued.character,
+          rawName: nameMap[glued.character] ?? glued.character,
+          damage: best.damage,
+          pct: best.pct,
+        })
+    }
+  }
+
+  // raw lines, not merged rows: tracker entries share heights with the
+  // attribute panel and would otherwise hide behind its first colon
+  const reactions = extractReactions(lines, candidates, nameMap)
+
   if (dps === undefined) warnings.push('DPS not found in the screenshot')
   if (totalDamage === undefined)
     warnings.push('Total damage not found in the screenshot')
@@ -456,6 +590,7 @@ export function parseOcrLines(
     timeElapsedSec,
     strongestHit,
     uid,
+    reactions,
     team: team.slice(0, TEAM_SIZE),
     warnings,
   }

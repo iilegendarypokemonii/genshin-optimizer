@@ -78,6 +78,7 @@ d('parse full OCR dumps', () => {
             contributions: res.contributions.map(
               (c) => `${c.character ?? `?${c.rawName}?`}=${c.damage}`
             ),
+            reactions: res.reactions,
             warnings: res.warnings,
           },
           null,

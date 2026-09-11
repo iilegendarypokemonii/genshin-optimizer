@@ -2,12 +2,8 @@ import { useDataManagerEntries } from '@genshin-optimizer/common/database-ui'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { isTauri } from '@genshin-optimizer/common/util'
 import type { CharacterKey } from '@genshin-optimizer/gi/consts'
-import type { TeamDpsRun } from '@genshin-optimizer/gi/db'
-import {
-  bestTeamDpsRun,
-  latestTeamDpsRun,
-  teamDpsCharacter,
-} from '@genshin-optimizer/gi/db'
+import type { TeamDpsRun, TeamDpsSim } from '@genshin-optimizer/gi/db'
+import { bestTeamDpsRun, latestTeamDpsRun } from '@genshin-optimizer/gi/db'
 import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
 import { iconAsset, SillyContext } from '@genshin-optimizer/gi/ui'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
@@ -50,7 +46,7 @@ interface Pending {
   ocrErrorText?: string
 }
 
-type SortKey = 'best' | 'recent'
+type SortKey = 'best' | 'recent' | 'total' | 'runs'
 
 export default function TeamDpsPage() {
   // ensure the charNames_gen namespace is loaded before building the name map
@@ -63,43 +59,58 @@ export default function TeamDpsPage() {
   const isDesktop = isTauri()
 
   const [sortKey, setSortKey] = useState<SortKey>('best')
-  const [dpsFilter, setDpsFilter] = useState<CharacterKey | undefined>(
-    undefined
-  )
+  const [charFilter, setCharFilter] = useState<
+    Partial<Record<CharacterKey, 'in' | 'out'>>
+  >({})
   const [pending, setPending] = useState<Pending | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
   const fileInput = useRef<HTMLInputElement>(null)
 
   const sorted = useMemo(() => {
-    const metric =
-      sortKey === 'best'
-        ? (run: TeamDpsRun | undefined) => run?.dps ?? 0
-        : (run: TeamDpsRun | undefined) => run?.date ?? 0
-    const pick = sortKey === 'best' ? bestTeamDpsRun : latestTeamDpsRun
-    return [...entries].sort(
-      ([, a], [, b]) => metric(pick(b)) - metric(pick(a))
-    )
+    const metric = (sim: TeamDpsSim): number => {
+      switch (sortKey) {
+        case 'recent':
+          return latestTeamDpsRun(sim)?.date ?? 0
+        case 'total':
+          return bestTeamDpsRun(sim)?.totalDamage ?? 0
+        case 'runs':
+          return sim.runs.length
+        default:
+          return bestTeamDpsRun(sim)?.dps ?? 0
+      }
+    }
+    return [...entries].sort(([, a], [, b]) => metric(b) - metric(a))
   }, [entries, sortKey])
 
-  const dpsCharacters = useMemo(() => {
+  const teamCharacters = useMemo(() => {
     const set = new Set<CharacterKey>()
-    for (const [, sim] of entries) {
-      const best = bestTeamDpsRun(sim)
-      const ck = best && teamDpsCharacter(best)
-      if (ck) set.add(ck)
-    }
-    return [...set].sort()
-  }, [entries])
+    for (const [, sim] of entries) for (const ck of sim.characters) set.add(ck)
+    return [...set].sort((a, b) =>
+      (nameMap[a] ?? a).localeCompare(nameMap[b] ?? b)
+    )
+  }, [entries, nameMap])
+
+  const cycleFilter = useCallback((ck: CharacterKey) => {
+    setCharFilter((f) => {
+      const next = { ...f }
+      if (f[ck] === 'in') next[ck] = 'out'
+      else if (f[ck] === 'out') delete next[ck]
+      else next[ck] = 'in'
+      return next
+    })
+  }, [])
 
   const filtered = useMemo(
     () =>
-      sorted.filter(([, sim]) => {
-        if (!dpsFilter) return true
-        const best = bestTeamDpsRun(sim)
-        return (best && teamDpsCharacter(best)) === dpsFilter
-      }),
-    [sorted, dpsFilter]
+      sorted.filter(([, sim]) =>
+        Object.entries(charFilter).every(([ck, mode]) =>
+          mode === 'in'
+            ? sim.characters.includes(ck as CharacterKey)
+            : !sim.characters.includes(ck as CharacterKey)
+        )
+      ),
+    [sorted, charFilter]
   )
 
   const handleFiles = useCallback(
@@ -176,6 +187,7 @@ export default function TeamDpsPage() {
           : {}),
         ...(result.uid ? { uid: result.uid } : {}),
         ...(result.notes ? { notes: result.notes } : {}),
+        ...(result.reactions ? { reactions: result.reactions } : {}),
       }
       const simId = database.teamDpsSims.addRun(result.characters, run)
       if (!simId) {
@@ -209,6 +221,8 @@ export default function TeamDpsPage() {
         >
           <MenuItem value="best">Best DPS</MenuItem>
           <MenuItem value="recent">Recent</MenuItem>
+          <MenuItem value="total">Total Damage</MenuItem>
+          <MenuItem value="runs">Run Count</MenuItem>
         </Select>
         {isDesktop && (
           <Button
@@ -233,7 +247,7 @@ export default function TeamDpsPage() {
           }}
         />
       </Stack>
-      {dpsCharacters.length > 1 && (
+      {teamCharacters.length > 1 && (
         <Stack
           direction="row"
           spacing={1}
@@ -242,19 +256,41 @@ export default function TeamDpsPage() {
           useFlexGap
         >
           <Typography variant="caption" color="text.secondary">
-            DPS
+            Filter
           </Typography>
-          {dpsCharacters.map((ck) => (
+          {teamCharacters.map((ck) => {
+            const mode = charFilter[ck]
+            return (
+              <Chip
+                key={ck}
+                clickable
+                size="small"
+                avatar={<Avatar src={iconAsset(ck, gender, silly)} />}
+                label={nameMap[ck] ?? ck}
+                color={
+                  mode === 'in'
+                    ? 'primary'
+                    : mode === 'out'
+                      ? 'error'
+                      : 'default'
+                }
+                sx={
+                  mode === 'out'
+                    ? { textDecoration: 'line-through' }
+                    : undefined
+                }
+                onClick={() => cycleFilter(ck)}
+              />
+            )
+          })}
+          {!!Object.keys(charFilter).length && (
             <Chip
-              key={ck}
-              clickable
               size="small"
-              avatar={<Avatar src={iconAsset(ck, gender, silly)} />}
-              label={nameMap[ck] ?? ck}
-              color={dpsFilter === ck ? 'primary' : 'default'}
-              onClick={() => setDpsFilter((f) => (f === ck ? undefined : ck))}
+              label="Clear"
+              variant="outlined"
+              onClick={() => setCharFilter({})}
             />
-          ))}
+          )}
         </Stack>
       )}
       {!isDesktop && (

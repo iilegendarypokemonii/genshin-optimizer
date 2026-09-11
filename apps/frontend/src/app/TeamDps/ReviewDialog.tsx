@@ -28,6 +28,7 @@ export interface ReviewResult {
   strongestHit?: number
   uid?: string
   notes?: string
+  reactions?: string
 }
 
 interface Row {
@@ -68,6 +69,7 @@ export default function ReviewDialog({
   const [strongestHit, setStrongestHit] = useState('')
   const [uid, setUid] = useState('')
   const [notes, setNotes] = useState('')
+  const [reactions, setReactions] = useState('')
   const [rows, setRows] = useState<Row[]>([])
   const [pickerSlot, setPickerSlot] = useState<number | undefined>(undefined)
 
@@ -85,6 +87,7 @@ export default function ReviewDialog({
     )
     setUid(parsed?.uid ?? accountUid ?? '')
     setNotes('')
+    setReactions(parsed?.reactions ?? '')
     // rows follow the parsed team (party) order; damages are attached by
     // character so a missing value line cannot shuffle members around
     const remaining = [...(parsed?.contributions ?? [])]
@@ -142,6 +145,7 @@ export default function ReviewDialog({
       strongestHit: toNum(strongestHit),
       uid: uid.trim() || undefined,
       notes: notes.trim() || undefined,
+      reactions: reactions.trim() || undefined,
     })
   }
 
@@ -239,6 +243,13 @@ export default function ReviewDialog({
               </Alert>
             )}
             {sumWarning && <Alert severity="warning">{sumWarning}</Alert>}
+            <TextField
+              label="Reactions"
+              value={reactions}
+              onChange={(e) => setReactions(e.target.value)}
+              size="small"
+              fullWidth
+            />
             <Stack direction="row" spacing={1}>
               <TextField
                 label="Strongest Hit"

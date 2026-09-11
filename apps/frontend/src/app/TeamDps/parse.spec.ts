@@ -298,6 +298,25 @@ describe('parseOcrLines', () => {
     expect(res.warnings.some((w) => w.includes('does not add up'))).toBe(true)
   })
 
+  test('rescues glued percent values and extracts reactions', () => {
+    const res = parseOcrLines(
+      [
+        line('DPS : 208 077'),
+        line('Damage : 13492769'),
+        line('Citlali 1014930%)-'), // "(1%)" glued onto the damage
+        line('Chasca : Mett XIO Swirl x15', { x: 430 }),
+        line('Durin : Vaporize x14 Melt x14', { x: 430 }),
+      ],
+      nameMap
+    )
+    expect(res.contributions).toEqual([
+      { character: 'Citlali', rawName: 'Citlali', damage: 101493, pct: 0 },
+    ])
+    expect(res.reactions).toEqual(
+      'Chasca: Melt x10, Swirl x15; Durin: Vaporize x14, Melt x14'
+    )
+  })
+
   test('handles empty input', () => {
     const res = parseOcrLines([], nameMap)
     expect(res.dps).toBeUndefined()

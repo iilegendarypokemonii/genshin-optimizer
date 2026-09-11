@@ -263,6 +263,12 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
     // (right) come first so their lines win dedupe; a full-image pass catches
     // the rest. Small game text resolves far better at 2-3x scale.
     let left = Some((0, 0, (full_w as f64 * 0.45) as u32, full_h));
+    let panel = Some((
+        0,
+        (full_h as f64 * 0.14) as u32,
+        (full_w as f64 * 0.22) as u32,
+        (full_h as f64 * 0.28) as u32,
+    ));
     let right = Some((
         (full_w as f64 * 0.70) as u32,
         0,
@@ -291,6 +297,18 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
         Pass {
             bounds: right,
             scale: 2.5,
+            threshold: true,
+        },
+        // extra zoom on the per-character damage list: the smallest HUD text
+        // (especially the 4th row) needs more pixels than the 2.5x crop gives
+        Pass {
+            bounds: panel,
+            scale: 4.0,
+            threshold: false,
+        },
+        Pass {
+            bounds: panel,
+            scale: 4.0,
             threshold: true,
         },
         Pass {

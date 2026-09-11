@@ -92,48 +92,55 @@ function RunRow({
 }) {
   const [showShot, setShowShot] = useState(false)
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ minWidth: 110 }}
-      >
-        {new Date(run.date).toLocaleDateString()}{' '}
-        {new Date(run.date).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </Typography>
-      <Typography sx={{ fontWeight: 600, minWidth: 90 }}>
-        {run.dps.toLocaleString()}
-      </Typography>
-      <Box sx={{ flexGrow: 1 }}>
-        <ContributionBar run={run} nameMap={nameMap} />
-      </Box>
-      {run.timeElapsedSec !== undefined && (
+    <Stack spacing={0.25}>
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ minWidth: 110 }}
+        >
+          {new Date(run.date).toLocaleDateString()}{' '}
+          {new Date(run.date).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </Typography>
+        <Typography sx={{ fontWeight: 600, minWidth: 90 }}>
+          {run.dps.toLocaleString()}
+        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <ContributionBar run={run} nameMap={nameMap} />
+        </Box>
+        {run.timeElapsedSec !== undefined && (
+          <Typography variant="caption" color="text.secondary">
+            {run.timeElapsedSec}s
+          </Typography>
+        )}
+        <IconButton
+          size="small"
+          disabled={!run.hasScreenshot}
+          onClick={() => setShowShot(true)}
+        >
+          {run.hasScreenshot ? (
+            <ImageIcon fontSize="small" />
+          ) : (
+            <ImageNotSupportedIcon fontSize="small" />
+          )}
+        </IconButton>
+        <IconButton size="small" color="error" onClick={onDelete}>
+          <DeleteForeverIcon fontSize="small" />
+        </IconButton>
+        <ScreenshotModal
+          runId={run.id}
+          show={showShot}
+          onClose={() => setShowShot(false)}
+        />
+      </Stack>
+      {run.reactions && (
         <Typography variant="caption" color="text.secondary">
-          {run.timeElapsedSec}s
+          {run.reactions}
         </Typography>
       )}
-      <IconButton
-        size="small"
-        disabled={!run.hasScreenshot}
-        onClick={() => setShowShot(true)}
-      >
-        {run.hasScreenshot ? (
-          <ImageIcon fontSize="small" />
-        ) : (
-          <ImageNotSupportedIcon fontSize="small" />
-        )}
-      </IconButton>
-      <IconButton size="small" color="error" onClick={onDelete}>
-        <DeleteForeverIcon fontSize="small" />
-      </IconButton>
-      <ScreenshotModal
-        runId={run.id}
-        show={showShot}
-        onClose={() => setShowShot(false)}
-      />
     </Stack>
   )
 }
@@ -242,18 +249,22 @@ export default function TeamCard({
           >
             {best ? best.dps.toLocaleString() : '-'}
           </Typography>
-          <Box sx={{ flexGrow: 1, minWidth: 60 }}>
+          <Box sx={{ width: 200, flexShrink: 0 }}>
             {best && <ContributionBar run={best} nameMap={nameMap} />}
           </Box>
-          {sim.name && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              noWrap
-              sx={{ maxWidth: 140 }}
-            >
-              {sim.name}
-            </Typography>
+          {sim.name ? (
+            <BootstrapTooltip title={sim.name}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                sx={{ flexGrow: 1, minWidth: 0 }}
+              >
+                {sim.name}
+              </Typography>
+            </BootstrapTooltip>
+          ) : (
+            <Box sx={{ flexGrow: 1 }} />
           )}
           <Typography
             variant="caption"
@@ -278,12 +289,14 @@ export default function TeamCard({
               {editingName ? (
                 <TextField
                   size="small"
+                  fullWidth
+                  multiline
+                  maxRows={4}
                   value={nameDraft}
                   onChange={(e) => setNameDraft(e.target.value)}
                   onBlur={saveName}
-                  onKeyDown={(e) => e.key === 'Enter' && saveName()}
                   autoFocus
-                  placeholder="Team label"
+                  placeholder="Notes - e.g. good vs a Stygian boss, or what this team should improve"
                 />
               ) : (
                 <Button
@@ -291,7 +304,7 @@ export default function TeamCard({
                   startIcon={<EditIcon fontSize="small" />}
                   onClick={() => setEditingName(true)}
                 >
-                  {sim.name || 'Add label'}
+                  {sim.name ? 'Edit notes' : 'Add notes'}
                 </Button>
               )}
               <Box sx={{ flexGrow: 1 }} />
