@@ -286,33 +286,39 @@ export default function TeamCard({
         <Collapse in={expanded}>
           <Stack spacing={1} sx={{ pt: 1 }}>
             <Stack direction="row" spacing={1} alignItems="center">
-              {editingName ? (
-                <TextField
-                  size="small"
-                  fullWidth
-                  multiline
-                  maxRows={4}
-                  value={nameDraft}
-                  onChange={(e) => setNameDraft(e.target.value)}
-                  onBlur={saveName}
-                  autoFocus
-                  placeholder="Notes - e.g. good vs a Stygian boss, or what this team should improve"
-                />
-              ) : (
-                <Button
-                  size="small"
-                  startIcon={<EditIcon fontSize="small" />}
-                  onClick={() => setEditingName(true)}
-                >
-                  {sim.name ? 'Edit notes' : 'Add notes'}
-                </Button>
-              )}
-              <Box sx={{ flexGrow: 1 }} />
+              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                {editingName ? (
+                  <TextField
+                    size="small"
+                    fullWidth
+                    multiline
+                    maxRows={4}
+                    value={nameDraft}
+                    onChange={(e) => setNameDraft(e.target.value)}
+                    onBlur={saveName}
+                    autoFocus
+                    placeholder="Notes - e.g. good vs a Stygian boss, or what this team should improve"
+                  />
+                ) : (
+                  <Button
+                    size="small"
+                    startIcon={<EditIcon fontSize="small" />}
+                    onClick={() => setEditingName(true)}
+                  >
+                    {sim.name ? 'Edit notes' : 'Add notes'}
+                  </Button>
+                )}
+              </Box>
               <Button
                 size="small"
                 color="error"
                 startIcon={<DeleteForeverIcon fontSize="small" />}
                 onClick={deleteTeam}
+                sx={{
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                  alignSelf: 'center',
+                }}
               >
                 Delete team
               </Button>
