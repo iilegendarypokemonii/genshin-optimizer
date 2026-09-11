@@ -29,7 +29,7 @@ import {
 import { useContext, useState } from 'react'
 import type { CharNameMap } from './parse'
 import ScreenshotModal from './ScreenshotModal'
-import { deleteScreenshot } from './store'
+import { confirmDialog, deleteScreenshot } from './store'
 
 const ELEMENT_HEX: Record<ElementKey, string> = {
   anemo: '#61dbbb',
@@ -171,13 +171,13 @@ export default function TeamCard({
     : [...sim.characters]
 
   const deleteRun = async (run: TeamDpsRun) => {
-    if (!window.confirm('Delete this run?')) return
+    if (!(await confirmDialog('Delete this run?'))) return
     const removed = database.teamDpsSims.removeRun(simId, run.id)
     if (removed?.hasScreenshot) await deleteScreenshot(removed.id)
   }
 
   const deleteTeam = async () => {
-    if (!window.confirm('Delete this team and all its runs?')) return
+    if (!(await confirmDialog('Delete this team and all its runs?'))) return
     const runs = sim.runs
     database.teamDpsSims.remove(simId)
     for (const run of runs)

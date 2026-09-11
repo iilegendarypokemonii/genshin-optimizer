@@ -72,3 +72,14 @@ export async function revealScreenshot(id: string): Promise<void> {
   const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
   await revealItemInDir(abs)
 }
+
+/**
+ * Native confirm dialog on desktop; window.confirm in the browser.
+ * Tauri replaces window.confirm with an async stub whose Promise return value
+ * is always truthy, so awaiting the dialog plugin is required for a real answer.
+ */
+export async function confirmDialog(message: string): Promise<boolean> {
+  if (!isTauri()) return window.confirm(message)
+  const { confirm } = await import('@tauri-apps/plugin-dialog')
+  return await confirm(message, { kind: 'warning' })
+}

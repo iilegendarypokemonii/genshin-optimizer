@@ -223,6 +223,11 @@ export function parseOcrLines(
   let strongestHit: number | undefined
   let uid: string | undefined
   const contributions: ParsedContribution[] = []
+  const teamCandidates: {
+    character: CharacterKey
+    y: number
+    left: boolean
+  }[] = []
 
   for (const row of rows) {
     const { text } = row
@@ -311,24 +316,39 @@ export function parseOcrLines(
             damage,
             ...(pct !== undefined ? { pct } : {}),
           })
+          if (matchedCharacter)
+            teamCandidates.push({
+              character: matchedCharacter,
+              y: row.y,
+              left: true,
+            })
         }
       }
     }
   }
 
-  // Team: contribution characters first, then any short line that names a
-  // character (left damage panel, reaction tracker, right rail).
-  const team: (CharacterKey | undefined)[] = []
-  for (const c of contributions)
-    if (c.character && !team.includes(c.character)) team.push(c.character)
-
+  // Team: gather every line naming a character. The damage panel, reaction
+  // tracker, and right rail each list members in party order top-to-bottom,
+  // so sorting left-panel hits by y (then rail hits by y) preserves the
+  // in-game order even when some value lines were missed.
   for (const line of lines) {
-    if (team.length >= TEAM_SIZE) break
     if (line.text.length > 30) continue
     const match = matchName(line.text, candidates)
-    if (match.character && !team.includes(match.character))
-      team.push(match.character)
+    if (match.character)
+      teamCandidates.push({
+        character: match.character,
+        y: line.y,
+        left: line.x < maxX * 0.55,
+      })
   }
+  const inPartyOrder = [
+    ...teamCandidates.filter((c) => c.left).sort((a, b) => a.y - b.y),
+    ...teamCandidates.filter((c) => !c.left).sort((a, b) => a.y - b.y),
+  ]
+  const team: (CharacterKey | undefined)[] = []
+  for (const c of inPartyOrder)
+    if (!team.includes(c.character) && team.length < TEAM_SIZE)
+      team.push(c.character)
   while (team.length < TEAM_SIZE) team.push(undefined)
   if (team.every((t) => t === undefined))
     warnings.push('No team members recognized - fill them in manually')

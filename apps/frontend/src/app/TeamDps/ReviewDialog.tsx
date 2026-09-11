@@ -85,14 +85,27 @@ export default function ReviewDialog({
     )
     setUid(parsed?.uid ?? accountUid ?? '')
     setNotes('')
+    // rows follow the parsed team (party) order; damages are attached by
+    // character so a missing value line cannot shuffle members around
+    const remaining = [...(parsed?.contributions ?? [])]
     const initial: Row[] = []
     for (let i = 0; i < TEAM_SIZE; i++) {
-      const contribution = parsed?.contributions[i]
-      initial.push({
-        character: contribution?.character ?? parsed?.team[i],
-        damage:
-          contribution?.damage !== undefined ? String(contribution.damage) : '',
-      })
+      const character = parsed?.team[i]
+      let damage = ''
+      if (character) {
+        const idx = remaining.findIndex((c) => c.character === character)
+        if (idx >= 0) {
+          damage = String(remaining[idx].damage)
+          remaining.splice(idx, 1)
+        }
+      }
+      initial.push({ character, damage })
+    }
+    // values whose character could not be recognized fill the empty slots
+    for (const c of remaining.filter((c) => !c.character)) {
+      const slot = initial.find((r) => !r.character && !r.damage)
+      if (slot) slot.damage = String(c.damage)
+      else break
     }
     setRows(initial)
   }, [open, parsed, accountUid])

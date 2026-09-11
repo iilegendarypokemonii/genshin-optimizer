@@ -210,6 +210,27 @@ describe('parseOcrLines', () => {
     expect(res.contributions).toEqual([])
   })
 
+  test('keeps party order when a middle value line is missing', () => {
+    const res = parseOcrLines(
+      [
+        at(40, 100, 100, 20, 'Chasca :'),
+        at(240, 100, 150, 20, '9000000 (75%)'),
+        at(40, 130, 100, 20, 'Nicole :'), // value line missed by OCR
+        at(40, 160, 100, 20, 'Durin :'),
+        at(40, 190, 100, 20, 'Citlali :'),
+        at(240, 190, 150, 20, '1000000 (8%)'),
+      ],
+      nameMap
+    )
+    // contributions exist only for slots 1 and 4, but the team keeps
+    // the on-screen top-to-bottom (party) order
+    expect(res.team).toEqual(['Chasca', 'Nicole', 'Durin', 'Citlali'])
+    expect(res.contributions.map((c) => c.character)).toEqual([
+      'Chasca',
+      'Citlali',
+    ])
+  })
+
   test('refuses genuinely ambiguous rail names', () => {
     // OCR reads "Iansan" as "lansan": 1 edit from both Iansan and Lan Yan
     const res = parseOcrLines([line('lansan', { x: 2300, w: 120 })], nameMap)

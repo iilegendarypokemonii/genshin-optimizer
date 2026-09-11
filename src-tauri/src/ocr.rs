@@ -1,11 +1,12 @@
 use serde::Serialize;
 use std::path::Path;
 use tauri::Manager;
-use windows::core::HSTRING;
+use windows::core::{Interface, HSTRING};
 use windows::Globalization::Language;
 use windows::Graphics::Imaging::{
-    BitmapAlphaMode, BitmapBounds, BitmapDecoder, BitmapInterpolationMode, BitmapPixelFormat,
-    BitmapTransform, ColorManagementMode, ExifOrientationMode,
+    BitmapAlphaMode, BitmapBounds, BitmapBufferAccessMode, BitmapDecoder,
+    BitmapInterpolationMode, BitmapPixelFormat, BitmapTransform, ColorManagementMode,
+    ExifOrientationMode, SoftwareBitmap,
 };
 use windows::Media::Ocr::OcrEngine;
 use windows::Storage::Streams::{DataWriter, InMemoryRandomAccessStream};
@@ -101,6 +102,34 @@ fn iou(a: &OcrLine, b: &OcrLine) -> f32 {
 struct Pass {
     bounds: Option<(u32, u32, u32, u32)>,
     scale: f64,
+    /// Binarize before recognition: bright (text) pixels become black on a
+    /// white background. Rescues white HUD text over bright map backgrounds.
+    threshold: bool,
+}
+
+/// In-place luminance threshold on a Bgra8 bitmap.
+fn binarize(bitmap: &SoftwareBitmap, cutoff: u32) -> Result<(), windows::core::Error> {
+    use windows::Win32::System::WinRT::IMemoryBufferByteAccess;
+    let buffer = bitmap.LockBuffer(BitmapBufferAccessMode::Write)?;
+    let reference = buffer.CreateReference()?;
+    let access = reference.cast::<IMemoryBufferByteAccess>()?;
+    let mut data: *mut u8 = std::ptr::null_mut();
+    let mut capacity: u32 = 0;
+    unsafe {
+        access.GetBuffer(&mut data, &mut capacity)?;
+        let slice = std::slice::from_raw_parts_mut(data, capacity as usize);
+        for px in slice.chunks_exact_mut(4) {
+            // BGRA
+            let lum = px[2] as u32 * 299 + px[1] as u32 * 587 + px[0] as u32 * 114;
+            let v = if lum >= cutoff * 1000 { 0u8 } else { 255u8 };
+            px[0] = v;
+            px[1] = v;
+            px[2] = v;
+        }
+    }
+    reference.Close()?;
+    buffer.Close()?;
+    Ok(())
 }
 
 /// Recognize one pass; returned line boxes are mapped back to original-image space.
@@ -143,6 +172,10 @@ fn recognize_pass(
             ColorManagementMode::DoNotColorManage,
         )?
         .get()?;
+
+    if pass.threshold {
+        binarize(&bitmap, 190)?;
+    }
 
     let result = engine.RecognizeAsync(&bitmap)?.get()?;
     let mut lines = Vec::new();
@@ -212,23 +245,40 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
     // High-resolution crops of the HUD (left) and the character rail + UID
     // (right) come first so their lines win dedupe; a full-image pass catches
     // the rest. Small game text resolves far better at 2-3x scale.
+    let left = Some((0, 0, (full_w as f64 * 0.45) as u32, full_h));
+    let right = Some((
+        (full_w as f64 * 0.70) as u32,
+        0,
+        (full_w as f64 * 0.30) as u32,
+        full_h,
+    ));
     let passes = [
+        // binarized crops first: they read white HUD text over bright maps
+        // that the plain passes misread, and win the overlap dedupe
         Pass {
-            bounds: Some((0, 0, (full_w as f64 * 0.45) as u32, full_h)),
+            bounds: left,
             scale: 2.5,
+            threshold: true,
         },
         Pass {
-            bounds: Some((
-                (full_w as f64 * 0.70) as u32,
-                0,
-                (full_w as f64 * 0.30) as u32,
-                full_h,
-            )),
+            bounds: left,
             scale: 2.5,
+            threshold: false,
+        },
+        Pass {
+            bounds: right,
+            scale: 2.5,
+            threshold: true,
+        },
+        Pass {
+            bounds: right,
+            scale: 2.5,
+            threshold: false,
         },
         Pass {
             bounds: None,
             scale: 2.0,
+            threshold: false,
         },
     ];
 
