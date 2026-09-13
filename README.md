@@ -1,6 +1,6 @@
 # Genshin Optimizer Local — personal Windows modification
 
-This is **Timon's personal modification** of [Gacha Optimizer / Genshin Optimizer](https://github.com/frzyc/genshin-optimizer), shared with friends. It is an unofficial desktop fork; the original optimizer and its authors are credited below.
+This is a **personal modification** of [Gacha Optimizer / Genshin Optimizer](https://github.com/frzyc/genshin-optimizer). It is an unofficial desktop fork; the original optimizer and its authors are credited below.
 
 **[Download the Windows app](https://github.com/iilegendarypokemonii/genshin-optimizer/releases/latest)** · [Installation](#install-on-windows) · [Updates](#update-the-app)
 
@@ -12,7 +12,7 @@ This is **Timon's personal modification** of [Gacha Optimizer / Genshin Optimize
 - **Tools page:** access the built-in tools and links to community resources, including account-specific Enka.Network and Akasha links.
 - **Desktop updates:** check for this fork's published releases and install updates inside the app.
 
-Each friend uses their own data. There is no separate optimizer signup or shared online account, and installing this app does not automatically import your Genshin account. Upstream game-data updates are included when a new desktop release is published here.
+Each user uses their own data. There is no separate optimizer signup or shared online account, and installing this app does not automatically import your Genshin account. Upstream game-data updates are included when a new desktop release is published here.
 
 ## Install on Windows
 
@@ -47,7 +47,7 @@ If Windows shows **Windows protected your PC** for this download and offers **Mo
 
 Click **Check for updates** at the bottom of the app, then **Update and restart** when a release is available. Your local accounts, builds, wish history, and screenshots are kept. Finish any imports or scans before starting the update.
 
-If checking fails, you can keep using your installed version and try again later. You can also close the app and run the latest installer over the existing installation. A GitHub commit alone is not an app update; updates become available when Timon publishes a new desktop release.
+If checking fails, you can keep using your installed version and try again later. You can also close the app and run the latest installer over the existing installation. A GitHub commit alone is not an app update; updates become available when a new desktop release is published.
 
 For problems with this modification, [open an issue in this fork](https://github.com/iilegendarypokemonii/genshin-optimizer/issues). For building the app or publishing releases, see the [desktop maintainer guide](docs/desktop.md).
 
