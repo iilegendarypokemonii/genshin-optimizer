@@ -86,8 +86,8 @@ export default function CacheStatusCard({
           <Typography variant="body2">
             Capture account inventory with the standalone Windows Irminsul tool.
           </Typography>
-          <Button onClick={() => navigate('/tools/irminsul')}>
-            Open Irminsul
+          <Button onClick={() => navigate('/tools/game-data')}>
+            Open Game data
           </Button>
         </CardContent>
       </Card>
@@ -181,7 +181,7 @@ export default function CacheStatusCard({
             <Button
               size="small"
               variant="outlined"
-              onClick={() => navigate('/tools/wish-tracker')}
+              onClick={() => navigate('/tools/game-data?tab=wishes')}
             >
               Open wish tracker
             </Button>
@@ -199,7 +199,7 @@ export default function CacheStatusCard({
               <Box>
                 <Typography variant="subtitle2">Account data</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Artifacts, characters, weapons, and materials ? captured
+                  Artifacts, characters, weapons, and materials, captured
                   separately for each UID
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -210,9 +210,9 @@ export default function CacheStatusCard({
               </Box>
               <Button
                 variant="outlined"
-                onClick={() => navigate('/tools/irminsul')}
+                onClick={() => navigate('/tools/game-data')}
               >
-                Open Irminsul
+                Open Game data
               </Button>
             </Stack>
           </>

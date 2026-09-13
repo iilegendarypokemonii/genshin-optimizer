@@ -321,7 +321,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "auto-artifactarium"
 version = "1.4.0"
-source = "git+https://github.com/iilegendarypokemonii/irminsul?rev=9138eb682bb8f4b630d0813ad9f415d7fe1137d9#9138eb682bb8f4b630d0813ad9f415d7fe1137d9"
+source = "git+https://github.com/iilegendarypokemonii/irminsul?rev=ed5932c687ed67c2e28370208b3ed925ee6207ed#ed5932c687ed67c2e28370208b3ed925ee6207ed"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2149,7 +2149,7 @@ dependencies = [
 [[package]]
 name = "irminsul-core"
 version = "0.3.0"
-source = "git+https://github.com/iilegendarypokemonii/irminsul?rev=9138eb682bb8f4b630d0813ad9f415d7fe1137d9#9138eb682bb8f4b630d0813ad9f415d7fe1137d9"
+source = "git+https://github.com/iilegendarypokemonii/irminsul?rev=ed5932c687ed67c2e28370208b3ed925ee6207ed#ed5932c687ed67c2e28370208b3ed925ee6207ed"
 dependencies = [
  "anime-game-data",
  "anyhow",
@@ -3158,7 +3158,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "pktmon"
 version = "0.6.2"
-source = "git+https://github.com/iilegendarypokemonii/irminsul?rev=9138eb682bb8f4b630d0813ad9f415d7fe1137d9#9138eb682bb8f4b630d0813ad9f415d7fe1137d9"
+source = "git+https://github.com/iilegendarypokemonii/irminsul?rev=ed5932c687ed67c2e28370208b3ed925ee6207ed#ed5932c687ed67c2e28370208b3ed925ee6207ed"
 dependencies = [
  "async-stream",
  "cidr",

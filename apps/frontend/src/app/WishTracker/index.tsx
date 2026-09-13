@@ -20,11 +20,11 @@ import {
 import { useMemo, useRef, useState } from 'react'
 import BannerStatsCard from './BannerStatsCard'
 import CacheStatusCard from './CacheStatusCard'
-import HistoryTable from './HistoryTable'
-import { useWishTracker } from './WishTrackerContext'
 import { getGameDir, setGameDir } from './gameDirSetting'
+import HistoryTable from './HistoryTable'
 import { exportBackup } from './storage'
 import { bySlotLabel, slotLabel, useDatabaseInfos } from './useDatabaseInfos'
+import { useWishTracker } from './WishTrackerContext'
 
 export default function WishTrackerPage() {
   const { isDesktop, profiles, error, importJson, setCapturingRadiance } =
@@ -172,7 +172,7 @@ export default function WishTrackerPage() {
       )}
       {error && <Alert severity="error">{error}</Alert>}
 
-      <CacheStatusCard />
+      <CacheStatusCard compact />
 
       {!profiles ? (
         <Skeleton variant="rectangular" height={300} />

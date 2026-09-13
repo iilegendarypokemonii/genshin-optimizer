@@ -8,7 +8,7 @@ This is a **personal modification** of [Gacha Optimizer / Genshin Optimizer](htt
 
 - **Windows desktop app:** open the optimizer from your Start menu, with your data saved locally on your PC.
 - **Wish Tracker:** import wish history from your local Genshin game cache, view pity/history per UID, keep backups, and record player-confirmed Capturing Radiance results.
-- **Irminsul account scanner:** capture separate account snapshots and select artifacts, characters, weapons, or materials. Open it from the home Game data card or Tools; wishes have their own tab. Capture requires Windows 11 24H2 or newer. A [small standalone version](https://github.com/iilegendarypokemonii/irminsul) is also available.
+- **Game data:** capture separate account snapshots and select artifacts, characters, weapons, or materials. Open it from the home Game data card or Tools; wishes have their own tab. Capture requires Windows 11 24H2 or newer. A [small standalone version](https://github.com/iilegendarypokemonii/irminsul) is also available.
 - **Team DPS:** import damage screenshots, read them with Windows OCR, and keep team results and screenshots per optimizer account.
 - **Tools page:** access the built-in tools and links to community resources, including account-specific Enka.Network and Akasha links.
 - **Desktop updates:** check for this fork's published releases and install updates inside the app.
@@ -35,7 +35,7 @@ If no release is shown yet, the first installer has not been published. A draft 
 - Set up your own optimizer database in **Settings**, then import your existing optimizer/GOOD export or add your characters, weapons, and artifacts.
 - For **Tools → Wish Tracker**, launch Genshin and open its Wish History first. If the app cannot find the game, enter the path of the folder containing `GenshinImpact.exe` in the Wish Tracker settings. Each wish profile is identified by its own UID.
 - For **Tools → Team DPS**, import a damage screenshot. OCR needs a supported Windows OCR language installed; the app gives instructions if none is available.
-- For **Tools → Irminsul**, start capture before entering the game door. Set the matching UID on an optimizer account, then preview and confirm an import. See [the Irminsul guide](docs/irminsul-tool.md) for account switching, data selection, and backups.
+- For **Tools → Game data**, start capture before entering the game door. Set the matching UID on an optimizer account, then preview and confirm an import. See [the Game data guide](docs/irminsul-tool.md) for account switching, data selection, and backups.
 
 Your saved data lives under `%LOCALAPPDATA%\com.iilegendarypokemonii.genshinoptimizerlocal`, separately from the installed program. Data is not automatically synced between PCs. Use the optimizer's export and the Wish Tracker's backup controls to keep your own copies.
 

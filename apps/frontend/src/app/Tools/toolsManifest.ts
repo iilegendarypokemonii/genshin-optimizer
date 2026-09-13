@@ -25,10 +25,10 @@ export type ToolEntry = {
 
 export const toolsManifest: ToolEntry[] = [
   {
-    id: 'irminsul',
-    name: 'Irminsul',
+    id: 'game-data',
+    name: 'Game data',
     description:
-      'Capture artifacts, characters, weapons, and materials per account',
+      'Capture account inventory and manage wish history for each account',
     url: '',
     icon: 'Inventory2',
     category: 'database',

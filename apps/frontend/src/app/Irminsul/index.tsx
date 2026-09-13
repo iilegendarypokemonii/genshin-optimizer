@@ -7,11 +7,6 @@ import {
   Card,
   CardContent,
   Checkbox,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControlLabel,
   Grid,
   MenuItem,
@@ -27,7 +22,17 @@ import { desktopWrite } from '../../desktopWriteBarrier'
 import { flushDesktopStorage } from '../../persistentStorage'
 import WishTrackerPage from '../WishTracker'
 import { slotLabel, useDatabaseInfos } from '../WishTracker/useDatabaseInfos'
+import { BatchAccountSelection } from './BatchAccountSelection'
+import {
+  applyBatchImport,
+  type BatchEntry,
+  type BatchResult,
+  prepareBatchImport,
+} from './batchImport'
+import { CaptureControls, CaptureMessages } from './CaptureControls'
 import { capture } from './capture'
+import { BatchImportDialog, ImportDialog } from './ImportDialogs'
+import { ImportSettingsDialog } from './ImportSettingsDialog'
 import { useIrminsul } from './IrminsulContext'
 import {
   applyImport,
@@ -35,7 +40,13 @@ import {
   type ImportPreview,
   prepareImport,
 } from './importSnapshot'
-import { type AccountSnapshot, dataCategories, defaultSelection } from './types'
+import { SnapshotActions } from './SnapshotActions'
+import {
+  type ImportSettings,
+  readDataSelection,
+  readImportSettings,
+} from './settings'
+import { dataCategories } from './types'
 
 const standaloneUrl = 'https://github.com/iilegendarypokemonii/irminsul'
 
@@ -43,36 +54,74 @@ export default function IrminsulPage() {
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'wishes' ? 'wishes' : 'account'
   return (
-    <Box sx={{ py: 2 }} data-testid="irminsul-page">
-      <Typography variant="h4">Irminsul</Typography>
+    <Box sx={{ py: 2 }} data-testid="game-data-page">
+      <Typography variant="h4">Game data</Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
-        Capture and export game data for each account.
+        Account inventory and wish history for each account.
       </Typography>
       <Tabs
         value={tab}
         onChange={(_, value) =>
-          setParams(value === 'wishes' ? { tab: value } : {})
+          setParams((current) => {
+            const next = new URLSearchParams(current)
+            if (value === 'wishes') next.set('tab', 'wishes')
+            else next.delete('tab')
+            return next
+          })
         }
         aria-label="Game data tools"
       >
-        <Tab value="account" label="Account data" />
-        <Tab value="wishes" label="Wishes" />
+        <Tab
+          id="account-data-tab"
+          aria-controls="account-data-panel"
+          value="account"
+          label="Account data"
+        />
+        <Tab
+          id="wishes-tab"
+          aria-controls="wishes-panel"
+          value="wishes"
+          label="Wishes"
+        />
       </Tabs>
-      <Box sx={{ pt: 2 }}>
-        {tab === 'account' ? <AccountData /> : <WishTrackerPage />}
+      <Box
+        sx={{ pt: 2 }}
+        role="tabpanel"
+        id="account-data-panel"
+        aria-labelledby="account-data-tab"
+        hidden={tab !== 'account'}
+      >
+        <AccountData />
+      </Box>
+      <Box
+        sx={{ pt: 2 }}
+        role="tabpanel"
+        id="wishes-panel"
+        aria-labelledby="wishes-tab"
+        hidden={tab !== 'wishes'}
+      >
+        {tab === 'wishes' && <WishTrackerPage />}
       </Box>
     </Box>
   )
 }
 
 function AccountData() {
-  const { state, busy, error: captureError, start, stop } = useIrminsul()
+  const { state } = useIrminsul()
   const databaseContext = useContext(DatabaseContext)
   const currentContext = useRef(databaseContext)
   currentContext.current = databaseContext
   const dbInfos = useDatabaseInfos()
   const [selectedUid, setSelectedUid] = useState('')
-  const [selection, setSelection] = useState(defaultSelection)
+  const [selection, setSelection] = useState(readDataSelection)
+  const [settings, setSettings] = useState(readImportSettings)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [excludedUids, setExcludedUids] = useState<string[]>([])
+  const [batch, setBatch] = useState<BatchEntry[]>()
+  const [batchResults, setBatchResults] = useState<BatchResult[]>([])
+  const selectedAccounts = state.snapshots.filter(
+    (s) => !excludedUids.includes(s.uid)
+  )
   const [preview, setPreview] = useState<ImportPreview>()
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
@@ -112,7 +161,7 @@ function AccountData() {
     await desktopWrite(async () => {
       const saved = await saveTextFileWithDialog(
         `irminsul_${snapshot.uid}_${snapshot.capturedAtMs}.json`,
-        JSON.stringify(exportSelection(snapshot, selection), null, 2)
+        JSON.stringify(exportSelection(snapshot, selection, settings), null, 2)
       )
       if (saved) setNotice(`Exported selected data for ${snapshot.uid}.`)
     })
@@ -121,8 +170,74 @@ function AccountData() {
   async function previewImport() {
     const snapshot = await readSelected()
     setPreview(
-      prepareImport(snapshot, selection, currentContext.current.databases)
+      prepareImport(
+        snapshot,
+        selection,
+        currentContext.current.databases,
+        settings
+      )
     )
+  }
+
+  async function saveSettings(
+    next: ImportSettings,
+    categories: typeof selection
+  ) {
+    await desktopWrite(async () => {
+      localStorage.setItem('irminsul_import_settings', JSON.stringify(next))
+      localStorage.setItem(
+        'irminsul_data_selection',
+        JSON.stringify(categories)
+      )
+      await flushDesktopStorage()
+    })
+    setSettings(next)
+    setSelection(categories)
+    setPreview(undefined)
+    setBatch(undefined)
+    setSettingsOpen(false)
+  }
+
+  async function previewBatch() {
+    const snapshots = await Promise.all(
+      selectedAccounts.map(async (summary) => {
+        const snapshot = await capture.snapshot(summary.uid, summary.captureId)
+        if (
+          snapshot.uid !== summary.uid ||
+          snapshot.captureId !== summary.captureId
+        )
+          throw new Error(
+            `The snapshot for ${summary.uid} changed. Review it again.`
+          )
+        return snapshot
+      })
+    )
+    setBatchResults([])
+    setBatch(
+      prepareBatchImport(
+        snapshots,
+        selection,
+        currentContext.current.databases,
+        settings
+      )
+    )
+  }
+
+  async function importBatch() {
+    if (!batch) return
+    await desktopWrite(async () => {
+      const results = await applyBatchImport(
+        batch,
+        () => currentContext.current.databases,
+        (index, database) =>
+          currentContext.current.setDatabase(index, database),
+        flushDesktopStorage
+      )
+      setBatchResults(results)
+      setBatch(undefined)
+      const completed = results.filter((r) => r.success).map((r) => r.uid)
+      setExcludedUids((current) => [...new Set([...current, ...completed])])
+    })
   }
 
   async function importData() {
@@ -182,67 +297,21 @@ function AccountData() {
 
   return (
     <Stack spacing={2}>
+      <CaptureControls standaloneUrl={standaloneUrl} />
+      <CaptureMessages error={error} notice={notice} />
       <Card>
         <CardContent>
           <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
-            spacing={2}
+            sx={{ mb: 2 }}
           >
-            <Typography variant="h6">Capture account data</Typography>
-            <Chip
-              label={state.capturing ? 'Capture running' : 'Capture stopped'}
-              color={state.capturing ? 'success' : 'default'}
-            />
-          </Stack>
-          <Typography sx={{ mt: 1 }}>
-            Start capture, allow the Windows permission prompt, then log in and
-            enter the game door. Keep capture running while switching accounts.
-          </Typography>
-          <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
-            Each login creates a snapshot for its captured UID. Wishes use the
-            separate wish-history authkey; account-data capture does not need
-            it.
-          </Typography>
-          <Typography role="status" sx={{ my: 2 }}>
-            {state.message}
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button
-              variant="contained"
-              disabled={busy || state.capturing}
-              onClick={() => void start()}
-            >
-              Start capture
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={busy || !state.capturing}
-              onClick={() => void stop()}
-            >
-              Stop capture
-            </Button>
-            <Button
-              component="a"
-              href={standaloneUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Standalone version
+            <Typography variant="h6">Account snapshots</Typography>
+            <Button disabled={working} onClick={() => setSettingsOpen(true)}>
+              Import settings
             </Button>
           </Stack>
-        </CardContent>
-      </Card>
-      {(error || captureError || state.phase === 'error') && (
-        <Alert severity="error">{error || captureError || state.message}</Alert>
-      )}
-      {notice && <Alert severity="success">{notice}</Alert>}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Account snapshots
-          </Typography>
           {!selected ? (
             <Typography color="text.secondary">
               Completed scans will appear here, separately for each account.
@@ -281,11 +350,12 @@ function AccountData() {
                           checked={selection[category]}
                           disabled={working}
                           onChange={(_, checked) => {
-                            setSelection((s) => ({
-                              ...s,
-                              [category]: checked,
-                            }))
-                            setPreview(undefined)
+                            void action(() =>
+                              saveSettings(settings, {
+                                ...selection,
+                                [category]: checked,
+                              })
+                            )
                           }}
                         />
                       }
@@ -295,37 +365,20 @@ function AccountData() {
                 ))}
               </Grid>
               <Typography variant="body2" color="text.secondary">
-                All rarities are included at their actual levels. Materials are
-                available in the exported file; the optimizer imports artifacts,
-                characters, and weapons.
+                Import settings filter the selected categories for every
+                account. With the default settings, export includes all rarities
+                at their actual levels. Optimizer import supports 3–5-star
+                artifacts, regular characters, and weapons. Materials are
+                available in the exported file.
               </Typography>
-              <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  disabled={working || !anySelected}
-                  onClick={() => void action(exportData)}
-                >
-                  Export selected data
-                </Button>
-                <Button
-                  variant="contained"
-                  disabled={working || !canImport}
-                  onClick={() => void action(previewImport)}
-                >
-                  Preview optimizer import
-                </Button>
-                {localStorage.getItem(`irminsul_backup_${selected.uid}`) && (
-                  <Button
-                    disabled={working}
-                    onClick={() => void action(downloadBackup)}
-                  >
-                    Download previous account backup
-                  </Button>
-                )}
-              </Stack>
-              <SnapshotDetails
-                snapshot={selected}
-                readSelected={readSelected}
+              <SnapshotActions
+                uid={selected.uid}
+                working={working}
+                anySelected={anySelected}
+                canImport={canImport}
+                exportData={() => void action(exportData)}
+                previewImport={() => void action(previewImport)}
+                downloadBackup={() => void action(downloadBackup)}
               />
               {selected.warnings?.map((warning) => (
                 <Alert severity="warning" key={warning}>
@@ -336,110 +389,49 @@ function AccountData() {
           )}
         </CardContent>
       </Card>
+      <BatchAccountSelection
+        snapshots={state.snapshots}
+        dbInfos={dbInfos}
+        excludedUids={excludedUids}
+        setExcludedUids={setExcludedUids}
+        working={working}
+        canImport={canImport}
+        selectedCount={selectedAccounts.length}
+        invalidate={() => setBatch(undefined)}
+        review={() => void action(previewBatch)}
+      />
+      {batchResults.map((result) => (
+        <Alert key={result.uid} severity={result.success ? 'success' : 'error'}>
+          {slotLabel(dbInfos, result.uid) ?? 'Account'} · {result.uid}:{' '}
+          {result.message}
+        </Alert>
+      ))}
+      {settingsOpen && (
+        <ImportSettingsDialog
+          settings={settings}
+          selection={selection}
+          error={error}
+          working={working}
+          close={() => setSettingsOpen(false)}
+          save={(next, categories) =>
+            void action(() => saveSettings(next, categories))
+          }
+        />
+      )}
+      <BatchImportDialog
+        batch={batch}
+        working={working}
+        error={error}
+        close={() => setBatch(undefined)}
+        confirm={() => void action(importBatch)}
+      />
       <ImportDialog
         preview={preview}
         working={working}
+        error={error}
         close={() => setPreview(undefined)}
         confirm={() => void action(importData)}
       />
     </Stack>
-  )
-}
-
-function SnapshotDetails({
-  snapshot,
-  readSelected,
-}: {
-  snapshot: { uid: string; captureId: string }
-  readSelected: () => Promise<AccountSnapshot>
-}) {
-  const [details, setDetails] = useState<AccountSnapshot>()
-  const [error, setError] = useState('')
-  const current =
-    details?.uid === snapshot.uid && details.captureId === snapshot.captureId
-      ? details
-      : undefined
-  return (
-    <Box sx={{ mt: 2 }}>
-      <Button
-        size="small"
-        onClick={() => {
-          setError('')
-          void readSelected()
-            .then(setDetails)
-            .catch((e) => setError(String(e)))
-        }}
-      >
-        View materials
-      </Button>
-      {error && <Alert severity="error">{error}</Alert>}
-      {current && (
-        <Box sx={{ maxHeight: 240, overflow: 'auto', mt: 1 }}>
-          {Object.entries(current.good.materials)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([key, count]) => (
-              <Typography variant="body2" key={key}>
-                {key.replace(/([a-z])([A-Z])/g, '$1 $2')}: {count}
-              </Typography>
-            ))}
-        </Box>
-      )}
-    </Box>
-  )
-}
-
-function ImportDialog({
-  preview,
-  working,
-  close,
-  confirm,
-}: {
-  preview?: ImportPreview
-  working: boolean
-  close: () => void
-  confirm: () => void
-}) {
-  return (
-    <Dialog
-      open={!!preview}
-      onClose={working ? undefined : close}
-      fullWidth
-      maxWidth="sm"
-    >
-      <DialogTitle>Review account import</DialogTitle>
-      <DialogContent>
-        {preview && (
-          <Stack spacing={2}>
-            <Typography>
-              Destination: {preview.target.dbMeta.get().name} · UID{' '}
-              {preview.snapshot.uid}
-            </Typography>
-            {(['artifacts', 'characters', 'weapons'] as const)
-              .filter((k) => preview.selection[k])
-              .map((category) => {
-                const result = preview.result[category]
-                return (
-                  <Typography key={category}>
-                    {category}: {result.new.length} new, {result.update.length}{' '}
-                    updated
-                  </Typography>
-                )
-              })}
-            <Alert severity="info">
-              Existing items absent from this scan are kept. Your previous
-              account data will be backed up before applying the import.
-            </Alert>
-          </Stack>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button disabled={working} onClick={close}>
-          Cancel
-        </Button>
-        <Button variant="contained" disabled={working} onClick={confirm}>
-          Import into this account
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }

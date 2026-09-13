@@ -93,11 +93,13 @@ function App() {
   })
   const setDatabase = useCallback(
     (index: number, db: ArtCharDatabase) => {
-      const dbs = [...databases]
-      dbs[index] = db
-      setDatabases(dbs)
+      setDatabases((current) => {
+        const dbs = [...current]
+        dbs[index] = db
+        return dbs
+      })
     },
-    [databases, setDatabases]
+    [setDatabases]
   )
 
   const database = databases[dbIndex - 1]

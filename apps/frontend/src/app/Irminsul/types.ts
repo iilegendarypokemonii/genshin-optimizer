@@ -24,7 +24,23 @@ export type SnapshotSummary = {
 }
 
 export type AccountSnapshot = SnapshotSummary & {
-  good: IGOOD & { materials: Record<string, number> }
+  // Capture keys belong to the game and may not exist in this optimizer.
+  good: Omit<IGOOD, 'characters' | 'artifacts' | 'weapons'> & {
+    characters?: (Omit<NonNullable<IGOOD['characters']>[number], 'key'> & {
+      key: string
+    })[]
+    artifacts?: (Omit<
+      NonNullable<IGOOD['artifacts']>[number],
+      'location' | 'rarity'
+    > & {
+      location: string
+      rarity: 1 | 2 | 3 | 4 | 5
+    })[]
+    weapons?: (Omit<NonNullable<IGOOD['weapons']>[number], 'location'> & {
+      location: string
+    })[]
+    materials: Record<string, number>
+  }
   artifactGuids: string[]
   unmappedMaterials?: Record<string, number>
 }

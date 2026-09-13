@@ -1,19 +1,22 @@
 import { isTauri } from '@genshin-optimizer/common/util'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import { Box, Grid, Typography } from '@mui/material'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import IrminsulPage from '../Irminsul'
 import TeamDpsPage from '../TeamDps'
-import WishTrackerPage from '../WishTracker'
 import { useDatabaseInfos } from '../WishTracker/useDatabaseInfos'
 import ToolCard from './ToolCard'
 import ToolViewer, { openToolWindow } from './ToolViewer'
 import { toolsManifest } from './toolsManifest'
 
 const internalPages: Record<string, () => JSX.Element> = {
-  irminsul: IrminsulPage,
+  'game-data': IrminsulPage,
   'team-dps': TeamDpsPage,
-  'wish-tracker': WishTrackerPage,
 }
 
 export default function ToolsPage() {
@@ -21,6 +24,17 @@ export default function ToolsPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const dbInfos = useDatabaseInfos()
+
+  if (toolId === 'irminsul' || toolId === 'wish-tracker') {
+    const params = new URLSearchParams(searchParams)
+    if (toolId === 'wish-tracker') params.set('tab', 'wishes')
+    return (
+      <Navigate
+        replace
+        to={{ pathname: '/tools/game-data', search: params.toString() }}
+      />
+    )
+  }
 
   const activeTool = toolId
     ? (toolsManifest.find((t) => t.id === toolId) ?? null)

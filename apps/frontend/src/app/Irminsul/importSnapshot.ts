@@ -2,13 +2,70 @@ import {
   type DBStorage,
   SandboxStorage,
 } from '@genshin-optimizer/common/database'
+import {
+  type CharacterKey,
+  charKeyToLocCharKey,
+} from '@genshin-optimizer/gi/consts'
 import { ArtCharDatabase } from '@genshin-optimizer/gi/db'
 import { validateGOODImport } from '@genshin-optimizer/gi/good'
+import {
+  defaultImportSettings,
+  filterCapturedGood,
+  type ImportSettings,
+} from './settings'
 import type { AccountSnapshot, DataSelection } from './types'
+
+// Miliastra Wonderland avatars are captured game data, but not optimizer
+// characters. Keep their records in exports and explain omissions in the preview.
+const wonderlandAvatars = new Set(['Manekin', 'Manekina'])
+
+function prepareOptimizerData(selected: ReturnType<typeof exportSelection>) {
+  const skippedArtifacts = (selected.artifacts ?? []).filter(
+    ({ rarity }) => rarity === 1 || rarity === 2
+  ).length
+  if (selected.artifacts)
+    selected.artifacts = selected.artifacts.filter(
+      ({ rarity }) => rarity !== 1 && rarity !== 2
+    )
+  const skippedCharacters = (selected.characters ?? [])
+    .filter(({ key }) => wonderlandAvatars.has(key))
+    .map(({ key }) => key)
+  if (selected.characters)
+    selected.characters = selected.characters.filter(
+      ({ key }) => !wonderlandAvatars.has(key)
+    )
+  const unequippedItems = { artifacts: 0, weapons: 0 }
+  for (const category of ['artifacts', 'weapons'] as const) {
+    const equipment = (selected[category] ?? []).filter(({ location }) =>
+      wonderlandAvatars.has(location)
+    )
+    unequippedItems[category] = equipment.length
+    for (const item of equipment) item.location = ''
+  }
+  return { skippedArtifacts, skippedCharacters, unequippedItems }
+}
+
+function invalidFields(
+  errors: { path: string }[],
+  selected: ReturnType<typeof exportSelection>
+) {
+  return errors
+    .slice(0, 3)
+    .map(({ path }) => {
+      const [category, index] = path.split('.')
+      const key =
+        category === 'characters' || category === 'weapons'
+          ? selected[category]?.[Number(index)]?.key
+          : undefined
+      return key ? `${path} (${key.slice(0, 80)})` : path
+    })
+    .join(', ')
+}
 
 export function exportSelection(
   snapshot: AccountSnapshot,
-  selection: DataSelection
+  selection: DataSelection,
+  settings: ImportSettings = defaultImportSettings
 ) {
   if (!Object.values(selection).some(Boolean))
     throw new Error('Select at least one data category.')
@@ -22,11 +79,12 @@ export function exportSelection(
     if (!selection[category]) delete good[category]
   }
   return {
-    ...good,
+    ...filterCapturedGood(good, settings),
     irminsul: {
       uid: snapshot.uid,
       captureId: snapshot.captureId,
       capturedAtMs: snapshot.capturedAtMs,
+      settings: { ...settings },
       ...(selection.materials && snapshot.unmappedMaterials
         ? { unmappedMaterials: snapshot.unmappedMaterials }
         : {}),
@@ -69,10 +127,50 @@ export function validateSnapshot(snapshot: AccountSnapshot) {
     throw new Error('The character or weapon snapshot is incomplete.')
 }
 
+function countFilteredRecords(
+  snapshot: AccountSnapshot,
+  selection: DataSelection,
+  selected: ReturnType<typeof exportSelection>
+) {
+  return {
+    artifacts: selection.artifacts
+      ? snapshot.counts.artifacts - (selected.artifacts?.length ?? 0)
+      : 0,
+    characters: selection.characters
+      ? snapshot.counts.characters - (selected.characters?.length ?? 0)
+      : 0,
+    weapons: selection.weapons
+      ? snapshot.counts.weapons - (selected.weapons?.length ?? 0)
+      : 0,
+  }
+}
+
+function removeUnavailableLocations(
+  selected: ReturnType<typeof exportSelection>,
+  database: ArtCharDatabase
+) {
+  const available = new Set<string>([
+    ...database.chars.keys.map(charKeyToLocCharKey),
+    ...(selected.characters?.map(({ key }) =>
+      charKeyToLocCharKey(key as CharacterKey)
+    ) ?? []),
+  ])
+  const unequipped = { artifacts: 0, weapons: 0 }
+  for (const category of ['artifacts', 'weapons'] as const) {
+    for (const item of selected[category] ?? []) {
+      if (!item.location || available.has(item.location)) continue
+      item.location = ''
+      unequipped[category]++
+    }
+  }
+  return unequipped
+}
+
 export function prepareImport(
   snapshot: AccountSnapshot,
   selection: DataSelection,
-  databases: ArtCharDatabase[]
+  databases: ArtCharDatabase[],
+  settings: ImportSettings = defaultImportSettings
 ) {
   validateSnapshot(snapshot)
   if (!selection.artifacts && !selection.characters && !selection.weapons)
@@ -80,11 +178,17 @@ export function prepareImport(
       'Materials can be exported; optimizer imports support artifacts, characters, and weapons.'
     )
   const { db, index } = findDestination(snapshot.uid, databases)
-  const selected = exportSelection(snapshot, selection)
+  const selected = exportSelection(snapshot, selection, settings)
+  const filteredCounts = countFilteredRecords(snapshot, selection, selected)
+  const { skippedArtifacts, skippedCharacters, unequippedItems } =
+    prepareOptimizerData(selected)
+  // The legacy importer creates default characters from equipment locations.
+  // Do not let that reintroduce characters excluded by selection or filters.
+  const unequippedBySettings = removeUnavailableLocations(selected, db)
   const validated = validateGOODImport(selected)
   if (!validated.success)
     throw new Error(
-      'The captured data is not compatible with this optimizer version.'
+      `Cannot import captured data. Invalid or unsupported fields: ${invalidFields(validated.errors, selected)}. No account data was changed. Deselect the affected category to import the others.`
     )
   const before = JSON.stringify(db.exportGOOD())
   const storage = new SandboxStorage()
@@ -109,11 +213,25 @@ export function prepareImport(
   return {
     snapshot,
     selection: { ...selection },
+    settings: { ...settings },
+    filteredCounts,
     index,
     target: db,
     before,
     imported,
     result,
+    skippedArtifacts,
+    skippedCharacters,
+    unequippedItems,
+    unequippedBySettings,
+    addedCounts: {
+      artifacts: imported.arts.values.filter(({ id }) => !db.arts.get(id))
+        .length,
+      characters: imported.chars.values.filter(({ key }) => !db.chars.get(key))
+        .length,
+      weapons: imported.weapons.values.filter(({ id }) => !db.weapons.get(id))
+        .length,
+    },
   }
 }
 
