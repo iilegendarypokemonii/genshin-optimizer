@@ -1,0 +1,77 @@
+name: Windows desktop release
+
+on:
+  push:
+    tags: ["desktop-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'iilegendarypokemonii/genshin-optimizer'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      DESKTOP_RELEASE_TAG: ${{ github.ref_name }}
+      NX_DAEMON: "false"
+      NX_URL_GITHUB_GO: https://github.com/iilegendarypokemonii/genshin-optimizer
+      NX_URL_GITHUB_GO_CURRENT_VERSION: https://github.com/iilegendarypokemonii/genshin-optimizer/releases/tag/${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - name: Validate release version
+        run: node tools/scripts/generate-update-json.mjs $env:DESKTOP_RELEASE_TAG --validate-only
+      - name: Install frontend dependencies
+        run: node .yarn/releases/yarn-3.4.1.cjs install --immutable
+      - name: Check frontend types
+        run: node node_modules/typescript/bin/tsc --noEmit -p apps/frontend/tsconfig.app.json
+      - name: Test desktop updater and storage
+        run: node node_modules/vitest/vitest.mjs run --config apps/frontend/vite.config.mts src/app/DesktopUpdates.spec.tsx src/desktopWriteBarrier.spec.ts src/persistentStorage.spec.ts src/app/WishTracker/storage.spec.ts --maxWorkers=1 --minWorkers=1
+      - name: Test release packaging
+        run: node --test tools/scripts/generate-update-json.test.mjs
+      - name: Test native code
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml --lib
+      - name: Build signed Windows installer
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if (-not $env:TAURI_SIGNING_PRIVATE_KEY) { throw 'Set TAURI_SIGNING_PRIVATE_KEY in repository Actions secrets first.' }
+          node .yarn/releases/yarn-3.4.1.cjs desktop:build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node tools/scripts/generate-update-json.mjs $env:DESKTOP_RELEASE_TAG
+      - name: Install test browser
+        run: node node_modules/@playwright/test/cli.js install chromium
+      - name: Check built frontend in Playwright
+        run: node tools/scripts/desktop-web-smoke.mjs
+      - name: Upload installer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-${{ github.ref_name }}
+          path: desktop/release/
+          if-no-files-found: error
+      - name: Prepare draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $releases = gh release list --limit 100 --json tagName,isDraft
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $existing = @($releases | ConvertFrom-Json) | Where-Object tagName -eq $env:DESKTOP_RELEASE_TAG
+          if ($existing) {
+            if (-not $existing.isDraft) { throw 'This release is already published. Bump the desktop version for new binaries.' }
+          } else {
+            gh release create $env:DESKTOP_RELEASE_TAG --verify-tag --draft --title "Genshin Optimizer Local $env:DESKTOP_RELEASE_TAG" --notes-file desktop/release/release-notes.md
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          gh release upload $env:DESKTOP_RELEASE_TAG desktop/release/Genshin-Optimizer-Local-Setup.exe desktop/release/Genshin-Optimizer-Local-Setup.exe.sig desktop/release/latest.json --clobber

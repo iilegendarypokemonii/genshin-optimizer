@@ -1,10 +1,22 @@
 import { isTauri } from '@genshin-optimizer/common/util'
+import { desktopWrite } from './desktopWriteBarrier'
 
 const STORAGE_DIRECTORY = 'storage'
 const STORAGE_FILE_PATH = `${STORAGE_DIRECTORY}/localStorage.json`
 const SAVE_DEBOUNCE_MS = 200
 
 type StorageSnapshot = Record<string, string>
+
+let desktopStorage: DesktopPersistentStorage | undefined
+
+/**
+ * Called after pauseDesktopWrites(). Deliberately bypass the paused barrier:
+ * entering desktopWrite() here would deadlock installation behind itself.
+ */
+export async function flushDesktopStorage() {
+  if (!desktopStorage) throw new Error('Desktop storage is not ready.')
+  await desktopStorage.flush()
+}
 
 let cachedPathModule: typeof import('@tauri-apps/api/path') | undefined
 let cachedFsModule: typeof import('@tauri-apps/plugin-fs') | undefined
@@ -81,7 +93,9 @@ class DesktopPersistentStorage implements Storage {
     if (this.persistTimer !== undefined) window.clearTimeout(this.persistTimer)
     this.persistTimer = window.setTimeout(() => {
       this.persistTimer = undefined
-      void this.queuePersist()
+      void desktopWrite(() => this.queuePersist()).catch((error) =>
+        console.error('Could not persist desktop storage', error)
+      )
     }, SAVE_DEBOUNCE_MS)
   }
 
@@ -178,12 +192,13 @@ export async function initializeDesktopStorage() {
       browserStorage
     )
     installStorage(storage)
+    desktopStorage = storage
 
     window.addEventListener('beforeunload', () => {
-      void storage.flush()
+      void desktopWrite(() => storage.flush()).catch(console.error)
     })
     window.addEventListener('pagehide', () => {
-      void storage.flush()
+      void desktopWrite(() => storage.flush()).catch(console.error)
     })
   } catch (error) {
     console.error('Failed to initialize desktop persistent storage', error)

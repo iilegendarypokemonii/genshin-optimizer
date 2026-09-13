@@ -1,3 +1,4 @@
+import { spawn, spawnSync } from 'node:child_process'
 import {
   cpSync,
   existsSync,
@@ -6,9 +7,8 @@ import {
   readFileSync,
   rmSync,
 } from 'node:fs'
-import { delimiter, dirname, join } from 'node:path'
-import { spawn, spawnSync } from 'node:child_process'
 import { homedir } from 'node:os'
+import { delimiter, dirname, join } from 'node:path'
 
 // Cargo must be on PATH for tauri build, but ~/.cargo/bin/cargo.exe can be a
 // symlink that native PATH search fails to resolve in some shells. Resolve the
@@ -86,7 +86,7 @@ function copyWithWarning(from, to, warnings) {
 }
 
 async function main() {
-  await run('node', ['.yarn/releases/yarn-3.4.1.cjs', 'tauri', 'build'])
+  await run('node', ['.yarn/releases/yarn-3.4.1.cjs', 'tauri', 'build', '--ci'])
 
   const tauriConfig = JSON.parse(readFileSync(tauriConfigPath, 'utf8'))
   const productName = tauriConfig.productName

@@ -1,4 +1,5 @@
 import { isTauri } from '@genshin-optimizer/common/util'
+import { desktopWrite } from '../../desktopWriteBarrier'
 
 export const SCREENSHOT_DIR = 'teamdps/screenshots'
 
@@ -24,6 +25,10 @@ export async function saveScreenshot(
   bytes: Uint8Array
 ): Promise<void> {
   if (!isTauri()) return
+  return desktopWrite(() => writeScreenshot(id, bytes))
+}
+
+async function writeScreenshot(id: string, bytes: Uint8Array): Promise<void> {
   const rel = screenshotRelPath(id)
   const fs = await fsApi()
   const baseDir = fs.BaseDirectory.AppLocalData
@@ -51,6 +56,10 @@ export async function loadScreenshotUrl(
 
 export async function deleteScreenshot(id: string): Promise<void> {
   if (!isTauri()) return
+  return desktopWrite(() => removeScreenshot(id))
+}
+
+async function removeScreenshot(id: string): Promise<void> {
   try {
     const rel = screenshotRelPath(id)
     const fs = await fsApi()

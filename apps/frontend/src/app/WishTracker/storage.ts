@@ -1,4 +1,5 @@
 import { isTauri } from '@genshin-optimizer/common/util'
+import { desktopWrite } from '../../desktopWriteBarrier'
 import { sortWishes } from './pity'
 import type { Wish, WishFile } from './types'
 
@@ -131,13 +132,15 @@ export async function exportBackup(): Promise<string> {
   const json = JSON.stringify(bundle, null, 1)
   const name = `wishes_backup_${timestamp()}.json`
   if (isTauri()) {
-    const fs = await getFs()
-    const baseDir = await getBaseDir()
-    await fs.mkdir(`${WISH_DIR}/exports`, { baseDir, recursive: true })
-    const rel = `${WISH_DIR}/exports/${name}`
-    await fs.writeTextFile(rel, json, { baseDir })
-    const { appLocalDataDir, join } = await import('@tauri-apps/api/path')
-    return await join(await appLocalDataDir(), ...rel.split('/'))
+    return desktopWrite(async () => {
+      const fs = await getFs()
+      const baseDir = await getBaseDir()
+      await fs.mkdir(`${WISH_DIR}/exports`, { baseDir, recursive: true })
+      const rel = `${WISH_DIR}/exports/${name}`
+      await fs.writeTextFile(rel, json, { baseDir })
+      const { appLocalDataDir, join } = await import('@tauri-apps/api/path')
+      return await join(await appLocalDataDir(), ...rel.split('/'))
+    })
   }
   const url = URL.createObjectURL(
     new Blob([json], { type: 'application/json' })
@@ -207,37 +210,37 @@ const tauriStore: WishStore = {
   },
 
   async save(uid, wishes) {
-    const fs = await getFs()
-    const baseDir = await getBaseDir()
-    await fs.mkdir(BACKUP_DIR, { baseDir, recursive: true })
-    const path = `${WISH_DIR}/wishes_${uid}.json`
-    const tmpPath = `${path}.tmp`
-
-    if (await fs.exists(path, { baseDir })) {
-      await fs.copyFile(
-        path,
-        `${BACKUP_DIR}/wishes_${uid}.${timestamp()}.json`,
-        {
-          fromPathBaseDir: baseDir,
-          toPathBaseDir: baseDir,
-        }
-      )
-      await pruneBackups(uid)
-    }
-
-    const file: WishFile = {
-      uid,
-      exported: exportedNow(),
-      wishes: sortWishes(wishes),
-    }
-    await fs.writeTextFile(tmpPath, JSON.stringify(file, null, 1), { baseDir })
-    // Windows rename refuses to overwrite; the backup above covers the gap
-    if (await fs.exists(path, { baseDir })) await fs.remove(path, { baseDir })
-    await fs.rename(tmpPath, path, {
-      oldPathBaseDir: baseDir,
-      newPathBaseDir: baseDir,
-    })
+    return desktopWrite(() => saveDesktopWishes(uid, wishes))
   },
+}
+
+async function saveDesktopWishes(uid: string, wishes: Wish[]) {
+  const fs = await getFs()
+  const baseDir = await getBaseDir()
+  await fs.mkdir(BACKUP_DIR, { baseDir, recursive: true })
+  const path = `${WISH_DIR}/wishes_${uid}.json`
+  const tmpPath = `${path}.tmp`
+
+  if (await fs.exists(path, { baseDir })) {
+    await fs.copyFile(path, `${BACKUP_DIR}/wishes_${uid}.${timestamp()}.json`, {
+      fromPathBaseDir: baseDir,
+      toPathBaseDir: baseDir,
+    })
+    await pruneBackups(uid)
+  }
+
+  const file: WishFile = {
+    uid,
+    exported: exportedNow(),
+    wishes: sortWishes(wishes),
+  }
+  await fs.writeTextFile(tmpPath, JSON.stringify(file, null, 1), { baseDir })
+  // Windows rename refuses to overwrite; the backup above covers the gap
+  if (await fs.exists(path, { baseDir })) await fs.remove(path, { baseDir })
+  await fs.rename(tmpPath, path, {
+    oldPathBaseDir: baseDir,
+    newPathBaseDir: baseDir,
+  })
 }
 
 async function pruneBackups(uid: string) {

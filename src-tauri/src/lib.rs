@@ -26,6 +26,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![wish_cache::get_wish_url, ocr::ocr_screenshot])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

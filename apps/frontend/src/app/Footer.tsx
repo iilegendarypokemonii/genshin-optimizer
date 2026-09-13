@@ -1,6 +1,7 @@
 import { AppBar, Box, Skeleton, Typography } from '@mui/material'
 import { Suspense } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import DesktopUpdates from './DesktopUpdates'
 
 declare const __VERSION__: string
 export default function Footer() {
@@ -24,12 +25,15 @@ function FooterContent() {
         justifyContent="space-between"
         sx={{ px: 2, py: 1 }}
         gap={2}
+        flexWrap="wrap"
+        alignItems="center"
       >
         <Typography variant="caption" sx={{ color: 'neutral400.main' }}>
           <Trans t={t} i18nKey="ui:rightsDisclaimer">
             Genshin Optimizer is not affiliated with or endorsed by HoYoverse.
           </Trans>
         </Typography>
+        <DesktopUpdates />
         <Typography
           variant="caption"
           sx={{ color: 'neutral400.main', textAlign: 'right' }}

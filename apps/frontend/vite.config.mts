@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin'
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react'
-import { defineConfig, normalizePath } from 'vite'
+import { defineConfig, loadEnv, normalizePath } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import pkg from '../../package.json' with { type: 'json' }
 
@@ -70,7 +70,7 @@ function manualChunks(id: string) {
   }
 }
 
-export default defineConfig(() => ({
+export default defineConfig(({ mode }) => ({
   base: '',
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/frontend',
@@ -145,7 +145,34 @@ export default defineConfig(() => ({
   ],
 
   define: {
-    'process.env': process.env,
+    // Only explicitly public configuration belongs in a distributed app.
+    // Release signing keys and CI credentials must never reach the frontend.
+    // Add new public settings here when upstream introduces another NX_ value.
+    'process.env': Object.fromEntries(
+      Object.entries({
+        ...loadEnv(mode, __dirname, 'NX_'),
+        ...process.env,
+      }).filter(([key]) =>
+        [
+          'NX_SHOW_DEV_COMPONENTS',
+          'NX_URL_DISCORD_GO',
+          'NX_URL_GITHUB_FRZYC',
+          'NX_URL_GITHUB_GO',
+          'NX_URL_GITHUB_GO_CURRENT_VERSION',
+          'NX_URL_GITHUB_LANTUA',
+          'NX_URL_GITHUB_VAN',
+          'NX_URL_YOUTUBE_TUTPL',
+          'NX_URL_TWITCH_FRZYC',
+          'NX_URL_TWITTER_FRZYC',
+          'NX_URL_PATREON_FRZYC',
+          'NX_URL_PAYPAL_FRZYC',
+          'NX_URL_WEBSITE_KQM',
+          'NX_URL_DISCORD_GDEV',
+          'NX_URL_KQM_MULTI_GUIDE',
+          'NX_URLS_GUIDES',
+        ].includes(key)
+      )
+    ),
     __VERSION__: `"${pkg.version}"`,
     __BUILD_DATE__: `"${new Date().toISOString().slice(0, 10)}"`,
   },
