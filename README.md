@@ -20,17 +20,19 @@ For **Windows 10/11 on an Intel or AMD 64-bit PC**.
 
 1. Open **[the latest release](https://github.com/iilegendarypokemonii/genshin-optimizer/releases/latest)**.
 2. Under **Assets**, download **`Genshin-Optimizer-Local-Setup.exe`**. You only need that file; the source-code, `.sig`, and `latest.json` downloads are for developers or the updater.
-3. Double-click the installer and follow its steps. It installs for your Windows user and can install Microsoft's WebView2 runtime if needed, which requires internet access.
+3. Close any already-running desktop copy of the optimizer, then double-click the installer and follow its steps. It installs for your Windows user and can install Microsoft's WebView2 runtime if needed, which requires internet access.
 4. Open **Genshin Optimizer Local** from the Start menu or the desktop shortcut offered by the installer.
 
 You do **not** need Git, Node.js, Rust, or any commands from the original developer guide below.
+
+If you already use an older portable/developer copy, install this release once to get the update button, then use the newly installed shortcut.
 
 If no release is shown yet, the first installer has not been published. A draft release is only visible to the maintainer.
 
 ### First use
 
 - Set up your own optimizer database in **Settings**, then import your existing optimizer/GOOD export or add your characters, weapons, and artifacts.
-- For **Tools → Wish Tracker**, launch Genshin and open its Wish History first. If the app cannot find the game, enter your Genshin game folder path in the Wish Tracker settings. Each wish profile is identified by its own UID.
+- For **Tools → Wish Tracker**, launch Genshin and open its Wish History first. If the app cannot find the game, enter the path of the folder containing `GenshinImpact.exe` in the Wish Tracker settings. Each wish profile is identified by its own UID.
 - For **Tools → Team DPS**, import a damage screenshot. OCR needs a supported Windows OCR language installed; the app gives instructions if none is available.
 
 Your saved data lives under `%LOCALAPPDATA%\com.iilegendarypokemonii.genshinoptimizerlocal`, separately from the installed program. Data is not automatically synced between PCs. Use the optimizer's export and the Wish Tracker's backup controls to keep your own copies.
@@ -38,6 +40,8 @@ Your saved data lives under `%LOCALAPPDATA%\com.iilegendarypokemonii.genshinopti
 ### Windows download notice
 
 This personal app does not currently have a paid Windows publisher certificate, so Windows may show an unknown-publisher or SmartScreen notice. Only use downloads from this repository's release page. Update signatures verify updates inside the app; they are separate from Windows publisher signing.
+
+If Windows shows **Windows protected your PC** for this download and offers **More info → Run anyway**, that continues installation.
 
 ## Update the app
 

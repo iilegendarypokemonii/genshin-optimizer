@@ -57,5 +57,22 @@ The production release workflow is
 It independently checks types, all four frontend spec files, packaging, native
 tests, and the built frontend before preparing the signed release assets.
 
+That workflow completed successfully. All four frontend test files were confirmed
+in its completed log. The resulting [0.2.0 release](https://github.com/iilegendarypokemonii/genshin-optimizer/releases/tag/desktop-v0.2.0)
+is published, and both the anonymous public installer request and the updater's
+`releases/latest/download/latest.json` endpoint succeeded.
+
+The downloaded production installer was independently verified against the
+embedded public key with `minisign-verify`; changing an installer byte caused
+verification to fail. Its SHA-256 also matches GitHub's asset digest:
+
+```text
+51d0e26a27f67db24727061e2fbc0b95ba69f3f229383d3ca28fb22038d65954
+```
+
+Installer size: 192,146,264 bytes. The original working developer executable was
+left running and unchanged. The isolated QA application was uninstalled and all
+three test ports were closed.
+
 This verification used an isolated installation on the maintainer's Windows PC;
 it does not claim testing on every Windows version or a separate clean VM.
