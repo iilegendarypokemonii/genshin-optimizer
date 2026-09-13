@@ -15,6 +15,7 @@ import type { DownloadEvent, Update } from '@tauri-apps/plugin-updater'
 import { useRef, useState } from 'react'
 import { pauseDesktopWrites, resumeDesktopWrites } from '../desktopWriteBarrier'
 import { flushDesktopStorage } from '../persistentStorage'
+import { stopCaptureBeforeUpdate } from './Irminsul/capture'
 
 type Status =
   | 'idle'
@@ -109,6 +110,7 @@ export default function DesktopUpdates() {
       setStatus('saving')
       setProgress(undefined)
       await pauseDesktopWrites()
+      await stopCaptureBeforeUpdate()
       await flushDesktopStorage()
       phase = 'installing'
       setStatus('installing')

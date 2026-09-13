@@ -1,7 +1,8 @@
+import { isTauri } from '@genshin-optimizer/common/util'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import { Box, Grid, Typography } from '@mui/material'
-import { isTauri } from '@genshin-optimizer/common/util'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import IrminsulPage from '../Irminsul'
 import TeamDpsPage from '../TeamDps'
 import WishTrackerPage from '../WishTracker'
 import { useDatabaseInfos } from '../WishTracker/useDatabaseInfos'
@@ -10,6 +11,7 @@ import ToolViewer, { openToolWindow } from './ToolViewer'
 import { toolsManifest } from './toolsManifest'
 
 const internalPages: Record<string, () => JSX.Element> = {
+  irminsul: IrminsulPage,
   'team-dps': TeamDpsPage,
   'wish-tracker': WishTrackerPage,
 }

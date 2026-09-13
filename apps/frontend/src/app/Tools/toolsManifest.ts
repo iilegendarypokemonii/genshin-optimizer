@@ -25,6 +25,16 @@ export type ToolEntry = {
 
 export const toolsManifest: ToolEntry[] = [
   {
+    id: 'irminsul',
+    name: 'Irminsul',
+    description:
+      'Capture artifacts, characters, weapons, and materials per account',
+    url: '',
+    icon: 'Inventory2',
+    category: 'database',
+    internal: true,
+  },
+  {
     id: 'team-dps',
     name: 'Team DPS',
     description: 'Track DPS-dummy team damage from screenshots, per account',

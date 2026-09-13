@@ -13,6 +13,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+irminsul-core = { git = "https://github.com/iilegendarypokemonii/irminsul", rev = "9138eb682bb8f4b630d0813ad9f415d7fe1137d9" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", features = [] }

@@ -6,13 +6,14 @@ import {
   Card,
   CardContent,
   Chip,
+  Divider,
   IconButton,
   Stack,
   Tooltip,
   Typography,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import { useWishTracker } from './WishTrackerContext'
+import { useIrminsul } from '../Irminsul/IrminsulContext'
 import type { SyncOutcome } from './cacheWatch'
 import type { CacheKeyState } from './types'
 import {
@@ -21,6 +22,7 @@ import {
   timeAgo,
   useDatabaseInfos,
 } from './useDatabaseInfos'
+import { useWishTracker } from './WishTrackerContext'
 
 function keyStatusChip(keyState?: CacheKeyState) {
   switch (keyState?.status) {
@@ -75,14 +77,24 @@ export default function CacheStatusCard({
   } = useWishTracker()
   const dbInfos = useDatabaseInfos()
   const navigate = useNavigate()
-  if (!isDesktop) return null
+  const { state: captureState } = useIrminsul()
+  if (!isDesktop)
+    return compact ? null : (
+      <Card data-testid="game-data-card">
+        <CardContent>
+          <Typography variant="h6">Game data</Typography>
+          <Typography variant="body2">
+            Capture account inventory with the standalone Windows Irminsul tool.
+          </Typography>
+          <Button onClick={() => navigate('/tools/irminsul')}>
+            Open Irminsul
+          </Button>
+        </CardContent>
+      </Card>
+    )
 
   const cachedUid = keyState?.uid
   const cachedLabel = cachedUid ? slotLabel(dbInfos, cachedUid) : undefined
-  const irminsulHint =
-    keyState?.status === 'valid' && cachedUid
-      ? `${cachedLabel ?? cachedUid} was last active — good moment to run Irminsul for it.`
-      : undefined
 
   return (
     <Card data-testid="cache-status-card">
@@ -90,7 +102,7 @@ export default function CacheStatusCard({
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
           <VideogameAssetIcon fontSize="small" />
           <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-            Game cache
+            {compact ? 'Wish game cache' : 'Game data'}
           </Typography>
           {keyStatusChip(keyState)}
           <Tooltip title="Re-check which account is in the cache (no wish sync)">
@@ -106,21 +118,21 @@ export default function CacheStatusCard({
           </Tooltip>
         </Stack>
 
+        {!compact && (
+          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            Wishes
+          </Typography>
+        )}
         <Typography variant="body2" color="text.secondary">
           {cachedUid
-            ? `Account in cache: ${cachedUid}${cachedLabel ? ` (${cachedLabel})` : ''}`
+            ? `Wish account in cache: ${cachedUid}${cachedLabel ? ` (${cachedLabel})` : ''}`
             : keyState?.url
-              ? 'Account in cache: identifying…'
+              ? 'Wish account in cache: identifying…'
               : 'No wish-history URL seen yet.'}
         </Typography>
         {outcomeText(lastOutcome) && (
           <Typography variant="body2" color="text.secondary">
             {outcomeText(lastOutcome)}
-          </Typography>
-        )}
-        {irminsulHint && (
-          <Typography variant="body2" sx={{ color: 'success.light' }}>
-            {irminsulHint}
           </Typography>
         )}
 
@@ -175,6 +187,36 @@ export default function CacheStatusCard({
             </Button>
           )}
         </Stack>
+        {!compact && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              spacing={2}
+            >
+              <Box>
+                <Typography variant="subtitle2">Account data</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Artifacts, characters, weapons, and materials ? captured
+                  separately for each UID
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {captureState.capturing
+                    ? captureState.message
+                    : `${captureState.snapshots.length} account snapshots available`}
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/tools/irminsul')}
+              >
+                Open Irminsul
+              </Button>
+            </Stack>
+          </>
+        )}
       </CardContent>
     </Card>
   )

@@ -36,6 +36,7 @@ import './App.scss'
 import ErrorBoundary from './ErrorBoundary'
 import Footer from './Footer'
 import Header from './Header'
+import { IrminsulProvider } from './Irminsul/IrminsulContext'
 import Snow from './Snow'
 import CacheStatusCard from './WishTracker/CacheStatusCard'
 import NewUidDialog from './WishTracker/NewUidDialog'
@@ -116,11 +117,13 @@ function App() {
             <DatabaseContext.Provider value={dbContextObj}>
               <ErrorBoundary>
                 <WishTrackerProvider>
-                  <HashRouter basename="/">
-                    <Content />
-                    <ScrollTop />
-                    <NewUidDialog />
-                  </HashRouter>
+                  <IrminsulProvider>
+                    <HashRouter basename="/">
+                      <Content />
+                      <ScrollTop />
+                      <NewUidDialog />
+                    </HashRouter>
+                  </IrminsulProvider>
                 </WishTrackerProvider>
               </ErrorBoundary>
             </DatabaseContext.Provider>
