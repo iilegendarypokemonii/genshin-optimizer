@@ -1,6 +1,6 @@
 [package]
 name = "genshin-optimizer-desktop"
-version = "0.3.0"
+version = "0.3.1"
 description = "Desktop shell for Genshin Optimizer"
 authors = ["Timon"]
 edition = "2021"

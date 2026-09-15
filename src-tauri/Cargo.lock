@@ -1531,7 +1531,7 @@ dependencies = [
 
 [[package]]
 name = "genshin-optimizer-desktop"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "irminsul-core",
  "regex",

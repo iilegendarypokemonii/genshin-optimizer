@@ -19,11 +19,13 @@ const mocks = vi.hoisted(() => ({
   pause: vi.fn(),
   resume: vi.fn(),
   relaunch: vi.fn(),
+  nativeInvoke: vi.fn(),
 }))
 vi.mock('@genshin-optimizer/common/util', () => ({
   isTauri: () => mocks.desktop,
 }))
 vi.mock('@tauri-apps/api/app', () => ({ getVersion: async () => '0.2.0' }))
+vi.mock('@tauri-apps/api/core', () => ({ invoke: mocks.nativeInvoke }))
 vi.mock('@tauri-apps/plugin-updater', () => ({ check: mocks.check }))
 vi.mock('@tauri-apps/plugin-process', () => ({ relaunch: mocks.relaunch }))
 vi.mock('../persistentStorage', () => ({ flushDesktopStorage: mocks.flush }))
@@ -62,6 +64,7 @@ describe('desktop updates', () => {
     const { container } = render(<DesktopUpdates />)
     expect(container.textContent).toBe('')
     expect(mocks.check).not.toHaveBeenCalled()
+    expect(mocks.nativeInvoke).not.toHaveBeenCalled()
   })
 
   it('reports the installed version when already current', async () => {
@@ -96,6 +99,7 @@ describe('desktop updates', () => {
   it('drains writes and saves before installation, without overlapping downloads', async () => {
     const order: string[] = []
     let finishDownload!: () => void
+    let finishCaptureStop!: () => void
     mocks.download.mockImplementation((onEvent) => {
       order.push('download')
       onEvent({ event: 'Started', data: { contentLength: 100 } })
@@ -106,6 +110,12 @@ describe('desktop updates', () => {
     })
     mocks.pause.mockImplementation(async () => {
       order.push('drain')
+    })
+    mocks.nativeInvoke.mockImplementation(() => {
+      order.push('stop capture')
+      return new Promise<void>((resolve) => {
+        finishCaptureStop = resolve
+      })
     })
     mocks.flush.mockImplementation(async () => {
       order.push('save')
@@ -126,12 +136,32 @@ describe('desktop updates', () => {
       screen.getByRole('button', { name: 'Close' }).hasAttribute('disabled')
     ).toBe(true)
     await act(async () => finishDownload())
-    expect(order).toEqual(['download', 'drain', 'save', 'install', 'restart'])
+    await waitFor(() =>
+      expect(order).toEqual(['download', 'drain', 'stop capture'])
+    )
+    expect(mocks.install).not.toHaveBeenCalled()
+    expect(mocks.flush).not.toHaveBeenCalled()
+    expect(mocks.nativeInvoke).toHaveBeenCalledExactlyOnceWith(
+      'irminsul_stop',
+      undefined
+    )
+    await act(async () => finishCaptureStop())
+    await waitFor(() =>
+      expect(order).toEqual([
+        'download',
+        'drain',
+        'stop capture',
+        'save',
+        'install',
+        'restart',
+      ])
+    )
     expect(mocks.download).toHaveBeenCalledOnce()
   })
 
   it.each([
     'download',
+    'nativeInvoke',
     'flush',
   ] as const)('does not install after a %s failure', async (stage) => {
     mocks[stage].mockRejectedValueOnce(new Error('verification or save failed'))
