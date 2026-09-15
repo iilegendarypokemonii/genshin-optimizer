@@ -57,7 +57,8 @@ export function packageDesktopRelease(rootDir, tag) {
     `Windows desktop release ${config.version} of this personal Genshin Optimizer modification.\n\n` +
       `**Install:** Download **${installerName}** below and run it. Windows 10/11, Intel/AMD 64-bit. No developer tools needed.\n\n` +
       '**Update:** Existing installed copies can use **Check for updates** at the bottom of the app, then **Update and restart**. Your saved data remains on your PC.\n\n' +
-      'Includes local storage, the Tools page, Wish Tracker with game-cache import, and Team DPS screenshot OCR.\n\n' +
+      'Includes Game data with shared **Account data / Wishes** tabs, separate login snapshots per UID, filtered imports and exports, and batch account imports with backups. **Account capture requires Windows 11 24H2 or newer.** Snapshots reflect inventory at login; log in again to refresh them after playing.\n\n' +
+      'Also includes local storage, the Tools page, Wish Tracker with game-cache import, and Team DPS screenshot OCR.\n\n' +
       'The `.sig` and `latest.json` files are used by the updater. The source-code downloads are for developers.\n\n' +
       `Read the [installation guide](https://github.com/${releaseRepo}#install-on-windows) for setup and troubleshooting.\n`
   )

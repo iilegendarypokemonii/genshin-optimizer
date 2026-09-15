@@ -28,12 +28,10 @@ You do **not** need Git, Node.js, Rust, or any commands from the original develo
 
 If you already use an older portable/developer copy, install this release once to get the update button, then use the newly installed shortcut.
 
-If no release is shown yet, the first installer has not been published. A draft release is only visible to the maintainer.
-
 ### First use
 
 - Set up your own optimizer database in **Settings**, then import your existing optimizer/GOOD export or add your characters, weapons, and artifacts.
-- For **Tools → Wish Tracker**, launch Genshin and open its Wish History first. If the app cannot find the game, enter the path of the folder containing `GenshinImpact.exe` in the Wish Tracker settings. Each wish profile is identified by its own UID.
+- For **Game data → Wishes**, launch Genshin and open its Wish History first. If the app cannot find the game, enter the path of the folder containing `GenshinImpact.exe` in the Wish Tracker settings. Each wish profile is identified by its own UID.
 - For **Tools → Team DPS**, import a damage screenshot. OCR needs a supported Windows OCR language installed; the app gives instructions if none is available.
 - For **Tools → Game data**, start capture before entering the game door. Set the matching UID on an optimizer account, then preview and confirm an import. See [the Game data guide](docs/irminsul-tool.md) for account switching, data selection, and backups.
 

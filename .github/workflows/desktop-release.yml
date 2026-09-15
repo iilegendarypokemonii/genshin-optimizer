@@ -38,6 +38,8 @@ jobs:
         run: node node_modules/typescript/bin/tsc --noEmit -p apps/frontend/tsconfig.app.json
       - name: Test desktop updater and storage
         run: node node_modules/vitest/vitest.mjs run --config apps/frontend/vite.config.mts src/app/DesktopUpdates.spec.tsx src/desktopWriteBarrier.spec.ts src/persistentStorage.spec.ts src/app/WishTracker/storage.spec.ts --maxWorkers=1 --minWorkers=1
+      - name: Test Game data imports and settings
+        run: node node_modules/vitest/vitest.mjs run --config apps/frontend/vite.config.mts src/app/Irminsul/importSnapshot.spec.ts src/app/Irminsul/settings.spec.ts src/app/Irminsul/batchImport.spec.ts --maxWorkers=1 --minWorkers=1
       - name: Test release packaging
         run: node --test tools/scripts/generate-update-json.test.mjs
       - name: Test native code
@@ -65,13 +67,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $releases = gh release list --limit 100 --json tagName,isDraft
+          $releases = gh release list --repo $env:GITHUB_REPOSITORY --limit 100 --json tagName,isDraft
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $existing = @($releases | ConvertFrom-Json) | Where-Object tagName -eq $env:DESKTOP_RELEASE_TAG
           if ($existing) {
             if (-not $existing.isDraft) { throw 'This release is already published. Bump the desktop version for new binaries.' }
           } else {
-            gh release create $env:DESKTOP_RELEASE_TAG --verify-tag --draft --title "Genshin Optimizer Local $env:DESKTOP_RELEASE_TAG" --notes-file desktop/release/release-notes.md
+            gh release create $env:DESKTOP_RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --draft --title "Genshin Optimizer Local $env:DESKTOP_RELEASE_TAG" --notes-file desktop/release/release-notes.md
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
-          gh release upload $env:DESKTOP_RELEASE_TAG desktop/release/Genshin-Optimizer-Local-Setup.exe desktop/release/Genshin-Optimizer-Local-Setup.exe.sig desktop/release/latest.json --clobber
+          gh release upload $env:DESKTOP_RELEASE_TAG desktop/release/Genshin-Optimizer-Local-Setup.exe desktop/release/Genshin-Optimizer-Local-Setup.exe.sig desktop/release/latest.json --repo $env:GITHUB_REPOSITORY --clobber
