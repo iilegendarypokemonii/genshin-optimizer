@@ -1,5 +1,5 @@
 import { isTauri } from '@genshin-optimizer/common/util'
-import type { AccountSnapshot, CaptureState } from './types'
+import type { AccountSnapshot, CaptureMode, CaptureState } from './types'
 
 async function invoke<T>(
   command: string,
@@ -11,7 +11,8 @@ async function invoke<T>(
 
 export const capture = {
   status: () => invoke<CaptureState>('irminsul_status'),
-  start: () => invoke<void>('irminsul_start'),
+  start: (mode: CaptureMode = 'auto') =>
+    invoke<void>('irminsul_start', { mode }),
   stop: () => invoke<void>('irminsul_stop'),
   snapshot: (uid: string, captureId: string) =>
     invoke<AccountSnapshot>('irminsul_snapshot', { uid, captureId }),

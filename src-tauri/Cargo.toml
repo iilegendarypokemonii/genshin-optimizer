@@ -1,6 +1,6 @@
 [package]
 name = "genshin-optimizer-desktop"
-version = "0.3.1"
+version = "0.4.0"
 description = "Desktop shell for Genshin Optimizer"
 authors = ["Timon"]
 edition = "2021"
@@ -13,7 +13,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-irminsul-core = { git = "https://github.com/iilegendarypokemonii/irminsul", rev = "ed5932c687ed67c2e28370208b3ed925ee6207ed" }
+irminsul-core = { git = "https://github.com/iilegendarypokemonii/irminsul", rev = "1498b009cbcb4680f0ab0c955401635b065f02aa" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", features = [] }

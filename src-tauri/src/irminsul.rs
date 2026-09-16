@@ -1,4 +1,4 @@
-use irminsul_core::{CaptureController, CaptureState, Snapshot};
+use irminsul_core::{CaptureController, CaptureMode, CaptureState, Snapshot};
 use std::sync::Mutex;
 use tauri::{State, WebviewWindow};
 
@@ -26,13 +26,17 @@ pub fn irminsul_status(
 }
 
 #[tauri::command]
-pub fn irminsul_start(window: WebviewWindow, state: State<'_, Irminsul>) -> Result<(), String> {
+pub fn irminsul_start(
+    window: WebviewWindow,
+    state: State<'_, Irminsul>,
+    mode: Option<CaptureMode>,
+) -> Result<(), String> {
     check_window(&window)?;
     state
         .0
         .lock()
         .map_err(|e| e.to_string())?
-        .start()
+        .start_with_mode(mode.unwrap_or_default())
         .map_err(|e| e.to_string())
 }
 

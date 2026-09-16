@@ -4,13 +4,16 @@ import {
   Card,
   CardContent,
   Chip,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material'
 import { useIrminsul } from './IrminsulContext'
+import type { CaptureMode } from './types'
 
 export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
-  const { state, busy, start, stop } = useIrminsul()
+  const { state, busy, mode, setMode, start, stop } = useIrminsul()
   return (
     <Card>
       <CardContent>
@@ -38,6 +41,19 @@ export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
         <Typography role="status" sx={{ my: 2 }}>
           {state.message}
         </Typography>
+        <TextField
+          select
+          label="Capture method"
+          value={mode}
+          onChange={(event) => setMode(event.target.value as CaptureMode)}
+          disabled={busy || state.capturing}
+          helperText="Automatic chooses a method for Windows 10 or 11. No extra driver installation is needed."
+          size="small"
+          sx={{ mb: 2, minWidth: 280, maxWidth: '100%' }}
+        >
+          <MenuItem value="auto">Automatic (recommended)</MenuItem>
+          <MenuItem value="compatibility">Compatibility (Windows 10)</MenuItem>
+        </TextField>
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"

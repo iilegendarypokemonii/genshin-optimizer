@@ -8,12 +8,14 @@ import {
   useState,
 } from 'react'
 import { capture } from './capture'
-import { type CaptureState, idleState } from './types'
+import { type CaptureMode, type CaptureState, idleState } from './types'
 
 type CaptureContext = {
   state: CaptureState
   error: string
   busy: boolean
+  mode: CaptureMode
+  setMode: (mode: CaptureMode) => void
   start: () => Promise<void>
   stop: () => Promise<void>
 }
@@ -24,6 +26,7 @@ export function IrminsulProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState('')
   const [pollError, setPollError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [mode, setMode] = useState<CaptureMode>('auto')
   useEffect(() => {
     if (!isTauri()) return
     let active = true
@@ -60,11 +63,19 @@ export function IrminsulProvider({ children }: { children: ReactNode }) {
       setBusy(false)
     }
   }, [])
-  const start = useCallback(() => run(capture.start), [run])
+  const start = useCallback(() => run(() => capture.start(mode)), [run, mode])
   const stop = useCallback(() => run(capture.stop), [run])
   return (
     <Context.Provider
-      value={{ state, error: error || pollError, busy, start, stop }}
+      value={{
+        state,
+        error: error || pollError,
+        busy,
+        mode,
+        setMode,
+        start,
+        stop,
+      }}
     >
       {children}
     </Context.Provider>

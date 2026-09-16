@@ -7,6 +7,7 @@ export const dataCategories = [
   'materials',
 ] as const
 export type DataCategory = (typeof dataCategories)[number]
+export type CaptureMode = 'auto' | 'compatibility'
 export type DataSelection = Record<DataCategory, boolean>
 export const defaultSelection: DataSelection = {
   artifacts: true,

@@ -3,8 +3,16 @@
 The Windows desktop app embeds the reusable capture core from the standalone
 [Irminsul multi-account fork](https://github.com/iilegendarypokemonii/irminsul).
 Open it from **Home -> Game data -> Open Game data** or **Tools -> Game data**.
-Capture requires **Windows 11 24H2 or newer**. Other optimizer features retain
-their existing Windows requirements.
+Capture supports **Windows 10 and 11** starting with desktop version **0.4.0**.
+Leave **Capture method** on **Automatic (recommended)**. The app uses private
+Packet Monitor sessions where available and falls back to compatibility capture
+on older Windows. **Compatibility (Windows 10)** can also be selected explicitly
+before starting capture. Both methods request administrator permission; neither
+requires a separate capture-driver installation.
+
+Compatibility capture requires an active IPv4 connection. Restart capture after
+changing networks or connecting/disconnecting a VPN. It uses the same account
+decoder, snapshot filters, previews, and batch import as the default method.
 
 **Account data:** start capture, allow Windows capture permission, then enter an
 account through the game door. Keep capture running while switching through the
@@ -61,9 +69,12 @@ import the others.
 Materials without bundled names produce a warning. Their item IDs and quantities
 are retained in the selected export's `irminsul.unmappedMaterials` metadata.
 
-Capture remains native and local. The elevated child captures only Genshin's UDP
+Capture remains native and local. The elevated child forwards only Genshin's UDP
 ports; the ordinary app decodes and reviews data without administrator privileges.
-Private capture sessions leave global Packet Monitor filters and captures alone.
+Private Packet Monitor sessions leave global filters and captures alone. The
+compatibility method receives IPv4 traffic through Winsock, filters game packets
+inside the helper, and does not change Packet Monitor state or enable promiscuous
+network-adapter mode. Closing the receive sockets releases the capture.
 Capture stops automatically after four hours; start it again for another login.
 Completed snapshots stay available while the app remains open.
 An update stops capture before installing. The browser route explains how to use

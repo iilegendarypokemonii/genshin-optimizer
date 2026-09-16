@@ -8,7 +8,7 @@ This is a **personal modification** of [Gacha Optimizer / Genshin Optimizer](htt
 
 - **Windows desktop app:** open the optimizer from your Start menu, with your data saved locally on your PC.
 - **Wish Tracker:** import wish history from your local Genshin game cache, view pity/history per UID, keep backups, and record player-confirmed Capturing Radiance results.
-- **Game data:** capture separate account snapshots and select artifacts, characters, weapons, or materials. Open it from the home Game data card or Tools; wishes have their own tab. Capture requires Windows 11 24H2 or newer. A [small standalone version](https://github.com/iilegendarypokemonii/irminsul) is also available.
+- **Game data:** capture separate account snapshots and select artifacts, characters, weapons, or materials. Open it from the home Game data card or Tools; wishes have their own tab. Automatic capture supports Windows 10 and 11, with a built-in compatibility method and no extra driver installation. A [small standalone version](https://github.com/iilegendarypokemonii/irminsul) is also available.
 - **Team DPS:** import damage screenshots, read them with Windows OCR, and keep team results and screenshots per optimizer account.
 - **Tools page:** access the built-in tools and links to community resources, including account-specific Enka.Network and Akasha links.
 - **Desktop updates:** check for this fork's published releases and install updates inside the app.
