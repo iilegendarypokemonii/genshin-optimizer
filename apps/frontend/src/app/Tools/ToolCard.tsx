@@ -67,11 +67,15 @@ export default function ToolCard({
           <Button
             size="small"
             variant="contained"
-            onClick={() => onOpenInApp(tool.url)}
+            onClick={() =>
+              tool.embeddable === false
+                ? onOpenInWindow(tool.url)
+                : onOpenInApp(tool.url)
+            }
           >
-            Open in app
+            {tool.embeddable === false ? 'Open website' : 'Open in app'}
           </Button>
-          {!tool.internal && (
+          {!tool.internal && tool.embeddable !== false && (
             <Button
               size="small"
               variant="outlined"

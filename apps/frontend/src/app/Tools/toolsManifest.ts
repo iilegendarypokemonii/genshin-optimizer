@@ -21,6 +21,8 @@ export type ToolEntry = {
   category: 'database' | 'planner' | 'wiki' | 'community' | 'calculator'
   /** Renders a built-in React page at /tools/<id> instead of an external site */
   internal?: boolean
+  /** Set false for sites that require a separate window rather than an iframe. */
+  embeddable?: boolean
 }
 
 export const toolsManifest: ToolEntry[] = [
@@ -113,6 +115,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Stygian.moe',
     description: 'Stygian Onslaught wiki and resources',
     url: 'https://www.stygian.moe/',
+    embeddable: false,
     icon: 'AutoAwesome',
     category: 'wiki',
   },
@@ -121,6 +124,7 @@ export const toolsManifest: ToolEntry[] = [
     name: 'Prydwen Tier List',
     description: 'Genshin Impact character tier list and role rankings',
     url: 'https://www.prydwen.gg/genshin-impact/tier-list',
+    embeddable: false,
     icon: 'Leaderboard',
     category: 'wiki',
   },

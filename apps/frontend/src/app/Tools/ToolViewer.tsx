@@ -2,7 +2,7 @@ import { isTauri } from '@genshin-optimizer/common/util'
 import CloseIcon from '@mui/icons-material/Close'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import { Button, IconButton, Toolbar, Typography } from '@mui/material'
+import { Box, Button, IconButton, Toolbar, Typography } from '@mui/material'
 import type { ToolEntry } from './toolsManifest'
 
 export async function openToolWindow(
@@ -58,6 +58,7 @@ export default function ToolViewer({
 
   const handleOpenInWindow = async () => {
     if (await openToolWindow(tool, activeUrl)) onClose()
+    else await handleOpenExternal()
   }
 
   const handleOpenExternal = async () => {
@@ -117,18 +118,29 @@ export default function ToolViewer({
           <CloseIcon />
         </IconButton>
       </Toolbar>
-      <iframe
-        data-testid="tool-iframe"
-        src={activeUrl}
-        title={tool.name}
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-        style={{
-          flexGrow: 1,
-          width: '100%',
-          border: 'none',
-          borderRadius: 4,
-        }}
-      />
+      {tool.embeddable === false ? (
+        <Box sx={{ p: 3 }}>
+          <Typography sx={{ mb: 2 }}>
+            This website opens in a separate window.
+          </Typography>
+          <Button variant="contained" onClick={handleOpenInWindow}>
+            Open website
+          </Button>
+        </Box>
+      ) : (
+        <iframe
+          data-testid="tool-iframe"
+          src={activeUrl}
+          title={tool.name}
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          style={{
+            flexGrow: 1,
+            width: '100%',
+            border: 'none',
+            borderRadius: 4,
+          }}
+        />
+      )}
     </div>
   )
 }
