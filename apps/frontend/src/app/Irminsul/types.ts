@@ -7,7 +7,7 @@ export const dataCategories = [
   'materials',
 ] as const
 export type DataCategory = (typeof dataCategories)[number]
-export type CaptureMode = 'auto' | 'compatibility'
+export type CaptureMode = 'auto' | 'packetMonitor' | 'compatibility'
 export type DataSelection = Record<DataCategory, boolean>
 export const defaultSelection: DataSelection = {
   artifacts: true,
@@ -48,6 +48,7 @@ export type AccountSnapshot = SnapshotSummary & {
 
 export type CaptureState = {
   capturing: boolean
+  activeBackend?: 'packetMonitor' | 'winsock' | null
   phase: string
   message: string
   activeUid: string | null

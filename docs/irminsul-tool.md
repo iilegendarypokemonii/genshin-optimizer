@@ -6,8 +6,13 @@ Open it from **Home -> Game data -> Open Game data** or **Tools -> Game data**.
 Capture supports **Windows 10 and 11** starting with desktop version **0.4.0**.
 Leave **Capture method** on **Automatic (recommended)**. The app uses private
 Packet Monitor sessions where available and falls back to compatibility capture
-on older Windows. **Compatibility (Windows 10)** can also be selected explicitly
-before starting capture. Both methods request administrator permission; neither
+on older Windows. **Windows 11 24H2+ · Packet Monitor** selects a private Packet
+Monitor session explicitly. **Windows 10 / 11 · Winsock (IPv4)** selects Windows
+raw-socket capture.
+The Windows 11 option reports an error if unavailable; **Automatic** remains the
+default and falls back when needed. While capture is running, the dropdown help
+shows the method actually confirmed by the capture helper, including after account
+switches. Both methods request administrator permission; neither
 requires a separate capture-driver installation.
 
 Compatibility capture requires an active IPv4 connection. Restart capture after

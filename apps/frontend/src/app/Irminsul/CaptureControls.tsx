@@ -12,8 +12,24 @@ import {
 import { useIrminsul } from './IrminsulContext'
 import type { CaptureMode } from './types'
 
+const methodDescriptions: Record<CaptureMode, string> = {
+  auto: 'Tries Packet Monitor first, then Winsock (IPv4). No extra driver needed.',
+  packetMonitor:
+    'Private Windows Packet Monitor session. Requires Windows 11 24H2 or newer.',
+  compatibility:
+    'Receives game traffic through Windows raw sockets (IPv4). No extra driver needed.',
+}
+const backendLabels = {
+  packetMonitor: 'Windows Packet Monitor',
+  winsock: 'Winsock raw sockets (IPv4)',
+}
+
 export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
   const { state, busy, mode, setMode, start, stop } = useIrminsul()
+  const methodDescription =
+    state.capturing && state.activeBackend
+      ? `Using ${backendLabels[state.activeBackend]}.`
+      : methodDescriptions[mode]
   return (
     <Card>
       <CardContent>
@@ -47,12 +63,20 @@ export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
           value={mode}
           onChange={(event) => setMode(event.target.value as CaptureMode)}
           disabled={busy || state.capturing}
-          helperText="Automatic chooses a method for Windows 10 or 11. No extra driver installation is needed."
+          helperText={methodDescription}
+          FormHelperTextProps={{
+            sx: { '&.Mui-disabled': { color: 'text.secondary' } },
+          }}
           size="small"
-          sx={{ mb: 2, minWidth: 280, maxWidth: '100%' }}
+          sx={{ mb: 2, width: 540, maxWidth: '100%' }}
         >
           <MenuItem value="auto">Automatic (recommended)</MenuItem>
-          <MenuItem value="compatibility">Compatibility (Windows 10)</MenuItem>
+          <MenuItem value="packetMonitor">
+            Windows 11 24H2+ · Packet Monitor
+          </MenuItem>
+          <MenuItem value="compatibility">
+            Windows 10 / 11 · Winsock (IPv4)
+          </MenuItem>
         </TextField>
         <Stack direction="row" spacing={1}>
           <Button
