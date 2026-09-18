@@ -3,9 +3,9 @@ import {
   Box,
   Button,
   Card,
-  CardActions,
-  CardContent,
   Chip,
+  IconButton,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import type { ToolEntry, ToolLink } from './toolsManifest'
@@ -41,62 +41,84 @@ export default function ToolCard({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'transform 0.15s, box-shadow 0.15s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 6,
-        },
+        p: 1.5,
+        gap: 1,
       }}
     >
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" gutterBottom>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h6"
+          sx={{ flex: 1, minWidth: 0, fontSize: '1rem', lineHeight: 1.3 }}
+        >
           {tool.name}
         </Typography>
         <Chip
           label={tool.category}
           color={categoryColors[tool.category]}
           size="small"
-          sx={{ mb: 1, textTransform: 'capitalize' }}
+          sx={{
+            height: 20,
+            fontSize: '0.6875rem',
+            textTransform: 'capitalize',
+          }}
         />
-        <Typography variant="body2" color="text.secondary">
-          {tool.description}
-        </Typography>
-      </CardContent>
-      <CardActions>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          <Button
-            size="small"
-            variant="contained"
-            onClick={() =>
-              tool.embeddable === false
-                ? onOpenInWindow(tool.url)
-                : onOpenInApp(tool.url)
-            }
-          >
-            {tool.embeddable === false ? 'Open website' : 'Open in app'}
-          </Button>
-          {!tool.internal && tool.embeddable !== false && (
-            <Button
+      </Box>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ flexGrow: 1, fontSize: '0.8125rem' }}
+      >
+        {tool.description}
+      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          flexWrap: 'wrap',
+          '& .MuiButton-root': { minWidth: 0, px: 0.75, fontSize: '0.75rem' },
+        }}
+      >
+        <Button
+          size="small"
+          variant="contained"
+          aria-label={
+            tool.embeddable === false
+              ? `Open ${tool.name} website`
+              : `Open ${tool.name} in app`
+          }
+          onClick={() =>
+            tool.embeddable === false
+              ? onOpenInWindow(tool.url)
+              : onOpenInApp(tool.url)
+          }
+        >
+          {tool.embeddable === false ? 'Open website' : 'Open'}
+        </Button>
+        {!tool.internal && tool.embeddable !== false && (
+          <Tooltip title="Open in a new window">
+            <IconButton
               size="small"
-              variant="outlined"
-              endIcon={<OpenInNewIcon />}
+              aria-label={`Open ${tool.name} in a new window`}
               onClick={() => onOpenInWindow(tool.url)}
             >
-              New window
-            </Button>
-          )}
-          {allLinks.map((link) => (
-            <Button
-              key={link.label}
-              size="small"
-              variant="outlined"
-              onClick={() => onOpenInApp(link.url)}
-            >
-              {link.label}
-            </Button>
-          ))}
-        </Box>
-      </CardActions>
+              <OpenInNewIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        {allLinks.map((link) => (
+          <Button
+            key={link.label}
+            size="small"
+            variant="text"
+            aria-label={`Open ${tool.name} for ${link.label}`}
+            sx={{ maxWidth: '100%', overflowWrap: 'anywhere' }}
+            onClick={() => onOpenInApp(link.url)}
+          >
+            {link.label}
+          </Button>
+        ))}
+      </Box>
     </Card>
   )
 }

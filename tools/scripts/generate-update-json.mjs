@@ -57,7 +57,7 @@ export function packageDesktopRelease(rootDir, tag) {
     `Windows desktop release ${config.version} of this personal Genshin Optimizer modification.\n\n` +
       `**Install:** Download **${installerName}** below and run it. Windows 10/11, Intel/AMD 64-bit. No developer tools needed.\n\n` +
       '**Update:** Existing installed copies can use **Check for updates** at the bottom of the app, then **Update and restart**. Your saved data remains on your PC.\n\n' +
-      '**Tools:** Added [Stygian.moe](https://www.stygian.moe/) and the [Prydwen Genshin Impact tier list](https://www.prydwen.gg/genshin-impact/tier-list), with a separate window for each website. Removed Lunaris.\n\n' +
+      '**Tools:** More compact cards fit all tools on the minimum desktop window, with four columns on wider screens. Account shortcuts remain one click away; the new-window action uses a labelled icon. Includes [Stygian.moe](https://www.stygian.moe/) and the [Prydwen Genshin Impact tier list](https://www.prydwen.gg/genshin-impact/tier-list).\n\n' +
       '**Capture method selection:** **Automatic (recommended)** remains the default: it prefers Windows Packet Monitor and falls back to Winsock (IPv4). Advanced users can explicitly select **Windows 11 24H2+ · Packet Monitor** or **Windows 10 / 11 · Winsock (IPv4)**. The app shows which method is actually running. No extra capture driver is needed.\n\n' +
       'Includes shared **Account data / Wishes** tabs, separate login snapshots per UID, filtered imports and exports, and batch account imports with backups. Snapshots reflect inventory at login; log in again to refresh them after playing.\n\n' +
       'Also includes local storage, the Tools page, Wish Tracker with game-cache import, and Team DPS screenshot OCR.\n\n' +
