@@ -48,6 +48,8 @@ export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
         <Typography sx={{ mt: 1 }}>
           Start capture, allow the Windows permission prompt, then log in and
           enter the game door. Keep capture running while switching accounts.
+          If the game was already open, fully close and restart it after
+          starting capture.
         </Typography>
         <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
           Capture can run for up to four hours. Each login creates a snapshot
