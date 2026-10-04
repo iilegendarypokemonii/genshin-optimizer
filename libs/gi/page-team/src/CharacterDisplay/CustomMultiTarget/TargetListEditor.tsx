@@ -21,12 +21,17 @@ export default function TargetListEditor({
   const { t } = useTranslation('page_character')
   const [selectedTarget, setSelectedTarget] = useState(-1)
 
+  /**
+   * Appends a new custom target (optionally with `multi` variants) and
+   * selects it, so the newly added target is immediately shown for editing.
+   */
   const addTarget = useCallback(
     (t: string[], m?: number) => {
       setCustomMultiTarget({
         ...customMultiTarget,
         targets: [...customMultiTarget.targets, initCustomTarget(t, m)],
       })
+      setSelectedTarget(customMultiTarget.targets.length)
     },
     [customMultiTarget, setCustomMultiTarget]
   )
