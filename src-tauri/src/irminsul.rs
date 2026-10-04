@@ -123,5 +123,8 @@ mod tests {
             "Irminsul capture data is older than the optimizer data. Missing weapons: \
              {missing_weapons:?}; characters: {missing_characters:?}"
         );
+        // Without these, imports fail on an elementless "Traveler" (7.1).
+        let data = irminsul_core::game_data().unwrap();
+        assert!(data.get_tps_avatar_id_male().is_ok() && data.get_tps_avatar_id_female().is_ok());
     }
 }
