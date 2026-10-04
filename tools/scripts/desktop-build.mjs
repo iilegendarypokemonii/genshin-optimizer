@@ -93,7 +93,10 @@ function copyWithWarning(from, to, warnings) {
 }
 
 async function main() {
-  await run('node', ['.yarn/releases/yarn-3.4.1.cjs', 'tauri', 'build', '--ci'])
+  const noBundle = process.argv.includes('--no-bundle')
+  const buildArgs = ['.yarn/releases/yarn-3.4.1.cjs', 'tauri', 'build', '--ci']
+  if (noBundle) buildArgs.push('--no-bundle')
+  await run('node', buildArgs)
 
   const tauriConfig = JSON.parse(readFileSync(tauriConfigPath, 'utf8'))
   const productName = tauriConfig.productName
@@ -121,26 +124,28 @@ async function main() {
       )} because the launcher is still using those files.`
     )
   }
-  copyWithWarning(
-    join(
-      releaseDir,
-      'bundle',
-      'nsis',
-      `${productName}_${version}_x64-setup.exe`
-    ),
-    join(desktopDir, `${productName} Setup.exe`),
-    warnings
-  )
-  copyWithWarning(
-    join(
-      releaseDir,
-      'bundle',
-      'msi',
-      `${productName}_${version}_x64_en-US.msi`
-    ),
-    join(desktopDir, `${productName}.msi`),
-    warnings
-  )
+  if (!noBundle) {
+    copyWithWarning(
+      join(
+        releaseDir,
+        'bundle',
+        'nsis',
+        `${productName}_${version}_x64-setup.exe`
+      ),
+      join(desktopDir, `${productName} Setup.exe`),
+      warnings
+    )
+    copyWithWarning(
+      join(
+        releaseDir,
+        'bundle',
+        'msi',
+        `${productName}_${version}_x64_en-US.msi`
+      ),
+      join(desktopDir, `${productName}.msi`),
+      warnings
+    )
+  }
 
   if (warnings.length) {
     console.warn('\nDesktop build completed with copy warnings:')

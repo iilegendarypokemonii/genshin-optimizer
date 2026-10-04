@@ -29,9 +29,13 @@ pub fn irminsul_status(
 pub fn irminsul_start(
     window: WebviewWindow,
     state: State<'_, Irminsul>,
+    verify: State<'_, crate::verify::VerifyState>,
     mode: Option<CaptureMode>,
 ) -> Result<(), String> {
     check_window(&window)?;
+    if verify.0.lock().map_err(|e| e.to_string())?.is_some() {
+        return Err("Live capture is disabled in verification profiles.".into());
+    }
     state
         .0
         .lock()

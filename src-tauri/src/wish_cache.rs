@@ -104,7 +104,21 @@ fn extract_last_url(blob: &[u8]) -> Option<String> {
 }
 
 #[tauri::command]
-pub async fn get_wish_url(game_dir: Option<String>) -> Result<WishUrlResult, WishCacheError> {
+pub async fn get_wish_url(
+    game_dir: Option<String>,
+    verify: tauri::State<'_, crate::verify::VerifyState>,
+) -> Result<WishUrlResult, WishCacheError> {
+    let verification_enabled = verify
+        .0
+        .lock()
+        .map_err(|error| WishCacheError::new("ReadError", error.to_string()))?
+        .is_some();
+    if verification_enabled {
+        return Err(WishCacheError::new(
+            "VerificationProfile",
+            "Game cache access is disabled in verification profiles.",
+        ));
+    }
     let dir = resolve_game_dir(game_dir)?;
     let cache_file = newest_cache_file(&dir)?;
     // plain read works even while the game holds the file open (read sharing)
@@ -149,6 +163,9 @@ mod tests {
 
     #[test]
     fn returns_none_when_absent() {
-        assert_eq!(extract_last_url(b"https://example.com/other nothing here"), None);
+        assert_eq!(
+            extract_last_url(b"https://example.com/other nothing here"),
+            None
+        );
     }
 }

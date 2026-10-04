@@ -14,6 +14,7 @@
     "desktop:update": "node tools/scripts/desktop-update.mjs",
     "gacha:plan": "node tools/gacha-planner/cli.mjs",
     "gacha:plan:test": "node --test tools/gacha-planner/model.test.mjs",
+    "verify": "node tools/verify/cli.mjs",
     "build-all": "nx run-many -t build",
     "mini-ci": "nx affected -t format && nx affected -t typecheck && nx affected -t lint && CI=true nx affected -t test",
     "reload-dm": "git submodule update --init",

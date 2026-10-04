@@ -1,0 +1,81 @@
+{
+  "fixture": {
+    "uid": "900000001",
+    "avatars": [
+      {
+        "id": 10000005,
+        "guid": 9000000001,
+        "type": 1,
+        "level": 90,
+        "ascension": 6,
+        "skillLevels": { "10128": 10 }
+      },
+      {
+        "id": 10000134,
+        "guid": 9000000002,
+        "type": 1,
+        "level": 90,
+        "ascension": 6
+      },
+      {
+        "id": 10000140,
+        "guid": 9000000003,
+        "type": 1,
+        "level": 90,
+        "ascension": 6,
+        "equipGuids": [9000000101]
+      }
+    ],
+    "items": [
+      {
+        "id": 14437,
+        "guid": 9000000100,
+        "kind": "weapon",
+        "level": 90,
+        "ascension": 6,
+        "refinement": 1,
+        "locked": true
+      },
+      {
+        "id": 20544,
+        "guid": 9000000101,
+        "kind": "artifact",
+        "level": 1,
+        "mainPropId": 10001,
+        "substatIds": [501051, 501201, 501221, 501231],
+        "locked": true
+      },
+      {
+        "id": 100001,
+        "guid": 9000000102,
+        "kind": "material",
+        "count": 3
+      }
+    ]
+  },
+  "expect": {
+    "uid": "900000001",
+    "counts": {
+      "characters": 2,
+      "artifacts": 1,
+      "weapons": 1,
+      "materials": 1
+    },
+    "characterKeys": ["TravelerCryo", "Vodyanitsa"],
+    "absentCharacterKeys": ["Traveler"],
+    "weaponKeys": ["WintersHeavyHeart"],
+    "materialKeys": ["Apple"],
+    "artifactKeys": [
+      {
+        "setKey": "DeepwoodMemories",
+        "slotKey": "flower",
+        "mainStatKey": "hp",
+        "rarity": 5,
+        "level": 0
+      }
+    ],
+    "equippedLocations": [
+      { "artifactGuid": "9000000101", "location": "Vodyanitsa" }
+    ]
+  }
+}

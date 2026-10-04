@@ -6,7 +6,11 @@ import { extname, resolve, sep } from 'node:path'
 import { chromium } from '@playwright/test'
 
 const root = resolve('dist/apps/frontend')
-const output = resolve('.codex-run/desktop-release')
+const output = resolve(
+  process.env.VERIFY_EVIDENCE_DIR ||
+    process.env.DESKTOP_WEB_SMOKE_OUTPUT_DIR ||
+    '.codex-run/desktop-release'
+)
 const contentTypes = {
   '.html': 'text/html',
   '.js': 'text/javascript',
@@ -44,7 +48,9 @@ try {
   assert.equal(response.status, 200)
   assert.match(await response.text(), /Genshin Optimizer/)
   browser = await chromium.launch({ headless: true })
-  const page = await browser.newPage({ viewport: { width: 1600, height: 960 } })
+  const page = await browser.newPage({
+    viewport: { width: 1600, height: 960 },
+  })
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto(url, { waitUntil: 'networkidle' })

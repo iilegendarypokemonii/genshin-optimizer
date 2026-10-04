@@ -27,7 +27,7 @@ if (process.platform === 'win32') {
 
 const build = spawnSync(
   process.execPath,
-  ['tools/scripts/desktop-build.mjs', '--close-running'],
+  ['tools/scripts/desktop-build.mjs', '--close-running', '--no-bundle'],
   { cwd: rootDir, stdio: 'inherit' }
 )
 if (build.status !== 0) process.exit(build.status ?? 1)

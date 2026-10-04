@@ -15,6 +15,7 @@ libs/game-opt/             → Cross-game optimization engine
 src-tauri/                 → Tauri 2 desktop shell (Rust)
 desktop/                   → Built desktop exe
 tools/scripts/             → Build helper scripts
+tools/verify/              → Reproducible desktop verification CLI and scenarios
 ```
 
 Key GI libraries:
@@ -91,9 +92,13 @@ Starts Vite dev server on localhost:4200 + Tauri webview window.
 ```bash
 yarn desktop:update       # kill running app → build → copy exe → relaunch
 ```
-This is the standard way to ship changes into `desktop/Genshin Optimizer Local.exe`
-(the exe people actually launch). The exe never updates itself — if you commit
-without running this, the app keeps showing old code.
+This is the standard way to install local changes into
+`desktop/Genshin Optimizer Local.exe` (the exe people actually launch). A source
+commit alone does not update that copy. Published releases also support the
+in-app signed updater.
+
+Local updates use `desktop-build --no-bundle`: no installer or release signing
+key is needed. `desktop:build` still packages installers for the release workflow.
 
 ### Release build (~3 min)
 ```bash
@@ -102,10 +107,10 @@ yarn desktop:build        # build + copy exe/resources to desktop/ (no kill/rela
 ```
 Outputs exe to `src-tauri/target/release/genshin-optimizer-desktop.exe`.
 
-Build is fast because:
-- `bundle.active: false` — skips MSI/NSIS installer packaging
-- Release profile: `opt-level = 1, lto = false, codegen-units = 16` — fine for a webview wrapper
-- Updater plugin removed — no signing keys needed
+Installer builds bundle NSIS and create updater artifacts; signed releases need
+the configured signing key. For app verification without packaging or signing,
+use `yarn verify app --build`. The release profile uses `opt-level = 1`,
+`lto = false`, and `codegen-units = 16`.
 
 ### Frontend only (no Tauri)
 ```bash
@@ -127,6 +132,20 @@ Playwright tests live in `apps/frontend-playwright/` and run against `http://loc
 ```bash
 yarn reload-dm            # update game data submodules
 ```
+
+### Verification
+
+Use `yarn verify app --build smoke good-upload irminsul-import` to drive the real
+desktop executable with synthetic data in an isolated profile. `yarn verify
+release` runs the shared release gates; `yarn verify installed --runtime` checks
+the installed copy; `yarn verify patch` checks upstream data dependencies.
+Reports, screenshots, logs, timings and traces are saved in `.verify/`.
+
+**Extend this CLI as you work.** If a feature or fix needs a new check, add a
+reusable command, scenario, fixture or evidence collector in the same change
+instead of relying on a one-off script. Use the real UI and native import path
+where applicable, and report the command and evidence directory. See
+[docs/verification.md](docs/verification.md) and [AGENTS.md](AGENTS.md).
 
 ## Important notes
 

@@ -3,6 +3,7 @@ import { desktopWrite } from './desktopWriteBarrier'
 
 const STORAGE_DIRECTORY = 'storage'
 const STORAGE_FILE_PATH = `${STORAGE_DIRECTORY}/localStorage.json`
+const STORAGE_TEMP_PATH = `${STORAGE_FILE_PATH}.tmp`
 const SAVE_DEBOUNCE_MS = 200
 
 type StorageSnapshot = Record<string, string>
@@ -44,7 +45,7 @@ class DesktopPersistentStorage implements Storage {
     for (const [key, value] of Object.entries(initialData)) {
       this.data.set(key, value)
     }
-    this.syncMirrorStorage(initialData)
+    this.updateMirror(() => this.syncMirrorStorage(initialData))
   }
 
   get length() {
@@ -54,8 +55,8 @@ class DesktopPersistentStorage implements Storage {
   clear() {
     if (!this.data.size) return
     this.data.clear()
-    this.mirrorStorage?.clear()
     this.schedulePersist()
+    this.updateMirror(() => this.mirrorStorage?.clear())
   }
 
   getItem(key: string) {
@@ -69,16 +70,18 @@ class DesktopPersistentStorage implements Storage {
   removeItem(key: string) {
     const normalizedKey = String(key)
     if (!this.data.delete(normalizedKey)) return
-    this.mirrorStorage?.removeItem(normalizedKey)
     this.schedulePersist()
+    this.updateMirror(() => this.mirrorStorage?.removeItem(normalizedKey))
   }
 
   setItem(key: string, value: string) {
     const normalizedKey = String(key)
     const normalizedValue = String(value)
     this.data.set(normalizedKey, normalizedValue)
-    this.mirrorStorage?.setItem(normalizedKey, normalizedValue)
     this.schedulePersist()
+    this.updateMirror(() =>
+      this.mirrorStorage?.setItem(normalizedKey, normalizedValue)
+    )
   }
 
   flush() {
@@ -118,6 +121,16 @@ class DesktopPersistentStorage implements Storage {
       this.mirrorStorage.setItem(key, value)
     }
   }
+
+  private updateMirror(update: () => void) {
+    try {
+      update()
+    } catch {
+      console.warn(
+        'Browser storage mirror unavailable; desktop saving remains active.'
+      )
+    }
+  }
 }
 
 function readBrowserStorage(storage: Storage): StorageSnapshot {
@@ -135,7 +148,7 @@ async function loadDesktopStorageSnapshot(
   fallbackStorage: Storage
 ): Promise<StorageSnapshot> {
   const { BaseDirectory } = await getTauriPath()
-  const { exists, readTextFile } = await getTauriFs()
+  const { exists, readTextFile, rename } = await getTauriFs()
 
   const hasPersistedStorage = await exists(STORAGE_FILE_PATH, {
     baseDir: BaseDirectory.AppLocalData,
@@ -145,9 +158,26 @@ async function loadDesktopStorageSnapshot(
   const raw = await readTextFile(STORAGE_FILE_PATH, {
     baseDir: BaseDirectory.AppLocalData,
   })
-  const parsed = JSON.parse(raw)
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Desktop storage file is not a JSON object.')
+  let parsed: StorageSnapshot
+  try {
+    parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('Desktop storage file is not a JSON object.')
+    }
+  } catch {
+    // Preserve the damaged file for recovery before enabling further saves.
+    await rename(
+      STORAGE_FILE_PATH,
+      `${STORAGE_FILE_PATH}.corrupt-${Date.now()}`,
+      {
+        oldPathBaseDir: BaseDirectory.AppLocalData,
+        newPathBaseDir: BaseDirectory.AppLocalData,
+      }
+    )
+    console.warn(
+      'Damaged desktop save preserved; recovering from browser storage.'
+    )
+    return readBrowserStorage(fallbackStorage)
   }
 
   return Object.fromEntries(
@@ -157,13 +187,17 @@ async function loadDesktopStorageSnapshot(
 
 async function persistDesktopStorageSnapshot(snapshot: StorageSnapshot) {
   const { BaseDirectory } = await getTauriPath()
-  const { mkdir, writeTextFile } = await getTauriFs()
+  const { mkdir, writeTextFile, rename } = await getTauriFs()
   await mkdir(STORAGE_DIRECTORY, {
     baseDir: BaseDirectory.AppLocalData,
     recursive: true,
   })
-  await writeTextFile(STORAGE_FILE_PATH, JSON.stringify(snapshot), {
+  await writeTextFile(STORAGE_TEMP_PATH, JSON.stringify(snapshot), {
     baseDir: BaseDirectory.AppLocalData,
+  })
+  await rename(STORAGE_TEMP_PATH, STORAGE_FILE_PATH, {
+    oldPathBaseDir: BaseDirectory.AppLocalData,
+    newPathBaseDir: BaseDirectory.AppLocalData,
   })
 }
 
@@ -181,11 +215,10 @@ export async function initializeDesktopStorage() {
   const browserStorage = window.localStorage
 
   try {
-    const browserSnapshot = readBrowserStorage(browserStorage)
-    const snapshot =
-      Object.keys(browserSnapshot).length > 0
-        ? browserSnapshot
-        : await loadDesktopStorageSnapshot(browserStorage)
+    // WebView2 can retain an older browser mirror after a forced exit. The
+    // desktop save is authoritative once it exists; browser data is migration
+    // input only for profiles that have never saved to disk.
+    const snapshot = await loadDesktopStorageSnapshot(browserStorage)
     const storage = new DesktopPersistentStorage(
       snapshot,
       persistDesktopStorageSnapshot,

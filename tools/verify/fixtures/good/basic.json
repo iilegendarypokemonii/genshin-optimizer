@@ -1,0 +1,17 @@
+{
+  "format": "GOOD",
+  "version": 1,
+  "source": "verification",
+  "characters": [
+    {
+      "key": "Amber",
+      "level": 1,
+      "ascension": 0,
+      "constellation": 0,
+      "talent": { "auto": 1, "skill": 1, "burst": 1 }
+    }
+  ],
+  "weapons": [],
+  "artifacts": [],
+  "materials": {}
+}
