@@ -56,6 +56,13 @@ function copyIfExists(from, to) {
   console.log(`Copied ${from} -> ${to}`)
 }
 
+// Used by desktop:update, which relaunches the app afterwards.
+function closeRunningApp(productName) {
+  if (process.platform !== 'win32') return
+  for (const image of ['genshin-optimizer-desktop.exe', `${productName}.exe`])
+    spawnSync('taskkill', ['/IM', image, '/F', '/T'], { stdio: 'ignore' })
+}
+
 function formatCopyTarget(path) {
   return path.replaceAll(rootDir, '.')
 }
@@ -66,7 +73,7 @@ function isWindowsFileLockError(error) {
     error &&
     typeof error === 'object' &&
     'code' in error &&
-    (error.code === 'EPERM' || error.code === 'EBUSY')
+    ['EPERM', 'EBUSY', 'EIO'].includes(error.code)
   )
 }
 
@@ -95,6 +102,7 @@ async function main() {
   const warnings = []
 
   mkdirSync(desktopDir, { recursive: true })
+  if (process.argv.includes('--close-running')) closeRunningApp(productName)
 
   copyWithWarning(
     join(releaseDir, 'genshin-optimizer-desktop.exe'),

@@ -59,7 +59,14 @@ git fetch upstream
 git log master..upstream/master --oneline -- libs/gi/stats   # new data commits pending?
 ```
 
-If new data is there, run the upstream sync above, then `yarn desktop:update` to rebuild the exe. If nothing landed after ~4 days, check open PRs on frzyc/genshin-optimizer — the data is usually in review there.
+If new data is there, run the upstream sync above, then `yarn desktop:update` to rebuild the exe. If nothing landed after ~4 days, check open PRs on frzyc/genshin-optimizer — the data is usually in review there (7.1 sat in PR #3316 for days; merging the PR branch into `desktop` early worked fine).
+
+**Irminsul account capture needs its own per-patch update** (lesson from 7.1, which broke capture twice). Our core is `iilegendarypokemonii/irminsul` branch `multi-account`, pinned by rev in `src-tauri/Cargo.toml`. Steps, detailed in that repo's `crates/irminsul-core/README.md`:
+1. **Decoder:** when konkers/auto-artifactarium publishes "Update for X.Y" (it landed on 7.1 release day), port it into `crates/irminsul-core/vendor/auto-artifactarium`. Also re-check the login UID lookup, because 7.1 reshuffled protobuf fields. Symptom if missed: "no unambiguous account UID".
+2. **Game data:** run `cargo run --example refresh_game_data` in `crates/irminsul-core`. It prints the added weapons and characters. Symptom if missed: "Unknown weapon ID; update Irminsul" for any account holding a new weapon. Upstream Irminsul downloads data at build time; ours is a bundled snapshot, so this step is never automatic.
+3. Push `multi-account`, bump the `irminsul-core` rev here, then release the standalone: bump the version in both of its `Cargo.toml`s and dispatch `release.yaml` with `prerelease=false`.
+
+Guard: the `src-tauri` test `capture_data_covers_optimizer_weapons_and_characters` (run by the desktop release workflow) fails when the optimizer's GI weapon or character keys include anything the bundled capture data lacks. If it fails after an upstream sync, do step 2. Only `QuantumCatalyst` and `Somnia` are allowlisted; they are custom optimizer entries, not game items.
 
 ## Features exclusive to this fork
 

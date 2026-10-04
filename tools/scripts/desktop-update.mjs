@@ -8,7 +8,9 @@ const tauriConfig = JSON.parse(
 )
 const exePath = join(rootDir, 'desktop', `${tauriConfig.productName}.exe`)
 
-// Windows locks a running exe, so kill both image names before building/copying.
+// Windows locks a running exe, so close the app before building, and again
+// right before copying (desktop-build --close-running): the app is often
+// reopened during the multi-minute build.
 if (process.platform === 'win32') {
   for (const image of [
     'genshin-optimizer-desktop.exe',
@@ -25,7 +27,7 @@ if (process.platform === 'win32') {
 
 const build = spawnSync(
   process.execPath,
-  ['tools/scripts/desktop-build.mjs'],
+  ['tools/scripts/desktop-build.mjs', '--close-running'],
   { cwd: rootDir, stdio: 'inherit' }
 )
 if (build.status !== 0) process.exit(build.status ?? 1)
