@@ -47,8 +47,11 @@ jobs:
           node tools/scripts/generate-update-json.mjs $env:DESKTOP_RELEASE_TAG
       - name: Install test browser
         run: node node_modules/@playwright/test/cli.js install chromium
+      # desktop-app needs WebView2's CDP port, which the runner's elevated
+      # session never opens (WebView2Feedback #5640). Run it locally before
+      # tagging: yarn verify release --stage post
       - name: Verify built frontend
-        run: node .yarn/releases/yarn-3.4.1.cjs verify release --stage post --tag $env:DESKTOP_RELEASE_TAG
+        run: node .yarn/releases/yarn-3.4.1.cjs verify release --stage post --tag $env:DESKTOP_RELEASE_TAG --skip desktop-app
       - name: Upload installer artifacts
         if: success()
         uses: actions/upload-artifact@v4

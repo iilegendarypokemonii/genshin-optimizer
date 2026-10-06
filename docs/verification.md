@@ -112,6 +112,12 @@ authorize termination, or a path suffix alone to authorize deletion.
 calls those stages and uploads `.verify/` even on failure. Keep the workflow
 drift guard and Node tests passing when extending it.
 
+CI runs the post stage with `--skip desktop-app`: GitHub's Windows runners run
+elevated, and elevated WebView2 never opens the CDP port the app harness needs
+(WebView2Feedback #5640). Run `yarn verify release --stage post` locally on the
+commit you tag. `--skip` takes comma-separated check ids, rejects unknown ones,
+and records each as `skipped` in the report.
+
 Local installation uses `yarn desktop:update`, which builds without installer
 bundling or release-signing keys. Release CI still uses `desktop:build` to create
 signed installer artifacts before running the post-build gates.

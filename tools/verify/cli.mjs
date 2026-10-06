@@ -6,7 +6,7 @@ import { createEvidence } from './lib/evidence.mjs'
 export const root = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const usage = `Usage:
   yarn verify app [scenario...] [--exe PATH] [--build] [--profile NAME] [--keep-profile] [--no-trace] [--recover]
-  yarn verify release [--stage tag,pre,post] [--tag desktop-vX.Y.Z]
+  yarn verify release [--stage tag,pre,post] [--tag desktop-vX.Y.Z] [--skip CHECK,...]
   yarn verify installed [--runtime] [--baseline REPORT]
   yarn verify patch [--offline]
 
@@ -20,7 +20,14 @@ const boolOptions = new Set([
   'offline',
   'recover',
 ])
-const valueOptions = new Set(['exe', 'profile', 'stage', 'tag', 'baseline'])
+const valueOptions = new Set([
+  'exe',
+  'profile',
+  'stage',
+  'tag',
+  'baseline',
+  'skip',
+])
 
 export function parseArgs(argv) {
   const [command, ...rest] = argv
@@ -67,7 +74,7 @@ function validateOptions(command, options, args) {
       'no-trace',
       'recover',
     ]),
-    release: new Set(['stage', 'tag']),
+    release: new Set(['stage', 'tag', 'skip']),
     installed: new Set(['runtime', 'baseline']),
     patch: new Set(['offline']),
   }[command]
