@@ -62,6 +62,7 @@ jobs:
         with:
           name: desktop-verification-${{ github.ref_name }}
           path: .verify/
+          include-hidden-files: true
           if-no-files-found: warn
       - name: Prepare draft release
         env:

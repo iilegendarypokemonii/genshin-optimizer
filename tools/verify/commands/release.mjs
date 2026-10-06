@@ -104,6 +104,17 @@ async function tagValue(root, options) {
   }
 }
 
+async function printLogTail(logPath, label, lines = 60) {
+  try {
+    const tail = (await readFile(logPath, 'utf8')).trimEnd().split(/\r?\n/)
+    console.error(`[verify] --- last ${lines} lines of ${label} ---`)
+    console.error(tail.slice(-lines).join('\n'))
+    console.error(`[verify] --- end ${label} ---`)
+  } catch {
+    // Missing log: the check's own error message is all there is.
+  }
+}
+
 export async function run({ root, options, evidence }) {
   const requested = (options.stage ?? 'tag,pre,post').split(',')
   let exitCode = 0
@@ -114,12 +125,16 @@ export async function run({ root, options, evidence }) {
       await evidence
         .check(`${stage}-${id}`, async () => {
           const outputDir = join(evidence.dir, 'smoke')
+          const logPath = join(evidence.dir, 'logs', `${stage}-${id}.log`)
           const result = await runProcess(command, args, {
             cwd: root,
             timeoutMs,
             env: { ...process.env, VERIFY_EVIDENCE_DIR: outputDir },
-            logPath: join(evidence.dir, 'logs', `${stage}-${id}.log`),
+            logPath,
           })
+          // CI job logs are often the only evidence that survives a failed run.
+          if (result.timedOut || result.code !== 0)
+            await printLogTail(logPath, `${stage}-${id}`)
           if (result.timedOut)
             throw Object.assign(
               new Error(`${id} timed out after ${timeoutMs}ms`),
