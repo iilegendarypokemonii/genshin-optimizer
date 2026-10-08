@@ -2283,6 +2283,102 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "Enables the get_wish_url command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-wish-url",
+          "markdownDescription": "Enables the get_wish_url command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the irminsul_inject_fixture command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-irminsul-inject-fixture",
+          "markdownDescription": "Enables the irminsul_inject_fixture command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the irminsul_snapshot command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-irminsul-snapshot",
+          "markdownDescription": "Enables the irminsul_snapshot command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the irminsul_start command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-irminsul-start",
+          "markdownDescription": "Enables the irminsul_start command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the irminsul_status command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-irminsul-status",
+          "markdownDescription": "Enables the irminsul_status command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the irminsul_stop command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-irminsul-stop",
+          "markdownDescription": "Enables the irminsul_stop command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the ocr_screenshot command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-ocr-screenshot",
+          "markdownDescription": "Enables the ocr_screenshot command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the verify_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-verify-info",
+          "markdownDescription": "Enables the verify_info command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_wish_url command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-wish-url",
+          "markdownDescription": "Denies the get_wish_url command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the irminsul_inject_fixture command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-irminsul-inject-fixture",
+          "markdownDescription": "Denies the irminsul_inject_fixture command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the irminsul_snapshot command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-irminsul-snapshot",
+          "markdownDescription": "Denies the irminsul_snapshot command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the irminsul_start command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-irminsul-start",
+          "markdownDescription": "Denies the irminsul_start command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the irminsul_status command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-irminsul-status",
+          "markdownDescription": "Denies the irminsul_status command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the irminsul_stop command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-irminsul-stop",
+          "markdownDescription": "Denies the irminsul_stop command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the ocr_screenshot command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-ocr-screenshot",
+          "markdownDescription": "Denies the ocr_screenshot command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the verify_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-verify-info",
+          "markdownDescription": "Denies the verify_info command without any pre-configured scope."
+        },
+        {
           "description": "Default core plugins set.\n#### This default permission set includes:\n\n- `core:path:default`\n- `core:event:default`\n- `core:window:default`\n- `core:webview:default`\n- `core:app:default`\n- `core:image:default`\n- `core:resources:default`\n- `core:menu:default`\n- `core:tray:default`",
           "type": "string",
           "const": "core:default",

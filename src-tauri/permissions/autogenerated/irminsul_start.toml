@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-irminsul-start"
+description = "Enables the irminsul_start command without any pre-configured scope."
+commands.allow = ["irminsul_start"]
+
+[[permission]]
+identifier = "deny-irminsul-start"
+description = "Denies the irminsul_start command without any pre-configured scope."
+commands.deny = ["irminsul_start"]

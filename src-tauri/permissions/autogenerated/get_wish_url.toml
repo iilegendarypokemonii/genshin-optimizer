@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-wish-url"
+description = "Enables the get_wish_url command without any pre-configured scope."
+commands.allow = ["get_wish_url"]
+
+[[permission]]
+identifier = "deny-get-wish-url"
+description = "Denies the get_wish_url command without any pre-configured scope."
+commands.deny = ["get_wish_url"]

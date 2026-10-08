@@ -60,6 +60,10 @@ async function fetchPage(
   const resp = await httpFetch(buildPageUrl(baseUrl, gachaType, endId), {
     method: 'GET',
     connectTimeout: 30_000,
+  }).catch((e: unknown) => {
+    // network errors quote the request URL; keep its authkey off the screen
+    const message = e instanceof Error ? e.message : String(e)
+    throw new Error(message.replace(/authkey=[^&\s)]+/gi, 'authkey=***'))
   })
   if (!resp.ok) throw new GachaApiError(resp.status, `HTTP ${resp.status}`)
   return (await resp.json()) as GachaResponse

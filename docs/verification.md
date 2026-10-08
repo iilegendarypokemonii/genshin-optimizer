@@ -48,6 +48,9 @@ traffic or validate the game's current wire protocol.
   inspect the imported characters and weapon.
 - `irminsul-error`: reject an unknown weapon through the core, show the error in
   the UI, then recover with valid data (expected exit 0).
+- `tool-window-isolation`: open a `tool-*` window on a local stand-in website,
+  then check that native app and plugin commands are refused there, also after
+  navigating that window to the app itself, while the main window keeps access.
 - `irminsul-mismatch`: deliberately change an expected count to exercise failure
   reports/screenshots (expected exit 1).
 - `interrupt-restart`: interrupt a restart and exercise cleanup (expected exit 2).

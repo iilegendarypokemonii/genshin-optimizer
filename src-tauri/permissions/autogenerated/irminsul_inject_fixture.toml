@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-irminsul-inject-fixture"
+description = "Enables the irminsul_inject_fixture command without any pre-configured scope."
+commands.allow = ["irminsul_inject_fixture"]
+
+[[permission]]
+identifier = "deny-irminsul-inject-fixture"
+description = "Denies the irminsul_inject_fixture command without any pre-configured scope."
+commands.deny = ["irminsul_inject_fixture"]

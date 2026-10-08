@@ -1,7 +1,8 @@
-import smoke from './smoke.mjs'
 import goodUpload from './good-upload.mjs'
-import irminsulImport from './irminsul-import.mjs'
 import irminsulError from './irminsul-error.mjs'
+import irminsulImport from './irminsul-import.mjs'
+import smoke from './smoke.mjs'
+import toolWindowIsolation from './tool-window-isolation.mjs'
 
 async function irminsulMismatch(ctx) {
   await irminsulImport({
@@ -29,5 +30,6 @@ export const scenarios = {
   'irminsul-error': irminsulError,
   'irminsul-mismatch': irminsulMismatch,
   'interrupt-restart': interruptRestart,
+  'tool-window-isolation': toolWindowIsolation,
 }
-export { smoke, goodUpload, irminsulImport, irminsulError }
+export { goodUpload, irminsulError, irminsulImport, smoke }

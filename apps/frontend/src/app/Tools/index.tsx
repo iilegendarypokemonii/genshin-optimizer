@@ -19,6 +19,15 @@ const internalPages: Record<string, () => JSX.Element> = {
   'team-dps': TeamDpsPage,
 }
 
+/** The `url` parameter may only point at a website, never e.g. a `javascript:` URL. */
+function httpsUrl(value: string | null) {
+  try {
+    return value && new URL(value).protocol === 'https:' ? value : null
+  } catch {
+    return null
+  }
+}
+
 export default function ToolsPage() {
   const { toolId } = useParams()
   const [searchParams] = useSearchParams()
@@ -45,7 +54,7 @@ export default function ToolsPage() {
       const InternalPage = internalPages[activeTool.id]
       if (InternalPage) return <InternalPage />
     } else {
-      const urlOverride = searchParams.get('url')
+      const urlOverride = httpsUrl(searchParams.get('url'))
       return (
         <ToolViewer
           tool={activeTool}

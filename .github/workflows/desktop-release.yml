@@ -25,6 +25,9 @@ jobs:
       NX_URL_GITHUB_GO_CURRENT_VERSION: https://github.com/iilegendarypokemonii/genshin-optimizer/releases/tag/${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          # build scripts don't need the write token; the release step passes it explicitly
+          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc

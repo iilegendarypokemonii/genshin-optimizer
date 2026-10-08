@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-verify-info"
+description = "Enables the verify_info command without any pre-configured scope."
+commands.allow = ["verify_info"]
+
+[[permission]]
+identifier = "deny-verify-info"
+description = "Denies the verify_info command without any pre-configured scope."
+commands.deny = ["verify_info"]

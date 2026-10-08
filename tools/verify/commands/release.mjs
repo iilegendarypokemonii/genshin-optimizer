@@ -82,6 +82,7 @@ const stages = {
         "good-upload",
         "irminsul-import",
         "irminsul-error",
+        "tool-window-isolation",
       ],
       300000,
     ],

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-irminsul-status"
+description = "Enables the irminsul_status command without any pre-configured scope."
+commands.allow = ["irminsul_status"]
+
+[[permission]]
+identifier = "deny-irminsul-status"
+description = "Denies the irminsul_status command without any pre-configured scope."
+commands.deny = ["irminsul_status"]
