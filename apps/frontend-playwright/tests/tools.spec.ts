@@ -1,15 +1,8 @@
 import { expect, test } from '@playwright/test'
+// biome-ignore lint/style/noRestrictedImports: the e2e tests check the app's own tool list, which no library exports
+import { toolsManifest } from '../../frontend/src/app/Tools/toolsManifest'
 
-test.use({ launchOptions: { slowMo: 300 } })
-
-const TOOL_IDS = [
-  'enka-network',
-  'paimon-moe',
-  'genshin-interactive-map',
-  'akasha-system',
-  'lunaris',
-  'keqing-mains',
-] as const
+const enka = toolsManifest.find((tool) => tool.id === 'enka-network')!
 
 test.describe('Tools page', () => {
   test('Tools page loads', async ({ page }) => {
@@ -19,89 +12,64 @@ test.describe('Tools page', () => {
 
   test('All tool cards are displayed', async ({ page }) => {
     await page.goto('/#/tools')
-    await expect(page.getByTestId('tools-page')).toBeVisible()
-
-    for (const id of TOOL_IDS) {
-      await expect(page.getByTestId(`tool-card-${id}`)).toBeVisible()
+    for (const tool of toolsManifest) {
+      const card = page.getByTestId(`tool-card-${tool.id}`)
+      await expect(card).toBeVisible()
+      await expect(card).toContainText(tool.name)
+      await expect(card).toContainText(tool.category)
     }
-  })
-
-  test('Tool cards show name and description', async ({ page }) => {
-    await page.goto('/#/tools')
-    await expect(page.getByTestId('tools-page')).toBeVisible()
-
-    const enkaCard = page.getByTestId('tool-card-enka-network')
-    await expect(enkaCard).toBeVisible()
-    await expect(enkaCard).toContainText('Enka')
-
-    const lunarisCard = page.getByTestId('tool-card-lunaris')
-    await expect(lunarisCard).toBeVisible()
-    await expect(lunarisCard).toContainText('Lunaris')
-  })
-
-  test('Category chips are visible', async ({ page }) => {
-    await page.goto('/#/tools')
-    await expect(page.getByTestId('tools-page')).toBeVisible()
-
-    const categories = ['database', 'planner', 'wiki', 'community']
-    const chipLocators = categories.map((cat) =>
-      page.getByText(new RegExp(cat, 'i'))
-    )
-
-    let found = false
-    for (const locator of chipLocators) {
-      if ((await locator.count()) > 0) {
-        found = true
-        break
-      }
-    }
-    expect(found).toBe(true)
   })
 
   test('Opening a tool shows the viewer', async ({ page }) => {
     await page.goto('/#/tools')
-    await expect(page.getByTestId('tools-page')).toBeVisible()
+    await page
+      .getByRole('button', { name: 'Open Enka.Network in app', exact: true })
+      .click()
 
-    const enkaCard = page.getByTestId('tool-card-enka-network')
-    await enkaCard.getByRole('button', { name: 'Open' }).click()
-
-    const viewer = page.getByTestId('tool-viewer')
-    await expect(viewer).toBeVisible()
-
-    const iframe = page.getByTestId('tool-iframe')
-    await expect(iframe).toBeVisible()
-    await expect(iframe).toHaveAttribute('src', /enka\.network/)
+    await expect(page.getByTestId('tool-viewer')).toBeVisible()
+    await expect(page.getByTestId('tool-iframe')).toHaveAttribute(
+      'src',
+      enka.url
+    )
   })
 
   test('Closing the viewer returns to grid', async ({ page }) => {
-    await page.goto('/#/tools')
-    await expect(page.getByTestId('tools-page')).toBeVisible()
-
-    const enkaCard = page.getByTestId('tool-card-enka-network')
-    await enkaCard.getByRole('button', { name: 'Open' }).click()
+    await page.goto('/#/tools/enka-network')
     await expect(page.getByTestId('tool-viewer')).toBeVisible()
 
-    const closeButton = page
+    await page
       .getByTestId('tool-viewer')
-      .getByRole('button', { name: /close/i })
-    await closeButton.click()
+      .getByRole('button', { name: 'Close' })
+      .click()
 
     await expect(page.getByTestId('tools-page')).toBeVisible()
-    for (const id of TOOL_IDS) {
-      await expect(page.getByTestId(`tool-card-${id}`)).toBeVisible()
-    }
+    await expect(page.getByTestId(`tool-card-${enka.id}`)).toBeVisible()
   })
 
-  test('Tool sub-links open with correct URL', async ({ page }) => {
+  test('Account links open the profile for the database UID', async ({
+    page,
+  }) => {
+    await page.goto('/#/setting')
+    await page.getByRole('textbox', { name: 'UID' }).first().fill('712345678')
+
     await page.goto('/#/tools')
-    await expect(page.getByTestId('tools-page')).toBeVisible()
+    await page
+      .getByRole('button', { name: 'Open Enka.Network for Database 1' })
+      .click()
+    await expect(page.getByTestId('tool-iframe')).toHaveAttribute(
+      'src',
+      'https://enka.network/u/712345678'
+    )
+  })
 
-    const lunarisCard = page.getByTestId('tool-card-lunaris')
-    await lunarisCard.getByRole('button', { name: 'Endgame' }).click()
-
-    const iframe = page.getByTestId('tool-iframe')
-    await expect(iframe).toBeVisible()
-    await expect(iframe).toHaveAttribute('src', /lunaris\.moe\/endgame/)
+  test('Only https URLs are accepted as a viewer URL', async ({ page }) => {
+    await page.goto(
+      `/#/tools/enka-network?url=${encodeURIComponent('javascript:alert(1)')}`
+    )
+    await expect(page.getByTestId('tool-iframe')).toHaveAttribute(
+      'src',
+      enka.url
+    )
   })
 
   test('Navigation from header', async ({ page }) => {
