@@ -91,8 +91,10 @@ publisher certificates. The current installer is not Authenticode signed.
 1. Merge and test the changes on `master`.
 2. Bump the desktop version in both Tauri files, and refresh `src-tauri/Cargo.lock`
    with Cargo. Use a stable `x.y.z` version greater than the last release.
-3. Run `yarn verify release --stage post` locally on that commit. CI skips its
-   desktop-app check (see [verification](verification.md)).
+3. Build that commit (for example with `yarn desktop:update`), then run
+   `yarn verify release --stage post` locally. The post stage tests the existing
+   build in `src-tauri/target/release/`; CI skips its desktop-app check (see
+   [verification](verification.md)).
 4. Commit and push the changes. Tag that exact commit as `desktop-vX.Y.Z` and push
    the tag. For example:
 
