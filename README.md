@@ -1,19 +1,21 @@
 # Genshin Optimizer Local — personal Windows modification
 
-This is a **personal modification** of [Gacha Optimizer / Genshin Optimizer](https://github.com/frzyc/genshin-optimizer). It is an unofficial desktop fork; the original optimizer and its authors are credited below.
+This is my **personal modification** of [Genshin Optimizer](https://github.com/frzyc/genshin-optimizer): an unofficial Windows desktop build with a few extra tools. The optimizer itself is the work of the Genshin Optimizer team; their original README follows below.
+
+This build is not affiliated with or supported by the Genshin Optimizer team. Please report problems with it [in this repository](https://github.com/iilegendarypokemonii/genshin-optimizer/issues), not upstream.
 
 **[Download the Windows app](https://github.com/iilegendarypokemonii/genshin-optimizer/releases/latest)** · [Installation](#install-on-windows) · [Updates](#update-the-app)
 
-## What is different here?
+## Additions
 
-- **Windows desktop app:** open the optimizer from your Start menu, with your data saved locally on your PC.
-- **Wish Tracker:** import wish history from your local Genshin game cache, view pity/history per UID, keep backups, and record player-confirmed Capturing Radiance results.
-- **Game data:** capture separate account snapshots and select artifacts, characters, weapons, or materials. Open it from the home Game data card or Tools; wishes have their own tab. Automatic capture supports Windows 10 and 11, with a built-in compatibility method and no extra driver installation. A [small standalone version](https://github.com/iilegendarypokemonii/irminsul) is also available.
-- **Team DPS:** import damage screenshots, read them with Windows OCR, and keep team results and screenshots per optimizer account.
-- **Tools page:** access the built-in tools and links to community resources, including account-specific Enka.Network and Akasha links.
-- **Desktop updates:** check for this fork's published releases and install updates inside the app.
+- **Desktop app:** a Windows app with a Start menu shortcut. Your data is stored on your PC, and updates install from inside the app.
+- **Expression targets:** multi-target optimization can combine targets with arithmetic, min/max, and priority expressions instead of only weighted sums. Ported from [aurceive's fork](https://github.com/aurceive/genshin-optimizer).
+- **Wish Tracker:** import wish history from the game's local cache, view pity and history per UID, keep backups, and record confirmed Capturing Radiance results.
+- **Game data:** capture account snapshots while logging in, then import artifacts, characters, and weapons, or export them as GOOD JSON. Works on Windows 10 and 11 without installing a capture driver. Also available as a [standalone app](https://github.com/iilegendarypokemonii/irminsul).
+- **Team DPS:** read damage screenshots with Windows OCR and keep team results per optimizer account.
+- **Tools page:** links to community tools, including account-specific Enka.Network and Akasha pages.
 
-Each user uses their own data. There is no separate optimizer signup or shared online account, and installing this app does not automatically import your Genshin account. Upstream game-data updates are included when a new desktop release is published here.
+There is no online account or sign-up. Each installation keeps its own data, and nothing is imported from your Genshin account automatically. New game data from upstream arrives with each desktop release.
 
 ## Install on Windows
 
@@ -39,7 +41,7 @@ Your saved data lives under `%LOCALAPPDATA%\com.iilegendarypokemonii.genshinopti
 
 ### Windows download notice
 
-This personal app does not currently have a paid Windows publisher certificate, so Windows may show an unknown-publisher or SmartScreen notice. Only use downloads from this repository's release page. Update signatures verify updates inside the app; they are separate from Windows publisher signing.
+The installer is not signed with a Windows publisher certificate, so Windows may show an unknown-publisher or SmartScreen notice. Only download it from this repository's releases page. Updates installed from inside the app are verified separately, with the app's own update signature.
 
 If Windows shows **Windows protected your PC** for this download and offers **More info → Run anyway**, that continues installation.
 
@@ -49,11 +51,11 @@ Click **Check for updates** at the bottom of the app, then **Update and restart*
 
 If checking fails, you can keep using your installed version and try again later. You can also close the app and run the latest installer over the existing installation. A GitHub commit alone is not an app update; updates become available when a new desktop release is published.
 
-For problems with this modification, [open an issue in this fork](https://github.com/iilegendarypokemonii/genshin-optimizer/issues). For building the app or publishing releases, see the [desktop maintainer guide](docs/desktop.md).
+To build the app or publish releases, see the [maintainer guide](docs/desktop.md).
 
 ---
 
-The original Gacha Optimizer README follows, preserved below. Its website links and developer setup instructions describe the upstream project.
+The original Gacha Optimizer README follows unchanged. Its website links and developer instructions describe the upstream project.
 
 # Gacha Optimizer
 

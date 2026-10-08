@@ -44,7 +44,7 @@ describe('parseOcrLines', () => {
         line('Citlali : 578232(2%)'),
         line('Time Elapsed : 52.71 s'),
         line('Strongest Hit : 856556'),
-        line('Stage GUID: 24801105423 UID: 757970926', { x: 1800, w: 700 }),
+        line('Stage GUID: 24801105423 UID: 712345678', { x: 1800, w: 700 }),
       ],
       nameMap
     )
@@ -52,7 +52,7 @@ describe('parseOcrLines', () => {
     expect(res.totalDamage).toEqual(31061996)
     expect(res.timeElapsedSec).toBeCloseTo(52.71)
     expect(res.strongestHit).toEqual(856556)
-    expect(res.uid).toEqual('757970926')
+    expect(res.uid).toEqual('712345678')
     expect(res.contributions).toEqual([
       { character: 'Chasca', rawName: 'Chasca', damage: 23498282, pct: 76 },
       { character: 'Nicole', rawName: 'Nicole', damage: 197781, pct: 1 },
@@ -90,7 +90,7 @@ describe('parseOcrLines', () => {
         at(2238, 340, 100, 23, 'C asca'),
         at(2251, 704, 86, 24, 'Citlali'),
         at(1848, 1402, 63, 29, 'Stag'),
-        at(1912, 1402, 557, 23, 'e GUID: 24801105423 UID: 757970926'),
+        at(1912, 1402, 557, 23, 'e GUID: 24801105423 UID: 712345678'),
       ],
       nameMap
     )
@@ -99,7 +99,7 @@ describe('parseOcrLines', () => {
     expect(res.timeElapsedSec).toBeCloseTo(52.7)
     // garbled "Strongest Hit" label: better missing than a wrong value
     expect(res.strongestHit).toBeUndefined()
-    expect(res.uid).toEqual('757970926')
+    expect(res.uid).toEqual('712345678')
     // contribution values were not OCR'd in this shot, but the team still resolves
     expect(res.contributions).toEqual([])
     expect(res.team).toEqual(['Chasca', 'Nicole', 'Durin', 'Citlali'])
@@ -125,14 +125,14 @@ describe('parseOcrLines', () => {
         at(4, 600, 400, 33, "+ Stron e'€Hit+856556"),
         at(2238, 339, 100, 24, 'Chasca'),
         at(2251, 704, 86, 24, 'Citlali'),
-        at(1848, 1402, 620, 29, 'stage GUID•. 24801105423 UID•. 757970926'),
+        at(1848, 1402, 620, 29, 'stage GUID•. 24801105423 UID•. 712345678'),
       ],
       nameMap
     )
     expect(res.dps).toEqual(589311)
     expect(res.totalDamage).toEqual(31061996)
     expect(res.strongestHit).toEqual(856556)
-    expect(res.uid).toEqual('757970926')
+    expect(res.uid).toEqual('712345678')
     expect(res.contributions).toEqual([
       { character: 'Chasca', rawName: 'Chasca', damage: 23498282, pct: 76 },
       { character: 'Nicole', rawName: 'Nicole', damage: 197781, pct: 1 },
@@ -162,7 +162,7 @@ describe('parseOcrLines', () => {
         at(432, 720, 347, 17, 'Chasca : Vaporize x4 Melt XIO Frozen x5'),
         at(2265, 461, 78, 22, 'Mona'),
         at(1853, 1401, 142, 26, 'Stage GUI'),
-        at(2020, 1394, 453, 30, ': 24801105423 UID: 757970926'),
+        at(2020, 1394, 453, 30, ': 24801105423 UID: 712345678'),
       ],
       nameMap
     )
@@ -172,7 +172,7 @@ describe('parseOcrLines', () => {
     expect(res.totalDamage).toEqual(13492769)
     expect(res.timeElapsedSec).toBeCloseTo(64.85)
     expect(res.strongestHit).toEqual(367910)
-    expect(res.uid).toEqual('757970926')
+    expect(res.uid).toEqual('712345678')
     expect(res.contributions).toEqual([
       { character: 'Chasca', rawName: 'Chasca', damage: 9883860, pct: 73 },
       { character: 'Mona', rawName: 'Mona', damage: 264923, pct: 2 },

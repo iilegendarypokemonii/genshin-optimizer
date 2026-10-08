@@ -2,7 +2,7 @@
 name = "genshin-optimizer-desktop"
 version = "0.4.8"
 description = "Desktop shell for Genshin Optimizer"
-authors = ["Timon"]
+authors = ["iilegendarypokemonii"]
 edition = "2021"
 
 [lib]

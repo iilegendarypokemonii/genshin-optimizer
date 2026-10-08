@@ -9,7 +9,7 @@ const root = resolve('dist/apps/frontend')
 const output = resolve(
   process.env.VERIFY_EVIDENCE_DIR ||
     process.env.DESKTOP_WEB_SMOKE_OUTPUT_DIR ||
-    '.codex-run/desktop-release'
+    '.verify/desktop-web-smoke'
 )
 const contentTypes = {
   '.html': 'text/html',

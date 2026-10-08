@@ -1,7 +1,7 @@
-import { readFile, readdir } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
-import { homedir } from 'node:os'
 import { execFile } from 'node:child_process'
+import { readdir, readFile } from 'node:fs/promises'
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
 import { gunzipSync } from 'node:zlib'
 import { runProcess } from '../lib/proc.mjs'
@@ -102,17 +102,12 @@ async function goComparisons(root) {
   const upstreamMissing = Number(
     await git(root, ['rev-list', '--count', 'master..upstream/master'])
   )
-  const desktopMissing = Number(
-    await git(root, ['rev-list', '--count', 'desktop..master'])
-  )
   return {
-    attention: upstreamMissing > 0 || desktopMissing > 0,
+    attention: upstreamMissing > 0,
     upstreamMissing,
-    desktopMissing,
     pendingStatsCommits: pending ? pending.split('\n') : [],
     refs: {
       master: await git(root, ['rev-parse', 'master']),
-      desktop: await git(root, ['rev-parse', 'desktop']),
       upstream: await git(root, ['rev-parse', 'upstream/master']),
     },
   }

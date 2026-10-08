@@ -4,10 +4,14 @@
 dist
 tmp
 /out-tsc
+
+# Desktop fork: Tauri build output, local executable copy, verification evidence
 src-tauri/target
-.codex-run
 desktop/*
 !desktop/.gitkeep
+/.verify/
+playwright-report/
+test-results/
 
 # dependencies
 node_modules
@@ -32,7 +36,6 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
-/\.verify/
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
@@ -71,16 +74,8 @@ apps/somnia/src/config.json
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
-
-# playwright artifacts
-playwright-report/
-test-results/
-
-# Nx tooling
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
 .nx/polygraph
 .nx/self-healing
-
-# Local theorycrafting research and downloaded source material
-/scratch/
