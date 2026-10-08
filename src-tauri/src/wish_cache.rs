@@ -4,12 +4,33 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
-/// Well-known install locations probed when the user has not configured a path.
+/// Default install locations, probed after the launcher's recorded path.
 const GAME_DIR_CANDIDATES: &[&str] = &[
-    r"A:\Games\Genshin Impact game",
     r"C:\Program Files\Genshin Impact\Genshin Impact game",
     r"C:\Program Files\HoYoPlay\games\Genshin Impact game",
 ];
+
+/// Install folders recorded by the HoYoPlay launcher, one per launcher version.
+fn launcher_game_dirs() -> Vec<PathBuf> {
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
+
+    let Ok(launcher) = RegKey::predef(HKEY_CURRENT_USER).open_subkey(r"Software\Cognosphere\HYP")
+    else {
+        return Vec::new();
+    };
+    launcher
+        .enum_keys()
+        .flatten()
+        .filter_map(|version| {
+            launcher
+                .open_subkey(format!(r"{version}\hk4e_global"))
+                .and_then(|game| game.get_value::<String, _>("GameInstallPath"))
+                .ok()
+        })
+        .map(PathBuf::from)
+        .collect()
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,8 +68,10 @@ fn resolve_game_dir(configured: Option<String>) -> Result<PathBuf, WishCacheErro
             format!("Configured game folder has no GenshinImpact_Data: {dir}"),
         ));
     }
-    for candidate in GAME_DIR_CANDIDATES {
-        let path = PathBuf::from(candidate);
+    let candidates = launcher_game_dirs()
+        .into_iter()
+        .chain(GAME_DIR_CANDIDATES.iter().map(PathBuf::from));
+    for path in candidates {
         if path.join("GenshinImpact_Data").is_dir() {
             return Ok(path);
         }
