@@ -44,8 +44,7 @@ import { WishTrackerProvider } from './WishTracker/WishTrackerContext'
 
 type PageModule = Promise<{ default: ComponentType<any> }>
 
-const loadPageHome = () =>
-  import('@genshin-optimizer/gi/page-home') as unknown as PageModule
+const loadPageHome = () => import('./Home') as unknown as PageModule
 const loadPageArtifacts = () =>
   import('@genshin-optimizer/gi/page-artifacts') as unknown as PageModule
 const loadPageSettings = () =>
