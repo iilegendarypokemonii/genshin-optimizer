@@ -57,7 +57,7 @@ import type { Dispatch, SetStateAction } from 'react'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import OptimizationTargetSelector from '../Tabs/TabOptimize/Components/OptimizationTargetSelector'
-import ReactionDropdown from './ReactionDropdown'
+import { ReactionDropdown } from './MTargetEditor'
 
 async function copyToClipboard(target: any) {
   try {
