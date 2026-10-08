@@ -1,0 +1,33 @@
+{
+  "format": "GOOD",
+  "version": 3,
+  "dbVersion": 26,
+  "source": "Genshin Optimizer",
+  "characters": [
+    {
+      "key": "Amber",
+      "level": 1,
+      "ascension": 0,
+      "constellation": 0,
+      "talent": { "auto": 1, "skill": 1, "burst": 1 }
+    }
+  ],
+  "weapons": [],
+  "artifacts": [],
+  "materials": {},
+  "teamchars": [
+    {
+      "id": "teamchar_verify",
+      "key": "Amber",
+      "name": "Verify loadout",
+      "customMultiTargets": []
+    }
+  ],
+  "teams": [
+    {
+      "id": "team_verify",
+      "name": "Verify team",
+      "loadoutData": [{ "teamCharId": "teamchar_verify" }]
+    }
+  ]
+}

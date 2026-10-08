@@ -1,6 +1,7 @@
 import goodUpload from './good-upload.mjs'
 import irminsulError from './irminsul-error.mjs'
 import irminsulImport from './irminsul-import.mjs'
+import multiTargetEditor from './multi-target-editor.mjs'
 import smoke from './smoke.mjs'
 import toolWindowIsolation from './tool-window-isolation.mjs'
 
@@ -31,5 +32,6 @@ export const scenarios = {
   'irminsul-mismatch': irminsulMismatch,
   'interrupt-restart': interruptRestart,
   'tool-window-isolation': toolWindowIsolation,
+  'multi-target-editor': multiTargetEditor,
 }
 export { goodUpload, irminsulError, irminsulImport, smoke }

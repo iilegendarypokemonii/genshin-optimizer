@@ -83,6 +83,7 @@ const stages = {
         'irminsul-import',
         'irminsul-error',
         'tool-window-isolation',
+        'multi-target-editor',
       ],
       300000,
     ],

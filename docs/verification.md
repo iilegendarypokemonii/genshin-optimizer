@@ -51,6 +51,9 @@ traffic or validate the game's current wire protocol.
 - `tool-window-isolation`: open a `tool-*` window on a local stand-in website,
   then check that native app and plugin commands are refused there, also after
   navigating that window to the app itself, while the main window keeps access.
+- `multi-target-editor`: add a target to a multi-opt in list mode, convert it to
+  an expression, check every label is translated, and verify the expression is
+  saved and survives a restart.
 - `irminsul-mismatch`: deliberately change an expected count to exercise failure
   reports/screenshots (expected exit 1).
 - `interrupt-restart`: interrupt a restart and exercise cleanup (expected exit 2).
