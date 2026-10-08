@@ -290,10 +290,7 @@ export default function TabUpopt() {
     if (!optimizationTarget) return
     // FIXME: Use teamData here because teamData recalcs upon dependency update. Its kind of jank since there are some redundant calcs
     const teamDataLocal =
-      teamData &&
-      getTeamData(database, teamId, teamCharId, 0, {
-        [teamCharId]: { art: [] },
-      })
+      teamData && getTeamData(database, teamId, teamCharId, 0, [])
     if (!teamDataLocal) return
     const workerData = uiDataForTeam(
       teamDataLocal.teamData,
