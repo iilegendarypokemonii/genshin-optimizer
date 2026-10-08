@@ -20,17 +20,17 @@ import type {
   UnitAddress,
 } from '@genshin-optimizer/gi/db'
 import {
-  OperationSpecs,
   initCustomMultiTarget,
   initExpressionUnit,
   itemAddressValue,
+  OperationSpecs,
 } from '@genshin-optimizer/gi/db'
 import { CharacterContext } from '@genshin-optimizer/gi/db-ui'
 import { isCharMelee } from '@genshin-optimizer/gi/stats'
 import {
   DataContext,
-  StatEditorList,
   infusionVals,
+  StatEditorList,
 } from '@genshin-optimizer/gi/ui'
 import type { CalcResult } from '@genshin-optimizer/gi/uidata'
 import { allInputPremodKeys } from '@genshin-optimizer/gi/wr-types'
@@ -338,7 +338,7 @@ export default function ItemConfigPanel({
       sx={{
         boxShadow: '0 0 10px black',
         position: 'sticky',
-        bottom: `10px`,
+        bottom: '10px',
         zIndex: 1000,
       }}
     >
@@ -412,7 +412,7 @@ function UnitConfig({
         <DropdownButton title={title}>
           {avana.map((name) => (
             <MenuItem
-              key={'avaibleNames' + sia.layer + sia.index + name}
+              key={`avaibleNames${sia.layer}${sia.index}${name}`}
               value={name}
               onClick={() => setUnit({ name })}
             >

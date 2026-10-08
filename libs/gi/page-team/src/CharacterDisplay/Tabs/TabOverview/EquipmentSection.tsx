@@ -1,4 +1,3 @@
-import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { CardThemed } from '@genshin-optimizer/common/ui'
 import { objKeyMap } from '@genshin-optimizer/common/util'
 import {
@@ -14,6 +13,7 @@ import { dataSetEffects } from '@genshin-optimizer/gi/sheets'
 import { getCharStat } from '@genshin-optimizer/gi/stats'
 import {
   BuildEditContext,
+  confirmAsync,
   DataContext,
   DocumentDisplay,
   EquippedGrid,
@@ -156,7 +156,7 @@ function ArtifactSectionCard() {
     const confirmMsg = buildEquip
       ? 'Do you want to unequip all artifacts in this build?'
       : 'Do you want to move all currently equipped artifacts to inventory?'
-    if (!await confirmAsync(confirmMsg)) return
+    if (!(await confirmAsync(confirmMsg))) return
 
     if (buildEquip)
       database.builds.set(buildId, {

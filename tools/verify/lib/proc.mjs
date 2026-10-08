@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process'
-import { mkdirSync, writeFileSync, appendFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, delimiter, join } from 'node:path'
+import { delimiter, dirname, join } from 'node:path'
 
 let toolchainBin
 function childEnvironment(env) {
@@ -16,9 +16,7 @@ function childEnvironment(env) {
     toolchainBin =
       rustup.status === 0 ? dirname(rustup.stdout.trim()) : cargoBin
   }
-  const pathKey = Object.prototype.hasOwnProperty.call(result, 'Path')
-    ? 'Path'
-    : 'PATH'
+  const pathKey = Object.hasOwn(result, 'Path') ? 'Path' : 'PATH'
   const currentPath = (result[pathKey] ?? '').split(delimiter).filter(Boolean)
   if (!currentPath.includes(cargoBin))
     result[pathKey] = [cargoBin, ...currentPath].join(delimiter)

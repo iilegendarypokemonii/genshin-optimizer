@@ -3,11 +3,11 @@ import {
   zodString,
 } from '@genshin-optimizer/common/database'
 import {
-  type CharacterKey,
   allAdditiveReactions,
   allAmpReactionKeys,
   allInfusionAuraElementKeys,
   allMultiOptHitModeKeys,
+  type CharacterKey,
 } from '@genshin-optimizer/gi/consts'
 import type { InputPremodKey } from '@genshin-optimizer/gi/wr-types'
 import { allInputPremodKeys } from '@genshin-optimizer/gi/wr-types'

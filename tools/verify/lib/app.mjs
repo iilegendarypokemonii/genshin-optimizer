@@ -1,24 +1,24 @@
 import assert from 'node:assert/strict'
-import fs from 'node:fs/promises'
-import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { runProcess } from './proc.mjs'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import {
-  claimProfile,
-  releaseProfile,
-  readOptional,
-  sameStorage,
-  validateProfileName,
-} from './app-profile.mjs'
-import {
+  assertListenerOwned,
+  bounded,
   freePort,
   processInfo,
   stopOwnedProcess,
-  assertListenerOwned,
   waitUntil,
-  bounded,
 } from './app-process.mjs'
+import {
+  claimProfile,
+  readOptional,
+  releaseProfile,
+  sameStorage,
+  validateProfileName,
+} from './app-profile.mjs'
+import { runProcess } from './proc.mjs'
 
 export const PROTOCOL_MARKER = 'GO_VERIFY_PROTOCOL_V1'
 export { validateProfileName } from './app-profile.mjs'

@@ -1,8 +1,8 @@
-import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { useBoolState } from '@genshin-optimizer/common/react-util'
 import { arrayMove, clamp, deepClone } from '@genshin-optimizer/common/util'
 import type { CustomMultiTarget, CustomTarget } from '@genshin-optimizer/gi/db'
 import { initCustomTarget } from '@genshin-optimizer/gi/db'
+import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import AddIcon from '@mui/icons-material/Add'
 import { Button } from '@mui/material'
 import { useCallback, useMemo, useState } from 'react'
@@ -49,7 +49,7 @@ export default function TargetListEditor({
     (index: number) => async () => {
       if (
         Object.values(customMultiTarget.targets[index].bonusStats).length &&
-        !await confirmAsync(t('multiTarget.confirm'))
+        !(await confirmAsync(t('multiTarget.confirm')))
       )
         return
       const targets = [...customMultiTarget.targets]

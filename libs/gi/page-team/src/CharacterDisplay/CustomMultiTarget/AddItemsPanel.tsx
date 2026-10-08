@@ -14,11 +14,11 @@ import type {
   ItemAddress,
 } from '@genshin-optimizer/gi/db'
 import {
-  OperationSpecs,
   initCustomFunction,
   initCustomFunctionArgument,
   initCustomTarget,
   initExpressionUnit,
+  OperationSpecs,
   validateCustomMultiTarget,
 } from '@genshin-optimizer/gi/db'
 import UploadIcon from '@mui/icons-material/Upload'
@@ -79,7 +79,7 @@ export default function AddItemsPanel({
   const addArgument = useCallback(
     (arg: Partial<CustomFunctionArgument>) => {
       let _sia = sia
-      if (!_sia || _sia.type !== 'argument') {
+      if (_sia?.type !== 'argument') {
         if (functions.length === 0) return
         const layer = _sia && _sia.layer < functions.length ? _sia.layer : 0
         _sia = { type: 'argument', layer, index: 0 }
@@ -95,7 +95,7 @@ export default function AddItemsPanel({
   const addUnit = useCallback(
     (unit: Partial<ExpressionUnit>) => {
       let _sia = sia
-      if (!_sia || _sia.type !== 'unit') {
+      if (_sia?.type !== 'unit') {
         const layer = _sia?.layer ?? functions.length
         _sia = { type: 'unit', layer, index: 0 }
       } else {
@@ -220,7 +220,7 @@ export default function AddItemsPanel({
       sx={{
         boxShadow: '0 0 10px black',
         position: 'sticky',
-        top: `10px`,
+        top: '10px',
         zIndex: 1000,
       }}
     >

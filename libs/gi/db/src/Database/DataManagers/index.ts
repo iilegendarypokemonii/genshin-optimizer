@@ -70,6 +70,18 @@ import {
 } from './WeaponDataManager'
 
 export type {
+  TeamDpsContribution,
+  TeamDpsRun,
+  TeamDpsSim,
+} from './TeamDpsDataManager'
+export {
+  bestTeamDpsRun,
+  latestTeamDpsRun,
+  TEAM_DPS_TEAM_SIZE,
+  TeamDpsDataManager,
+  teamDpsCharacter,
+} from './TeamDpsDataManager'
+export type {
   AddressItemTypesMap,
   ArtifactData,
   ArtSetExclusion,
@@ -135,15 +147,3 @@ export {
   validateArtifact,
   validateCustomMultiTarget,
 }
-export type {
-  TeamDpsContribution,
-  TeamDpsRun,
-  TeamDpsSim,
-} from './TeamDpsDataManager'
-export {
-  bestTeamDpsRun,
-  latestTeamDpsRun,
-  TEAM_DPS_TEAM_SIZE,
-  TeamDpsDataManager,
-  teamDpsCharacter,
-} from './TeamDpsDataManager'

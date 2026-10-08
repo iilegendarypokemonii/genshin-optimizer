@@ -7,8 +7,8 @@ import type {
   ItemRelations,
 } from '@genshin-optimizer/gi/db'
 import {
-  OperationSpecs,
   isEnclosing,
+  OperationSpecs,
   unitPartFinder,
 } from '@genshin-optimizer/gi/db'
 import { DataContext, resolveInfo } from '@genshin-optimizer/gi/ui'

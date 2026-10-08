@@ -1,10 +1,10 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { runProcess } from '../lib/proc.mjs'
-import assert from 'node:assert/strict'
-import { createHash } from 'node:crypto'
 import { readOptional } from '../lib/app-profile.mjs'
+import { runProcess } from '../lib/proc.mjs'
 
 function installedExe(root, options) {
   return resolve(
@@ -63,7 +63,7 @@ async function expectedDigest(root, exe) {
 
 async function installedMetadata(root, exe, evidence) {
   const imageName = exe.split('\\').pop().replaceAll("'", "''")
-  const ps = `$ErrorActionPreference='Stop'; $f=Get-Item -LiteralPath ${quotePowerShell(exe)}; $processes=@(Get-CimInstance Win32_Process -Filter \"Name='${imageName}'\" | Where-Object { $_.ExecutablePath -eq $f.FullName } | ForEach-Object { $creation=$_.CreationDate.ToUniversalTime(); [pscustomobject]@{ path=$_.ExecutablePath; creation=$creation.ToString('o'); afterWrite=($creation -gt $f.LastWriteTimeUtc); pid=$_.ProcessId } }); [pscustomobject]@{ path=$f.FullName; sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash; productVersion=$f.VersionInfo.ProductVersion; writeTime=$f.LastWriteTimeUtc.ToString('o'); processes=$processes } | ConvertTo-Json -Compress -Depth 4`
+  const ps = `$ErrorActionPreference='Stop'; $f=Get-Item -LiteralPath ${quotePowerShell(exe)}; $processes=@(Get-CimInstance Win32_Process -Filter "Name='${imageName}'" | Where-Object { $_.ExecutablePath -eq $f.FullName } | ForEach-Object { $creation=$_.CreationDate.ToUniversalTime(); [pscustomobject]@{ path=$_.ExecutablePath; creation=$creation.ToString('o'); afterWrite=($creation -gt $f.LastWriteTimeUtc); pid=$_.ProcessId } }); [pscustomobject]@{ path=$f.FullName; sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash; productVersion=$f.VersionInfo.ProductVersion; writeTime=$f.LastWriteTimeUtc.ToString('o'); processes=$processes } | ConvertTo-Json -Compress -Depth 4`
   const result = await runProcess(
     'powershell.exe',
     ['-NoProfile', '-NonInteractive', '-Command', ps],

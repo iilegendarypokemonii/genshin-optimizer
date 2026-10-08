@@ -1,4 +1,3 @@
-import { confirmAsync } from '../../../util/confirmAsync'
 import { useDataManagerEntries } from '@genshin-optimizer/common/database-ui'
 import { CardThemed, ImgIcon } from '@genshin-optimizer/common/ui'
 import { objKeyMap } from '@genshin-optimizer/common/util'
@@ -25,6 +24,7 @@ import { useCallback, useContext, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { BuildEditContext, DataContext, SillyContext } from '../../../context'
+import { confirmAsync } from '../../../util/confirmAsync'
 import { AddTeamInfo } from '../../AddTeamInfo'
 import { CharacterLevelSelect } from '../CharacterLevelSelect'
 import {
@@ -61,7 +61,7 @@ export function Content({ onClose }: { onClose?: () => void }) {
       }:${charKeyToLocGenderedCharKey(characterKey, gender)}`
     )
 
-    if (!await confirmAsync(t('removeCharacter', { value: name }))) return
+    if (!(await confirmAsync(t('removeCharacter', { value: name })))) return
     database.chars.remove(characterKey)
     navigate('/characters')
   }, [database, navigate, characterKey, gender, silly, t])

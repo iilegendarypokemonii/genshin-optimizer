@@ -1,4 +1,3 @@
-import { confirmAsync } from '../../util/confirmAsync'
 import {
   useDataEntryBase,
   useDataManagerKeys,
@@ -25,6 +24,7 @@ import {
 } from '@mui/material'
 import { useCallback, useContext } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import { confirmAsync } from '../../util/confirmAsync'
 import { UploadCard } from './UploadCard'
 
 export function DatabaseCard({ readOnly = false }: { readOnly?: boolean }) {
@@ -79,7 +79,8 @@ function DataCard({ index, readOnly }: { index: number; readOnly: boolean }) {
   )
 
   const onDelete = useCallback(async () => {
-    if (!await confirmAsync(`Are you sure you want to delete "${name}"?`)) return
+    if (!(await confirmAsync(`Are you sure you want to delete "${name}"?`)))
+      return
     database.clear()
     database.toExtraLocalDB()
   }, [database, name])

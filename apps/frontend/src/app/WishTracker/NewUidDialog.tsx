@@ -6,8 +6,8 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material'
-import { useWishTracker } from './WishTrackerContext'
 import { slotLabel, useDatabaseInfos } from './useDatabaseInfos'
+import { useWishTracker } from './WishTrackerContext'
 
 /** Non-blocking prompt when the cache authkey belongs to a UID with no wish profile. */
 export default function NewUidDialog() {

@@ -1,18 +1,17 @@
-import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import test from 'node:test'
 import { hasProtocolMarker, validAppUrl } from './lib/app.mjs'
+import { sameProcess, waitUntil } from './lib/app-process.mjs'
 import {
   claimProfile,
-  releaseProfile,
   profilePath,
-  validateProfileName,
+  releaseProfile,
   sameStorage,
+  validateProfileName,
 } from './lib/app-profile.mjs'
-import { sameProcess } from './lib/app-process.mjs'
-import { waitUntil } from './lib/app-process.mjs'
 
 const identifier = 'com.example.verification'
 
@@ -150,26 +149,24 @@ test('aborted startup polling cannot continue into an app launch', async () => {
   assert.equal(polls, 1)
 })
 
-test(
-  'explicit recovery refuses a live owner and safely reclaims a dead owner',
-  { skip: process.platform !== 'win32' },
-  async () => {
-    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'verify-recovery-'))
-    try {
-      const claim = await claimProfile(identifier, 'stale', base)
-      await assert.rejects(
-        claimProfile(identifier, 'stale', base, true),
-        /owning harness PID is live/
-      )
-      await fs.writeFile(
-        path.join(claim.lockPath, 'owner.json'),
-        JSON.stringify({ pid: 2147483647, token: claim.token })
-      )
-      const recovered = await claimProfile(identifier, 'stale', base, true)
-      assert.notEqual(recovered.token, claim.token)
-      await releaseProfile(recovered, false)
-    } finally {
-      await fs.rm(base, { recursive: true, force: true })
-    }
+test('explicit recovery refuses a live owner and safely reclaims a dead owner', {
+  skip: process.platform !== 'win32',
+}, async () => {
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'verify-recovery-'))
+  try {
+    const claim = await claimProfile(identifier, 'stale', base)
+    await assert.rejects(
+      claimProfile(identifier, 'stale', base, true),
+      /owning harness PID is live/
+    )
+    await fs.writeFile(
+      path.join(claim.lockPath, 'owner.json'),
+      JSON.stringify({ pid: 2147483647, token: claim.token })
+    )
+    const recovered = await claimProfile(identifier, 'stale', base, true)
+    assert.notEqual(recovered.token, claim.token)
+    await releaseProfile(recovered, false)
+  } finally {
+    await fs.rm(base, { recursive: true, force: true })
   }
-)
+})

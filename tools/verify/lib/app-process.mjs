@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
-import path from 'node:path'
 import net from 'node:net'
+import path from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { runProcess } from './proc.mjs'
 

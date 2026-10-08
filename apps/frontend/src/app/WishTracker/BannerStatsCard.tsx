@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
-import { capturingRadianceWinChance, type BannerStats } from './pity'
+import { type BannerStats, capturingRadianceWinChance } from './pity'
 
 function pityColor(pity: number): string {
   if (pity <= 40) return '#7fe08a'

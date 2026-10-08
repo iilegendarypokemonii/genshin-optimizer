@@ -1,8 +1,8 @@
 import { DropdownButton } from '@genshin-optimizer/common/ui'
 import type {
   AdditiveReactionKey,
-  AmpReactionKey,
   AmplifyingReactionKey,
+  AmpReactionKey,
   ElementKey,
   InfusionAuraElementKey,
 } from '@genshin-optimizer/gi/consts'

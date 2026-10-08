@@ -1,7 +1,7 @@
 import {
-  UidMismatchError,
   mergeWishes,
   parseImport,
+  UidMismatchError,
   validateWishFile,
 } from './storage'
 import type { Wish } from './types'

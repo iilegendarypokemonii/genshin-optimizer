@@ -4,9 +4,8 @@ use tauri::Manager;
 use windows::core::{Interface, HSTRING};
 use windows::Globalization::Language;
 use windows::Graphics::Imaging::{
-    BitmapAlphaMode, BitmapBounds, BitmapBufferAccessMode, BitmapDecoder,
-    BitmapInterpolationMode, BitmapPixelFormat, BitmapTransform, ColorManagementMode,
-    ExifOrientationMode, SoftwareBitmap,
+    BitmapAlphaMode, BitmapBounds, BitmapBufferAccessMode, BitmapDecoder, BitmapInterpolationMode,
+    BitmapPixelFormat, BitmapTransform, ColorManagementMode, ExifOrientationMode, SoftwareBitmap,
 };
 use windows::Media::Ocr::OcrEngine;
 use windows::Storage::Streams::{DataWriter, InMemoryRandomAccessStream};
@@ -111,7 +110,10 @@ fn read_quality(s: &str) -> (usize, usize) {
             run = 0;
         }
     }
-    (longest, s.chars().filter(|c| c.is_ascii_alphanumeric()).count())
+    (
+        longest,
+        s.chars().filter(|c| c.is_ascii_alphanumeric()).count(),
+    )
 }
 
 /// A region of the source image to recognize, at a given upscale factor.
@@ -158,9 +160,7 @@ fn recognize_pass(
     max_dim: u32,
     pass: &Pass,
 ) -> Result<Vec<OcrLine>, windows::core::Error> {
-    let (bx, by, bw, bh) = pass
-        .bounds
-        .unwrap_or((0, 0, full_w, full_h));
+    let (bx, by, bw, bh) = pass.bounds.unwrap_or((0, 0, full_w, full_h));
     let scale = scale_for(bw, bh, max_dim, pass.scale);
     if scale < 0.99 {
         // even 1x does not fit the engine limit; skip this pass
@@ -324,9 +324,7 @@ fn ocr_image_bytes(bytes: &[u8]) -> Result<OcrOutput, OcrError> {
         match recognize_pass(&engine, &decoder, full_w, full_h, max_dim, pass) {
             Ok(lines) => {
                 for line in lines {
-                    if let Some(kept) =
-                        merged.iter_mut().find(|kept| overlap(kept, &line) > 0.55)
-                    {
+                    if let Some(kept) = merged.iter_mut().find(|kept| overlap(kept, &line) > 0.55) {
                         // same spot read by several passes: keep the better read
                         if read_quality(&line.text) > read_quality(&kept.text) {
                             *kept = line;

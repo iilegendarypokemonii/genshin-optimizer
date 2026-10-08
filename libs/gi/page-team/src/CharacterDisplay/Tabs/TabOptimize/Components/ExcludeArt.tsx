@@ -1,4 +1,3 @@
-import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { useDataManagerValues } from '@genshin-optimizer/common/database-ui'
 import {
   useBoolState,
@@ -22,6 +21,7 @@ import {
   ArtifactCard,
   ArtifactCardNano,
   ArtifactFilterDisplay,
+  confirmAsync,
   ExcludeIcon,
   OptimizationIcon,
 } from '@genshin-optimizer/gi/ui'
@@ -237,11 +237,13 @@ function ExcludeArtRedButtons({
   }, [artifactIds, artExclusion])
 
   const excludeArtifacts = async () =>
-    await confirmAsync(t('optExcludeModal.excludeMsg', { count: numExclude })) &&
-    onExclude(artifactIds)
+    (await confirmAsync(
+      t('optExcludeModal.excludeMsg', { count: numExclude })
+    )) && onExclude(artifactIds)
   const includeArtifacts = async () =>
-    await confirmAsync(t('optExcludeModal.includeMsg', { count: numInclude })) &&
-    onInclude(artifactIds)
+    (await confirmAsync(
+      t('optExcludeModal.includeMsg', { count: numInclude })
+    )) && onInclude(artifactIds)
 
   return (
     <Grid container spacing={1} alignItems="center">

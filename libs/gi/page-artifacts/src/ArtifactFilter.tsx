@@ -1,9 +1,8 @@
-import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import { CardThemed, SqBadge } from '@genshin-optimizer/common/ui'
 import type { ICachedArtifact } from '@genshin-optimizer/gi/db'
 import { useDatabase, useDisplayArtifact } from '@genshin-optimizer/gi/db-ui'
 import type { FilterOption } from '@genshin-optimizer/gi/schema'
-import { ArtifactFilterDisplay } from '@genshin-optimizer/gi/ui'
+import { ArtifactFilterDisplay, confirmAsync } from '@genshin-optimizer/gi/ui'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import LockIcon from '@mui/icons-material/Lock'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
@@ -106,23 +105,27 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
   }, [artifactIds, database])
 
   const unequipArtifacts = async () =>
-    await confirmAsync(
+    (await confirmAsync(
       `Are you sure you want to unequip ${numUnequip} artifacts currently equipped on characters?`
-    ) && artifactIds.map((id) => database.arts.set(id, { location: '' }))
+    )) && artifactIds.map((id) => database.arts.set(id, { location: '' }))
 
   const deleteArtifacts = async () =>
-    await confirmAsync(`Are you sure you want to delete ${numDelete} artifacts?`) &&
+    (await confirmAsync(
+      `Are you sure you want to delete ${numDelete} artifacts?`
+    )) &&
     artifactIds.map(
       (id) => !database.arts.get(id)?.lock && database.arts.remove(id)
     )
 
   const lockArtifacts = async () =>
-    await confirmAsync(`Are you sure you want to lock ${numUnlock} artifacts?`) &&
-    artifactIds.map((id) => database.arts.set(id, { lock: true }))
+    (await confirmAsync(
+      `Are you sure you want to lock ${numUnlock} artifacts?`
+    )) && artifactIds.map((id) => database.arts.set(id, { lock: true }))
 
   const unlockArtifacts = async () =>
-    await confirmAsync(`Are you sure you want to unlock ${numLock} artifacts?`) &&
-    artifactIds.map((id) => database.arts.set(id, { lock: false }))
+    (await confirmAsync(
+      `Are you sure you want to unlock ${numLock} artifacts?`
+    )) && artifactIds.map((id) => database.arts.set(id, { lock: false }))
 
   return (
     <Grid container spacing={1} alignItems="center">

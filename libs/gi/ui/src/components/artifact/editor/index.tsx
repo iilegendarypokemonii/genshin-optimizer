@@ -1,5 +1,4 @@
 import { useDataManagerValues } from '@genshin-optimizer/common/database-ui'
-import { confirmAsync } from '../../../util/confirmAsync'
 import {
   CardThemed,
   DropdownButton,
@@ -78,6 +77,7 @@ import {
   useState,
 } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import { confirmAsync } from '../../../util/confirmAsync'
 import { CustomNumberTextField } from '../../CustomNumberTextField'
 import { LocationAutocomplete } from '../../character'
 import { ArtifactCardObj } from '../ArtifactCard'
