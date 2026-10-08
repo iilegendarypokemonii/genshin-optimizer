@@ -1,4 +1,3 @@
-import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import {
   useDataEntryBase,
   useDataManagerValues,
@@ -17,6 +16,7 @@ import type { WeaponKey } from '@genshin-optimizer/gi/consts'
 import { initialWeapon } from '@genshin-optimizer/gi/db'
 import { useDatabase } from '@genshin-optimizer/gi/db-ui'
 import {
+  confirmAsync,
   WeaponCard,
   WeaponEditor,
   WeaponSelectionModal,
@@ -38,9 +38,11 @@ import {
   Suspense,
   useCallback,
   useDeferredValue,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
+import ReactGA from 'react-ga4'
 import { useTranslation } from 'react-i18next'
 import WeaponFilter, { WeaponRedButtons } from './WeaponFilter'
 
@@ -55,6 +57,9 @@ export default function PageWeapon() {
 
   const [newWeaponModalShow, onNewWeaponModalShow, onNewWeaponModalHide] =
     useBoolState(false)
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: '/weapon' })
+  }, [])
 
   const brPt = useMediaQueryUp()
 
@@ -64,7 +69,7 @@ export default function PageWeapon() {
       if (!weapon) return
       const name = t(`weaponNames_gen:${weapon.key}`)
 
-      if (!await confirmAsync(t('removeWeapon', { value: name }))) return
+      if (!(await confirmAsync(t('removeWeapon', { value: name })))) return
       database.weapons.remove(key)
       if (displayWeapon.editWeaponId === key)
         database.displayWeapon.set({ editWeaponId: '' })

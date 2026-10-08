@@ -11,10 +11,8 @@ import { memo, Suspense } from 'react'
 
 export const OptCharacterCard = memo(function OptCharacterCard({
   characterKey,
-  hideStats,
 }: {
   characterKey: CharacterKey
-  hideStats?: boolean
 }) {
   return (
     <CardThemed bgt="light">
@@ -35,7 +33,7 @@ export const OptCharacterCard = memo(function OptCharacterCard({
         >
           <CharacterCardEquipmentRow />
         </Box>
-        {!hideStats && <CharacterCardStats bgt="light" />}
+        <CharacterCardStats bgt="light" />
       </Suspense>
     </CardThemed>
   )

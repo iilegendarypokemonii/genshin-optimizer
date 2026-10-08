@@ -29,7 +29,8 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import DifferenceIcon from '@mui/icons-material/Difference'
 import { Box, Button, CardContent, Grid, Skeleton } from '@mui/material'
-import { Suspense, useDeferredValue, useMemo, useState } from 'react'
+import { Suspense, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import ReactGA from 'react-ga4'
 import { useTranslation } from 'react-i18next'
 import ArtifactFilter, { ArtifactRedButtons } from './ArtifactFilter'
 import DupModal from './DupModal'
@@ -55,6 +56,10 @@ export default function PageArtifact() {
     () => new Set(effFilter),
     [effFilter]
   ) as Set<SubstatKey>
+
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: '/artifact' })
+  }, [])
 
   const noArtifact = !database.arts.values.length
   const sortConfigs = useMemo(

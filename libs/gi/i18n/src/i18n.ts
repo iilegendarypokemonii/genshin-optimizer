@@ -23,31 +23,19 @@ export const languageCodeList = [
 ]
 
 function getLocaleLoadPath(lng: string, ns: string) {
-  if (typeof window === 'undefined')
-    return `./assets/locales/${lng}/${ns}.json`
+  if (typeof window === 'undefined') return `./assets/locales/${lng}/${ns}.json`
   return new URL(
     `./assets/locales/${lng}/${ns}.json`,
     window.location.href.split('#')[0]
   ).toString()
 }
 
-const commonNamespaces = new Set(['build', 'common', 'loadout'])
-
-function getDevLocaleLoadPath(lng: string, ns: string) {
-  const relativeBase = commonNamespaces.has(ns)
-    ? '../../../common/localization/assets/locales/'
-    : ns === 'sillyWisher_charNames'
-      ? '../../silly-wisher-names/assets/locales/'
-      : ns.endsWith('_gen')
-        ? '../../dm-localization/assets/locales/'
-        : '../../localization/assets/locales/'
-  return new URL(`${relativeBase}${lng}/${ns}.json`, import.meta.url).toString()
-}
-
-function resolveLocaleLoadPath(lngs: string | string[], namespaces: string | string[]) {
+function resolveLocaleLoadPath(
+  lngs: string | string[],
+  namespaces: string | string[]
+) {
   const lng = Array.isArray(lngs) ? lngs[0] : lngs
   const ns = Array.isArray(namespaces) ? namespaces[0] : namespaces
-  if (import.meta.env.DEV) return getDevLocaleLoadPath(lng, ns)
   return getLocaleLoadPath(lng, ns)
 }
 
@@ -60,13 +48,18 @@ function normalizeLanguageCode(lang?: string | null) {
 
 function getInitialLanguage() {
   if (typeof window === 'undefined') return undefined
-  const storedLanguage = normalizeLanguageCode(window.localStorage.getItem('i18nextLng'))
+  const storedLanguage = normalizeLanguageCode(
+    window.localStorage.getItem('i18nextLng')
+  )
   if (storedLanguage) {
     window.localStorage.setItem('i18nextLng', storedLanguage)
     return storedLanguage
   }
 
-  const navigatorLanguages = [window.navigator.language, ...(window.navigator.languages ?? [])]
+  const navigatorLanguages = [
+    window.navigator.language,
+    ...(window.navigator.languages ?? []),
+  ]
   for (const language of navigatorLanguages) {
     const normalized = normalizeLanguageCode(language)
     if (normalized) return normalized

@@ -24,6 +24,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import ReactGA from 'react-ga4'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
 import AdScanner from './AdeptiScanner.png'
@@ -33,6 +34,7 @@ import Irminsul from './Irminsul.webp'
 
 export default function PageScanner() {
   const { t } = useTranslation('page_scanner')
+  ReactGA.send({ hitType: 'pageview', page: '/scanner' })
   return (
     <Box display="flex" flexDirection="column" gap={2}>
       <CardThemed>

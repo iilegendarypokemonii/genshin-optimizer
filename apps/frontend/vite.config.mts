@@ -78,10 +78,6 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 4200,
     host: 'localhost',
-    // Locale assets are sourced from shared libs outside this app root.
-    fs: {
-      allow: ['../..'],
-    },
   },
 
   preview: {

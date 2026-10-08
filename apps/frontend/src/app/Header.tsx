@@ -6,8 +6,8 @@ import { useDatabase, useDBMeta } from '@genshin-optimizer/gi/db-ui'
 import { FlowerIcon } from '@genshin-optimizer/gi/svgicons'
 import { SillyContext } from '@genshin-optimizer/gi/ui'
 import ArticleIcon from '@mui/icons-material/Article'
-import ExtensionIcon from '@mui/icons-material/Extension'
 import BookIcon from '@mui/icons-material/Book'
+import ExtensionIcon from '@mui/icons-material/Extension'
 import GroupsIcon from '@mui/icons-material/Groups'
 import MenuIcon from '@mui/icons-material/Menu'
 import PeopleIcon from '@mui/icons-material/People'
@@ -33,9 +33,9 @@ import type { ReactElement, ReactNode } from 'react'
 import { Suspense, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink, useMatch } from 'react-router-dom'
-import { toolsManifest } from './Tools/toolsManifest'
 import go_icon from './go_icon.png'
 import silly_icon from './silly_icon.png'
+import { toolsManifest } from './Tools/toolsManifest'
 
 type ITab = {
   i18Key: string
@@ -79,7 +79,7 @@ const teams: ITab = {
   textSuffix: <TeamChip key="charAdd" />,
 }
 const tools: ITab = {
-  i18Key: 'Tools',
+  i18Key: 'tabs.tools',
   icon: <ExtensionIcon />,
   to: '/tools',
   value: 'tools',

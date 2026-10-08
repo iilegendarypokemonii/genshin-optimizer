@@ -1,4 +1,3 @@
-import { confirmAsync } from '@genshin-optimizer/gi/ui'
 import {
   CardThemed,
   InfoTooltip,
@@ -9,7 +8,7 @@ import { deepClone } from '@genshin-optimizer/common/util'
 import type { CustomMultiTarget } from '@genshin-optimizer/gi/db'
 import { initCustomMultiTarget } from '@genshin-optimizer/gi/db'
 import { TeamCharacterContext, useDatabase } from '@genshin-optimizer/gi/db-ui'
-import { DataContext } from '@genshin-optimizer/gi/ui'
+import { confirmAsync, DataContext } from '@genshin-optimizer/gi/ui'
 import { UIData } from '@genshin-optimizer/gi/uidata'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
@@ -65,9 +64,9 @@ export function CustomMultiTargetModal({
     (ind: number) => async () => {
       if (
         customMultiTargets[ind].targets.length &&
-        !await confirmAsync(
+        !(await confirmAsync(
           `Are you sure you want to delete "${customMultiTargets[ind].name}"?`
-        )
+        ))
       )
         return
       const customTargets_ = [...customMultiTargets]
@@ -77,7 +76,7 @@ export function CustomMultiTargetModal({
     [customMultiTargets, setCustomTargets]
   )
   const dupCustomMultiTarget = useCallback(
-    (ind: number) => async () => {
+    (ind: number) => () => {
       const customTargets_ = [...customMultiTargets]
       const newTarget = deepClone(customMultiTargets[ind])
       newTarget.name = `${newTarget.name} (Duplicate)`
