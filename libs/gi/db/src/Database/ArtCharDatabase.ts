@@ -17,6 +17,9 @@ import { CharacterDataManager } from './DataManagers/CharacterDataManager'
 import { CharMetaDataManager } from './DataManagers/CharMetaDataManager'
 import { GeneratedBuildListDataManager } from './DataManagers/GeneratedBuildListDataManager'
 import { OptConfigDataManager } from './DataManagers/OptConfigDataManager'
+import { PandoGeneratedBuildListDataManager } from './DataManagers/PandoGeneratedBuildListDataManager'
+import { PandoOptConfigDataManager } from './DataManagers/PandoOptConfigDataManager'
+import { PandoTeamDataManager } from './DataManagers/PandoTeamDataManager'
 import { TeamCharacterDataManager } from './DataManagers/TeamCharacterDataManager'
 import { TeamDataManager } from './DataManagers/TeamDataManager'
 import { TeamDpsDataManager } from './DataManagers/TeamDpsDataManager'
@@ -36,6 +39,9 @@ export class ArtCharDatabase extends Database {
   teamChars: TeamCharacterDataManager
   teams: TeamDataManager
   teamDpsSims: TeamDpsDataManager
+  pandoGeneratedBuildList: PandoGeneratedBuildListDataManager
+  pandoOptConfigs: PandoOptConfigDataManager
+  pandoTeams: PandoTeamDataManager
 
   dbMeta: DBMetaEntry
   displayWeapon: DisplayWeaponEntry
@@ -85,6 +91,9 @@ export class ArtCharDatabase extends Database {
 
     // Standalone: DPS-dummy screenshot simulations per team
     this.teamDpsSims = new TeamDpsDataManager(this)
+    this.pandoGeneratedBuildList = new PandoGeneratedBuildListDataManager(this)
+    this.pandoOptConfigs = new PandoOptConfigDataManager(this)
+    this.pandoTeams = new PandoTeamDataManager(this)
 
     // Handle DataEntries
     this.dbMeta = new DBMetaEntry(this)
@@ -110,6 +119,9 @@ export class ArtCharDatabase extends Database {
     this.teamChars.followAny(updateLastEdit)
     this.teams.followAny(updateLastEdit)
     this.teamDpsSims.followAny(updateLastEdit)
+    this.pandoGeneratedBuildList.followAny(updateLastEdit)
+    this.pandoOptConfigs.followAny(updateLastEdit)
+    this.pandoTeams.followAny(updateLastEdit)
     this.displayWeapon.follow(updateLastEdit)
     this.displayArtifact.follow(updateLastEdit)
     this.displayCharacter.follow(updateLastEdit)
@@ -131,6 +143,9 @@ export class ArtCharDatabase extends Database {
       this.teamChars,
       this.teams,
       this.teamDpsSims,
+      this.pandoGeneratedBuildList,
+      this.pandoOptConfigs,
+      this.pandoTeams,
     ] as const
   }
   get dataEntries() {
