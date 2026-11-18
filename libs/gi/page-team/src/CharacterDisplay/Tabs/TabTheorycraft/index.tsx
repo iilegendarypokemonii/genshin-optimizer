@@ -94,11 +94,14 @@ export default function TabTheorycraft() {
 
   const [status, setStatus] = useState(initialBuildStatus())
   const solving = status.type === 'active'
+  // Set when the last run found no distribution that satisfies the constraints
+  const [noDistributionFound, setNoDistributionFound] = useState(false)
 
   const terminateWorker = useCallback(() => {
     workerRef.current?.terminate()
     workerRef.current = null
     setStatus(initialBuildStatus())
+    setNoDistributionFound(false)
   }, [workerRef])
 
   const { minSubLines, minOtherRolls } = useMemo(
@@ -139,6 +142,7 @@ export default function TabTheorycraft() {
     )
     if (!nodes || !valueFilter) return
     workerRef.current.postMessage({ buildTc, nodes, valueFilter })
+    setNoDistributionFound(false)
     setStatus((s) => ({
       ...s,
       type: 'active',
@@ -160,7 +164,8 @@ export default function TabTheorycraft() {
           }))
           break
         case 'finalize': {
-          const { maxBuffer, distributed, tested, failed, skipped } = data
+          const { found, maxBuffer, distributed, tested, failed, skipped } =
+            data
           setStatus((s) => ({
             ...s,
             type: 'inactive',
@@ -169,9 +174,11 @@ export default function TabTheorycraft() {
             skipped,
             finishTime: performance.now(),
           }))
+          setNoDistributionFound(!found)
 
           if (!apply) {
             console.log({
+              found,
               maxBuffer,
               distributed,
               tested,
@@ -180,6 +187,8 @@ export default function TabTheorycraft() {
             })
             break
           }
+          // Nothing satisfies the constraints, so keep the current substats as they are
+          if (!found) break
 
           setBuildTc((buildTc) => {
             buildTc.artifact.substats.stats = objMap(
@@ -232,16 +241,24 @@ export default function TabTheorycraft() {
     <Stack spacing={1}>
       <Box>
         <Grid container spacing={1} sx={{ justifyContent: 'center' }}>
-          <Grid item xs={8} sm={8} md={3} lg={2.3}>
+          <Grid
+            size={{
+              xs: 8,
+              sm: 8,
+              md: 3,
+              lg: 2.3,
+            }}
+          >
             <CharacterProfileCard />
           </Grid>
           <Grid
-            item
-            xs={12}
-            sm={12}
-            md={9}
-            lg={9.7}
             sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+            size={{
+              xs: 12,
+              sm: 12,
+              md: 9,
+              lg: 9.7,
+            }}
           >
             <CardThemed bgt="light" sx={{ flexGrow: 1, p: 1 }}>
               {dataContextValueWithCompare ? (
@@ -273,11 +290,12 @@ export default function TabTheorycraft() {
           <Box>
             <Grid container spacing={1} sx={{ justifyContent: 'center' }}>
               <Grid
-                item
-                xs={12}
-                md={6}
-                xl={3}
                 sx={{ flexGrow: -1, maxWidth: '400px' }}
+                size={{
+                  xs: 12,
+                  md: 6,
+                  xl: 3,
+                }}
               >
                 <WeaponEditorCard
                   weaponTypeKey={weaponTypeKey}
@@ -285,10 +303,23 @@ export default function TabTheorycraft() {
                 />
                 <StatFilterCard disabled={solving} />
               </Grid>
-              <Grid item xs={12} md={6} xl={4} sx={{ flexGrow: -2 }}>
+              <Grid
+                sx={{ flexGrow: -2 }}
+                size={{
+                  xs: 12,
+                  md: 6,
+                  xl: 4,
+                }}
+              >
                 <ArtifactMainStatAndSetEditor disabled={solving} />
               </Grid>
-              <Grid item xs={12} xl={5} sx={{ flexGrow: 1 }}>
+              <Grid
+                sx={{ flexGrow: 1 }}
+                size={{
+                  xs: 12,
+                  xl: 5,
+                }}
+              >
                 <ArtifactSubCard
                   disabled={solving}
                   maxTotalRolls={maxTotalRolls}
@@ -296,7 +327,13 @@ export default function TabTheorycraft() {
               </Grid>
             </Grid>
           </Box>
-          <Box display="flex" flexDirection="column" gap={1}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+            }}
+          >
             {minOtherRolls > 0 && (
               <Alert severity="warning" variant="filled">
                 <Trans
@@ -311,7 +348,12 @@ export default function TabTheorycraft() {
                 </Trans>
               </Alert>
             )}
-            <Box display="flex" gap={1}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+              }}
+            >
               <OptimizationTargetSelector
                 disabled={solving}
                 optimizationTarget={optimizationTarget}
@@ -374,6 +416,11 @@ export default function TabTheorycraft() {
               </Button>
             )}
             <ScalesWith minOtherRolls={minOtherRolls} />
+            {noDistributionFound && (
+              <Alert severity="warning" variant="filled">
+                {t('tabTheorycraft.noDistributionAlert')}
+              </Alert>
+            )}
             <BuildAlert
               status={status}
               characterKey={characterKey}

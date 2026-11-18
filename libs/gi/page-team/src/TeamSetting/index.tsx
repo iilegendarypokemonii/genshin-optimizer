@@ -247,10 +247,10 @@ function TeamEditor({
         </Trans>
       </Alert>
       <Grid container sx={{ justifyContent: 'space-between' }} spacing={2}>
-        <Grid item>
+        <Grid>
           <Typography variant="h5">{t('teamSettings.title')}</Typography>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             startIcon={<Filter4Icon />}
             onClick={() => setShowMultiSelect(true)}
@@ -261,7 +261,7 @@ function TeamEditor({
       </Grid>
       <Grid container columns={{ xs: 1, md: 2, lg: 4 }} spacing={2}>
         {loadoutData.map((loadoutDatum, ind) => (
-          <Grid item xs={1} key={loadoutDatum?.teamCharId ?? ind}>
+          <Grid key={loadoutDatum?.teamCharId ?? ind} size={1}>
             {loadoutDatum ? (
               <CharSelButton
                 index={ind}

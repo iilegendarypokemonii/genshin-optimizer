@@ -151,8 +151,10 @@ export default function DesktopUpdates() {
       </Button>
       <Dialog
         open={open}
-        onClose={dismiss}
-        disableEscapeKeyDown={working}
+        onClose={(_event, reason) => {
+          if (working && reason === 'escapeKeyDown') return
+          dismiss()
+        }}
         fullWidth
         maxWidth="sm"
         aria-labelledby="desktop-update-title"
@@ -160,7 +162,12 @@ export default function DesktopUpdates() {
         <DialogTitle id="desktop-update-title">Desktop updates</DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 2 }}>
           {currentVersion && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               Installed desktop version: {currentVersion}
             </Typography>
           )}

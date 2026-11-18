@@ -161,13 +161,17 @@ function Content() {
 
   return (
     <Box
-      display="flex"
-      flexDirection="column"
-      minHeight="100vh"
-      position="relative"
-      sx={(theme) => ({
-        background: `radial-gradient(ellipse at top, ${theme.palette.neutral700.main} 0%, ${theme.palette.neutral800.main} 100%)`,
-      })}
+      sx={[
+        {
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          position: 'relative',
+        },
+        (theme) => ({
+          background: `radial-gradient(ellipse at top, ${theme.palette.neutral700.main} 0%, ${theme.palette.neutral800.main} 100%)`,
+        }),
+      ]}
     >
       <Header anchor="back-to-top-anchor" />
       <Container
@@ -203,7 +207,11 @@ function Content() {
       </Container>
 
       {/* make sure footer is always at bottom */}
-      <Box flexGrow={1} />
+      <Box
+        sx={{
+          flexGrow: 1,
+        }}
+      />
       <Snow />
       <Footer />
     </Box>

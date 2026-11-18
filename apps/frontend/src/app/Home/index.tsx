@@ -84,9 +84,11 @@ export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
         >
           <Stack
             direction="row"
-            justifyContent="space-between"
-            alignItems="flex-start"
             spacing={2}
+            sx={{
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}
           >
             <Box>
               <Typography
@@ -121,8 +123,10 @@ export default function PageHome({ extraCard }: { extraCard?: ReactNode }) {
               direction={{ xs: 'column', sm: 'row' }}
               spacing={1}
               useFlexGap
-              flexWrap="wrap"
-              sx={{ mt: 0.5 }}
+              sx={{
+                flexWrap: 'wrap',
+                mt: 0.5,
+              }}
             >
               {serverTimes.map(({ label, value }) => (
                 <Chip

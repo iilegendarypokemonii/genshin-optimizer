@@ -99,7 +99,14 @@ export default function CacheStatusCard({
   return (
     <Card data-testid="cache-status-card">
       <CardContent>
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+            mb: 1,
+          }}
+        >
           <VideogameAssetIcon fontSize="small" />
           <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
             {compact ? 'Wish game cache' : 'Game data'}
@@ -123,7 +130,12 @@ export default function CacheStatusCard({
             Wishes
           </Typography>
         )}
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           {cachedUid
             ? `Wish account in cache: ${cachedUid}${cachedLabel ? ` (${cachedLabel})` : ''}`
             : keyState?.url
@@ -131,7 +143,12 @@ export default function CacheStatusCard({
               : 'No wish-history URL seen yet.'}
         </Typography>
         {outcomeText(lastOutcome) && (
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {outcomeText(lastOutcome)}
           </Typography>
         )}
@@ -141,7 +158,13 @@ export default function CacheStatusCard({
             {[...profiles].sort(bySlotLabel(dbInfos)).map((p) => {
               const label = slotLabel(dbInfos, p.uid)
               return (
-                <Typography key={p.uid} variant="body2" color="text.secondary">
+                <Typography
+                  key={p.uid}
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {label ? `${label} (${p.uid})` : p.uid}: synced{' '}
                   {timeAgo(p.lastSyncMs)}
                 </Typography>
@@ -153,9 +176,11 @@ export default function CacheStatusCard({
         <Stack
           direction="row"
           spacing={1}
-          sx={{ mt: 1.5 }}
-          flexWrap="wrap"
           useFlexGap
+          sx={{
+            flexWrap: 'wrap',
+            mt: 1.5,
+          }}
         >
           {lastOutcome?.kind === 'new-uid' && (
             <Button
@@ -192,17 +217,29 @@ export default function CacheStatusCard({
             <Divider sx={{ my: 2 }} />
             <Stack
               direction="row"
-              justifyContent="space-between"
-              alignItems="center"
               spacing={2}
+              sx={{
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
             >
               <Box>
                 <Typography variant="subtitle2">Account data</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   Artifacts, characters, weapons, and materials, captured
                   separately for each UID
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
+                >
                   {captureState.capturing
                     ? captureState.message
                     : `${captureState.snapshots.length} account snapshots available`}

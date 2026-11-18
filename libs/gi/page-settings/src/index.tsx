@@ -20,10 +20,10 @@ export default function PageSettings() {
       <Divider />
       <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Grid container direction="row" spacing={1}>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <LanguageCard />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <SnowToggle />
           </Grid>
         </Grid>

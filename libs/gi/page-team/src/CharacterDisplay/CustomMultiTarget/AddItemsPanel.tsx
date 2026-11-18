@@ -128,7 +128,7 @@ export default function AddItemsPanel({
       ['addition', 'subtraction', 'multiplication', 'division'] as const
     ).map((operation) => {
       return (
-        <Grid item xs={1.5} key={operation}>
+        <Grid key={operation} size={1.5}>
           <Button
             key={operation}
             onClick={() => addUnit({ type: 'operation', operation })}
@@ -150,7 +150,7 @@ export default function AddItemsPanel({
       'sum_fraction',
     ] as const) {
       result.push(
-        <Grid item xs={1.5} key={enclosing}>
+        <Grid key={enclosing} size={1.5}>
           <Button
             key={enclosing}
             onClick={() =>
@@ -172,7 +172,7 @@ export default function AddItemsPanel({
   const EnclosingPartButtons = useMemo(() => {
     const result = [] as JSX.Element[]
     result.push(
-      <Grid item xs={0.5} key={'priority'}>
+      <Grid key={'priority'} size={0.5}>
         <Button
           key={'priority'}
           onClick={() =>
@@ -189,7 +189,7 @@ export default function AddItemsPanel({
     )
     for (const part of ['comma', 'tail'] as const) {
       result.push(
-        <Grid item xs={0.5} key={part}>
+        <Grid key={part} size={0.5}>
           <Button
             key={part}
             onClick={() => addUnit({ type: 'enclosing', part })}
@@ -224,9 +224,27 @@ export default function AddItemsPanel({
         zIndex: 1000,
       }}
     >
-      <Box display="flex" gap={1}>
-        <Box sx={{ flexGrow: 1 }} display="flex" flexDirection="column" gap={1}>
-          <Box display="flex" gap={1} flexWrap="wrap">
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            flexGrow: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              flexWrap: 'wrap',
+            }}
+          >
             {noFunctions ? null : (
               <>
                 <Button
@@ -284,7 +302,10 @@ export default function AddItemsPanel({
           onClose={onClose}
           setTarget={(target, multi) => {
             onClose()
-            addUnit({ type: 'target', target: initCustomTarget(target, multi) })
+            addUnit({
+              type: 'target',
+              target: initCustomTarget(target, multi),
+            })
           }}
           excludeSections={['bonusStats', 'character', 'custom']}
         />

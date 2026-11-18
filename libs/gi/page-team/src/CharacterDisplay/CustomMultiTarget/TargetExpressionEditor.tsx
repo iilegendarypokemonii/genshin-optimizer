@@ -287,7 +287,14 @@ export default function TargetExpressionEditor({
         addItem={addExpressionItem}
         noFunctions={!_setFunctions}
       />
-      <Box display="flex" flexDirection="column" gap={1} pb={'60vh'}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          pb: '60vh',
+        }}
+      >
         {expressionDisplays}
       </Box>
       {itemConfigPanel}

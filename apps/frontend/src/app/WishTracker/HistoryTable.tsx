@@ -53,9 +53,11 @@ export default function HistoryTable({ wishes }: { wishes: Wish[] }) {
         <Stack
           direction="row"
           spacing={2}
-          alignItems="center"
-          sx={{ mb: 1.5 }}
-          flexWrap="wrap"
+          sx={{
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            mb: 1.5,
+          }}
         >
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             History

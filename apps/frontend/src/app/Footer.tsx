@@ -21,12 +21,15 @@ function FooterContent() {
       elevation={0}
     >
       <Box
-        display="flex"
-        justifyContent="space-between"
-        sx={{ px: 2, py: 1 }}
-        gap={2}
-        flexWrap="wrap"
-        alignItems="center"
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: 2,
+          px: 2,
+          py: 1,
+          flexWrap: 'wrap',
+          alignItems: 'center',
+        }}
       >
         <Typography variant="caption" sx={{ color: 'neutral400.main' }}>
           <Trans t={t} i18nKey="ui:rightsDisclaimer">

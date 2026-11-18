@@ -35,9 +35,11 @@ export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
       <CardContent>
         <Stack
           direction="row"
-          justifyContent="space-between"
-          alignItems="center"
           spacing={2}
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <Typography variant="h6">Capture account data</Typography>
           <Chip
@@ -51,7 +53,13 @@ export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
           the game was already open, fully close and restart it after starting
           capture.
         </Typography>
-        <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mt: 1,
+          }}
+        >
           Capture can run for up to four hours. Each login creates a snapshot
           for its captured UID. Wishes use the separate wish-history authkey;
           account-data capture does not need it.
@@ -66,8 +74,10 @@ export function CaptureControls({ standaloneUrl }: { standaloneUrl: string }) {
           onChange={(event) => setMode(event.target.value as CaptureMode)}
           disabled={busy || state.capturing}
           helperText={methodDescription}
-          FormHelperTextProps={{
-            sx: { '&.Mui-disabled': { color: 'text.secondary' } },
+          slotProps={{
+            formHelperText: {
+              sx: { '&.Mui-disabled': { color: 'text.secondary' } },
+            },
           }}
           size="small"
           sx={{ mb: 2, width: 540, maxWidth: '100%' }}

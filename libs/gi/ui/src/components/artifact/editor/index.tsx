@@ -426,7 +426,14 @@ export function ArtifactEditor({
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Grid container spacing={1} columns={{ xs: 1, md: 2 }}>
             {/* Left column */}
-            <Grid item xs={1} display="flex" flexDirection="column" gap={1}>
+            <Grid
+              size={1}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+              }}
+            >
               {/* set & rarity */}
               <Box sx={{ display: 'flex', gap: 1 }}>
                 {/* Artifact Set */}
@@ -449,7 +456,12 @@ export function ArtifactEditor({
               </Box>
 
               {/* level */}
-              <Box component="div" display="flex">
+              <Box
+                component="div"
+                sx={{
+                  display: 'flex',
+                }}
+              >
                 <CustomNumberTextField
                   id="filled-basic"
                   label={t('editor.level')}
@@ -492,7 +504,12 @@ export function ArtifactEditor({
               </Box>
 
               {/* slot */}
-              <Box component="div" display="flex">
+              <Box
+                component="div"
+                sx={{
+                  display: 'flex',
+                }}
+              >
                 <ArtifactSlotDropdown
                   disabled={
                     disableEditSlot ||
@@ -506,7 +523,11 @@ export function ArtifactEditor({
                 />
                 <CardThemed bgt="light" sx={{ p: 1, ml: 1, flexGrow: 1 }}>
                   <Suspense fallback={<Skeleton width="60%" />}>
-                    <Typography color="text.secondary">
+                    <Typography
+                      sx={{
+                        color: 'text.secondary',
+                      }}
+                    >
                       {artifact ? (
                         <span>
                           <ImgIcon
@@ -532,9 +553,11 @@ export function ArtifactEditor({
               {/* main stat */}
               <Box
                 component="div"
-                display="flex"
-                gap={1}
                 data-testid="main-stat"
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                }}
               >
                 <DropdownButton
                   startIcon={
@@ -566,7 +589,11 @@ export function ArtifactEditor({
                   ))}
                 </DropdownButton>
                 <CardThemed bgt="light" sx={{ p: 1, flexGrow: 1 }}>
-                  <Typography color="text.secondary">
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
                     {artifact
                       ? getMainStatDisplayStr(
                           artifact.mainStatKey,
@@ -612,8 +639,18 @@ export function ArtifactEditor({
                   >
                     {/* TODO: artifactDispatch not overwrite */}
                     <Suspense fallback={<Skeleton width="100%" height="100" />}>
-                      <Grid container spacing={1} alignItems="center">
-                        <Grid item flexGrow={1}>
+                      <Grid
+                        container
+                        spacing={1}
+                        sx={{
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Grid
+                          sx={{
+                            flexGrow: 1,
+                          }}
+                        >
                           <label htmlFor="contained-button-file">
                             <InputInvis
                               accept="image/*"
@@ -624,6 +661,7 @@ export function ArtifactEditor({
                             />
                             <Button
                               component="span"
+                              nativeButton={false}
                               startIcon={<PhotoCamera />}
                             >
                               {t('editor.uploadBtn')}
@@ -633,11 +671,11 @@ export function ArtifactEditor({
                           </label>
                         </Grid>
                         {shouldShowDevComponents && debugImgs && (
-                          <Grid item>
+                          <Grid>
                             <DebugModal imgs={debugImgs} />
                           </Grid>
                         )}
-                        <Grid item>
+                        <Grid>
                           <Button
                             color="info"
                             sx={{ px: 2, minWidth: 0 }}
@@ -649,17 +687,24 @@ export function ArtifactEditor({
                       </Grid>
 
                       {imageURL && (
-                        <Box display="flex" justifyContent="center">
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Box
                             component="img"
                             src={imageURL}
-                            width="100%"
-                            maxWidth={350}
-                            height="auto"
                             alt={
                               fileName ||
                               'Screenshot to parse for artifact values'
                             }
+                            sx={{
+                              width: '100%',
+                              maxWidth: 350,
+                              height: 'auto',
+                            }}
                           />
                         </Box>
                       )}
@@ -674,7 +719,12 @@ export function ArtifactEditor({
                       )}
                       {!!queueTotal && (
                         <CardThemed sx={{ pl: 2 }}>
-                          <Box display="flex" alignItems="center">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
                             {!!scanningNum && <CircularProgress size="1em" />}
                             <Typography sx={{ flexGrow: 1, ml: 1 }}>
                               <span>
@@ -700,7 +750,14 @@ export function ArtifactEditor({
               )}
             </Grid>
             {/* Right column */}
-            <Grid item xs={1} display="flex" flexDirection="column" gap={1}>
+            <Grid
+              size={1}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+              }}
+            >
               {/* substat selections */}
               {[0, 1, 2, 3].map((index) => (
                 <SubstatInput
@@ -734,13 +791,21 @@ export function ArtifactEditor({
           {/* Duplicate/Updated/Edit UI */}
           {old && (
             <Grid container sx={{ justifyContent: 'space-around' }} spacing={1}>
-              <Grid item xs={12} md={5.5} lg={4}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 5.5,
+                  lg: 4,
+                }}
+              >
                 <CardThemed bgt="light">
                   <Typography
-                    sx={{ textAlign: 'center' }}
-                    py={1}
                     variant="h6"
-                    color="text.secondary"
+                    sx={{
+                      py: 1,
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                    }}
                   >
                     {oldType !== 'edit'
                       ? oldType === 'duplicate'
@@ -753,24 +818,35 @@ export function ArtifactEditor({
               </Grid>
               {grmd && (
                 <Grid
-                  item
-                  md={1}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
+                  size={{
+                    md: 1,
+                  }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 >
                   <CardThemed bgt="light" sx={{ display: 'flex' }}>
                     <ChevronRight sx={{ fontSize: 40 }} />
                   </CardThemed>
                 </Grid>
               )}
-              <Grid item xs={12} md={5.5} lg={4}>
+              <Grid
+                size={{
+                  xs: 12,
+                  md: 5.5,
+                  lg: 4,
+                }}
+              >
                 <CardThemed bgt="light">
                   <Typography
-                    sx={{ textAlign: 'center' }}
-                    py={1}
                     variant="h6"
-                    color="text.secondary"
+                    sx={{
+                      py: 1,
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                    }}
                   >
                     {t('editor.preview')}
                   </Typography>
@@ -789,7 +865,12 @@ export function ArtifactEditor({
             </Alert>
           )}
           {/* Buttons */}
-          <Box display="flex" gap={2}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+            }}
+          >
             {oldType === 'edit' ? (
               <Button
                 startIcon={<Add />}
@@ -900,7 +981,13 @@ function DebugModal({ imgs }: { imgs: Record<string, string> }) {
               {Object.entries(imgs).map(([key, url]) => (
                 <Box key={key}>
                   <Typography>{key}</Typography>
-                  <Box component="img" src={url} maxWidth="100%" />
+                  <Box
+                    component="img"
+                    src={url}
+                    sx={{
+                      maxWidth: '100%',
+                    }}
+                  />
                 </Box>
               ))}
             </Stack>

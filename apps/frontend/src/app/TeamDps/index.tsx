@@ -279,7 +279,13 @@ export default function TeamDpsPage() {
         if (isDesktop) void handleFiles(e.dataTransfer.files)
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <SpeedIcon fontSize="large" />
         <Typography variant="h4">Team DPS</Typography>
         <Chip size="small" label={`${visible.length} teams`} />
@@ -357,11 +363,18 @@ export default function TeamDpsPage() {
         <Stack
           direction="row"
           spacing={1}
-          alignItems="center"
-          flexWrap="wrap"
           useFlexGap
+          sx={{
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
         >
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             Filter
           </Typography>
           {teamCharacters.map((ck) => {
@@ -412,7 +425,11 @@ export default function TeamDpsPage() {
       {!allEntries.length && (
         <CardThemed>
           <CardContent>
-            <Typography color="text.secondary">
+            <Typography
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               No team simulations yet. Run the DPS dummy trounce in game,
               screenshot the results, and drop the screenshot here (or paste it
               with Ctrl+V) to start tracking your teams.
@@ -421,7 +438,11 @@ export default function TeamDpsPage() {
         </CardThemed>
       )}
       {!!allEntries.length && !filtered.length && (
-        <Typography color="text.secondary">
+        <Typography
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           Nothing matches the current account selection and filters.
         </Typography>
       )}

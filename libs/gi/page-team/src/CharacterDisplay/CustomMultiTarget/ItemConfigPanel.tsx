@@ -282,7 +282,13 @@ export default function ItemConfigPanel({
     if (sia.type === 'function' || sia.type === 'argument') {
       const _item = item as CustomFunction | CustomFunctionArgument
       result.push(
-        <Box sx={{ display: 'flex', gap: 1 }} flexDirection="column">
+        <Box
+          sx={{
+            flexDirection: 'column',
+            display: 'flex',
+            gap: 1,
+          }}
+        >
           <Box sx={{ display: 'flex', gap: 1 }}>
             <TextFieldLazy
               fullWidth
@@ -470,7 +476,14 @@ function UnitConfig({
   }, [avana, focusToSIA, setUnit, sia.index, sia.layer, unit])
 
   return (
-    <Box sx={{ flexGrow: 1 }} display="flex" flexDirection="column" gap={1}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        flexGrow: 1,
+      }}
+    >
       {config}
     </Box>
   )
@@ -478,7 +491,7 @@ function UnitConfig({
 
 const keys = [...allInputPremodKeys]
 const wrapperFunc = (e: JSX.Element, key?: string) => (
-  <Grid item key={key} xs={1}>
+  <Grid key={key} size={1}>
     {e}
   </Grid>
 )
@@ -564,11 +577,11 @@ function TargetUnitConfig({
         </DropdownButton>
       </Box>
       <Grid container columns={{ xs: 1, md: 2 }} spacing={1}>
-        <Grid item xs={1}>
+        <Grid size={1}>
           <Box>
             <Grid container columns={{ xs: 1 }} sx={{ pt: 1 }} spacing={1}>
               {(isMeleeAuto || isTransformativeReaction) && (
-                <Grid item xs={1}>
+                <Grid size={1}>
                   <DropdownButton
                     title={infusionVals[infusionAura ?? '']}
                     color={infusionAura || 'secondary'}
@@ -599,7 +612,7 @@ function TargetUnitConfig({
             </Grid>
           </Box>
         </Grid>
-        <Grid item xs={1}>
+        <Grid size={1}>
           <TextFieldLazy
             fullWidth
             label="Target Description"

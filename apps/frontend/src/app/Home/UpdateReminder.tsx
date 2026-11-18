@@ -103,10 +103,12 @@ export function UpdateReminder() {
     >
       <Stack
         direction="row"
-        alignItems="center"
         spacing={1.5}
-        flexWrap="wrap"
         useFlexGap
+        sx={{
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
       >
         <Chip
           size="small"

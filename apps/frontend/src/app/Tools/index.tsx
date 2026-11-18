@@ -78,13 +78,27 @@ export default function ToolsPage() {
       >
         <ExtensionIcon />
         <Typography variant="h5">Tools</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            ml: 0.5,
+          }}
+        >
           Tools and resources for Genshin Impact
         </Typography>
       </Box>
       <Grid container spacing={1}>
         {toolsManifest.map((tool) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={tool.id}>
+          <Grid
+            key={tool.id}
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 4,
+              lg: 3,
+            }}
+          >
             <ToolCard
               tool={tool}
               extraLinks={tool.dynamicLinks?.(dbInfos)}

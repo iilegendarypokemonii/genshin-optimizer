@@ -208,7 +208,14 @@ export default function ReviewDialog({
                   ? Math.round((dmg / totalNum) * 100)
                   : undefined
               return (
-                <Stack key={i} direction="row" spacing={1} alignItems="center">
+                <Stack
+                  key={i}
+                  direction="row"
+                  spacing={1}
+                  sx={{
+                    alignItems: 'center',
+                  }}
+                >
                   <Button
                     onClick={() => setPickerSlot(i)}
                     startIcon={
@@ -234,7 +241,12 @@ export default function ReviewDialog({
                     }}
                     size="small"
                   />
-                  <Typography sx={{ minWidth: 48 }} color="text.secondary">
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                      minWidth: 48,
+                    }}
+                  >
                     {pct !== undefined ? `${pct}%` : ''}
                   </Typography>
                 </Stack>
@@ -283,7 +295,13 @@ export default function ReviewDialog({
                 fullWidth
               />
             </Stack>
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                justifyContent: 'flex-end',
+              }}
+            >
               <Button onClick={onCancel} color="secondary">
                 Cancel
               </Button>

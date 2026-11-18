@@ -38,8 +38,10 @@ export function BatchAccountSelection({
       <CardContent>
         <Stack
           direction="row"
-          justifyContent="space-between"
-          alignItems="center"
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <Typography variant="h6">Import multiple accounts</Typography>
           <Button
@@ -52,7 +54,13 @@ export function BatchAccountSelection({
             Select all
           </Button>
         </Stack>
-        <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            my: 1,
+          }}
+        >
           Review the login snapshots together after playing. Each account uses
           its own UID, destination, and backup. Loot or upgrades after login are
           not included.

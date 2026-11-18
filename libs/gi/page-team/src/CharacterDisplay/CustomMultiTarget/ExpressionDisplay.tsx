@@ -252,7 +252,12 @@ export default function ExpressionDisplay({
   }
 
   return (
-    <Box display="flex" gap={1}>
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+      }}
+    >
       <SolidToggleButtonGroup
         sx={{ flexWrap: 'wrap', alignItems: 'flex-start' }}
         value={sirpaList}

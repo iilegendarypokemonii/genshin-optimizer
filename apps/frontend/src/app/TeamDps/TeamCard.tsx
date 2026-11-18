@@ -103,18 +103,29 @@ function RunRow({
   const [notesDraft, setNotesDraft] = useState('')
   return (
     <Stack spacing={0.25}>
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <Typography
           variant="caption"
-          color="text.secondary"
-          sx={{ minWidth: 28, fontWeight: 600 }}
+          sx={{
+            color: 'text.secondary',
+            minWidth: 28,
+            fontWeight: 600,
+          }}
         >
           {run.patch ?? patchForDate(run.date) ?? '-'}
         </Typography>
         <Typography
           variant="caption"
-          color="text.secondary"
-          sx={{ minWidth: 110 }}
+          sx={{
+            color: 'text.secondary',
+            minWidth: 110,
+          }}
         >
           {new Date(run.date).toLocaleDateString()}{' '}
           {new Date(run.date).toLocaleTimeString([], {
@@ -129,7 +140,12 @@ function RunRow({
           <ContributionBar run={run} nameMap={nameMap} />
         </Box>
         {run.timeElapsedSec !== undefined && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {run.timeElapsedSec}s
           </Typography>
         )}
@@ -179,7 +195,12 @@ function RunRow({
         />
       ) : (
         (run.notes || run.reactions) && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {[run.notes, run.reactions].filter(Boolean).join('  |  ')}
           </Typography>
         )
@@ -260,11 +281,21 @@ export default function TeamCard({
           flexDirection: 'column',
         }}
       >
-        <Stack direction="row" spacing={1.5} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <Typography
             variant="body2"
-            color="text.secondary"
-            sx={{ minWidth: 22, textAlign: 'right', fontWeight: 700 }}
+            sx={{
+              color: 'text.secondary',
+              minWidth: 22,
+              textAlign: 'right',
+              fontWeight: 700,
+            }}
           >
             {rank}
           </Typography>
@@ -323,9 +354,11 @@ export default function TeamCard({
           <Box sx={{ flexGrow: 1 }} />
           <Typography
             variant="caption"
-            color="text.secondary"
             noWrap
-            sx={{ flexShrink: 0 }}
+            sx={{
+              color: 'text.secondary',
+              flexShrink: 0,
+            }}
           >
             {sim.runs.length} run{sim.runs.length === 1 ? '' : 's'}
             {latest ? `, ${new Date(latest.date).toLocaleDateString()}` : ''}
@@ -340,7 +373,13 @@ export default function TeamCard({
         </Stack>
         <Collapse in={expanded}>
           <Stack spacing={1} sx={{ pt: 1 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                alignItems: 'center',
+              }}
+            >
               <Box sx={{ flexGrow: 1 }} />
               <Button
                 size="small"

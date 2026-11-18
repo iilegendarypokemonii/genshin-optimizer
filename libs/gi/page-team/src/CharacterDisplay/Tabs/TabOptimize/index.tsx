@@ -552,19 +552,28 @@ export default function TabBuild() {
     builds.length + (graphBuilds ? graphBuilds.length : 0)
 
   return (
-    <Box display="flex" flexDirection="column" gap={1}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+      }}
+    >
       {noArtifact && <NoArtWarning />}
       {/* Build Generator Editor */}
       <Grid container spacing={1}>
         {/* 1*/}
         <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={3}
-          display="flex"
-          flexDirection="column"
-          gap={1}
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 3,
+          }}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
         >
           <OptCharacterCard characterKey={characterKey} />
           <BonusStatsCard />
@@ -572,13 +581,16 @@ export default function TabBuild() {
         </Grid>
         {/* 2 */}
         <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={4}
-          display="flex"
-          flexDirection="column"
-          gap={1}
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 4,
+          }}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
         >
           {/* Level Filter */}
           <LevelFilter
@@ -598,7 +610,13 @@ export default function TabBuild() {
             </CardContent>
             <Divider />
             <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
                 <AssumeFullLevelToggle
                   mainStatAssumptionLevel={mainStatAssumptionLevel}
                   setmainStatAssumptionLevel={(
@@ -658,13 +676,16 @@ export default function TabBuild() {
 
         {/* 3 */}
         <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={5}
-          display="flex"
-          flexDirection="column"
-          gap={1}
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 5,
+          }}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
         >
           <ArtifactSetConfig disabled={generatingBuilds} />
 
@@ -691,7 +712,12 @@ export default function TabBuild() {
           }
         >
           <MenuItem>
-            <Typography variant="caption" color="info.main">
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'info.main',
+              }}
+            >
               {t('buildDropdownDesc')}
             </Typography>
           </MenuItem>
@@ -719,7 +745,12 @@ export default function TabBuild() {
           }
         >
           <MenuItem>
-            <Typography variant="caption" color="info.main">
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'info.main',
+              }}
+            >
               {t('threadDropdownDesc')}
             </Typography>
           </MenuItem>
@@ -812,7 +843,14 @@ export default function TabBuild() {
       {optimizationTarget && (
         <CardThemed bgt="light">
           <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={1}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 1,
+              }}
+            >
               <Typography sx={{ flexGrow: 1 }}>
                 {builds ? (
                   <span>
@@ -855,15 +893,25 @@ export default function TabBuild() {
                 {t('clearBuildsBtn')}
               </Button>
             </Box>
-            <Grid container display="flex" spacing={1}>
-              <Grid item>
+            <Grid
+              container
+              spacing={1}
+              sx={{
+                display: 'flex',
+              }}
+            >
+              <Grid>
                 <HitModeToggle size="small" />
               </Grid>
-              <Grid item>
+              <Grid>
                 <ReactionToggle size="small" />
               </Grid>
-              <Grid item flexGrow={1} />
-              <Grid item>
+              <Grid
+                sx={{
+                  flexGrow: 1,
+                }}
+              />
+              <Grid>
                 <CompareBtn />
               </Grid>
             </Grid>

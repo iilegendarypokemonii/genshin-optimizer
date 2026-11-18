@@ -102,7 +102,13 @@ export default function WishTrackerPage() {
 
   return (
     <Box sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <CasinoIcon fontSize="large" />
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Wish Tracker
@@ -144,7 +150,13 @@ export default function WishTrackerPage() {
       </Stack>
 
       <Collapse in={isDesktop && showSettings} unmountOnExit>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <TextField
             size="small"
             fullWidth
@@ -204,13 +216,23 @@ export default function WishTrackerPage() {
           )}
           {active && (
             <>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 UID {active.uid} · {active.file.wishes.length.toLocaleString()}{' '}
                 wishes · last export {active.file.exported || 'unknown'}
               </Typography>
               <Grid container spacing={2}>
                 {(characterEventStats || chronicledStats) && (
-                  <Grid item xs={12} md={6}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      md: 6,
+                    }}
+                  >
                     <Stack spacing={2}>
                       {characterEventStats && (
                         <BannerStatsCard
@@ -231,7 +253,12 @@ export default function WishTrackerPage() {
                   </Grid>
                 )}
                 {!!secondaryStats?.length && (
-                  <Grid item xs={12} md={6}>
+                  <Grid
+                    size={{
+                      xs: 12,
+                      md: 6,
+                    }}
+                  >
                     <Stack spacing={2}>
                       {secondaryStats.map((stats) => (
                         <BannerStatsCard

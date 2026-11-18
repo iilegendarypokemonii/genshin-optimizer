@@ -10,9 +10,9 @@ import type {
 import {
   Autocomplete,
   Chip,
+  ListItem,
   ListItemIcon,
   ListItemText,
-  MenuItem,
   Skeleton,
   TextField,
   useTheme,
@@ -77,24 +77,25 @@ export function GeneralAutocomplete<T extends string>({
           ? (theme.palette[variant] as PaletteColor | undefined)?.main
           : undefined
         const valueKey = value?.key
-        const { InputLabelProps, InputProps, inputProps, ...restParams } =
-          params
         return (
           <TextField
-            {...restParams}
+            {...params}
             {...(textFieldProps as TextFieldProps)}
             label={label}
-            InputProps={{
-              ...InputProps,
-              startAdornment:
-                typeof valueKey === 'string' ? toImg(valueKey) : undefined,
-            }}
-            inputProps={{
-              ...inputProps,
-              autoComplete: 'new-password', // disable autocomplete and autofill
-              style: { color },
-            }}
             color={valueKey ? 'success' : 'primary'}
+            slotProps={{
+              ...params.slotProps,
+              input: {
+                ...params.slotProps.input,
+                startAdornment:
+                  typeof valueKey === 'string' ? toImg(valueKey) : undefined,
+              },
+              htmlInput: {
+                ...params.slotProps.htmlInput,
+                autoComplete: 'new-password', // disable autocomplete and autofill
+                style: { color },
+              },
+            }}
           />
         )
       }}
@@ -103,12 +104,7 @@ export function GeneralAutocomplete<T extends string>({
         const { key, ...rest } =
           props as React.HTMLAttributes<HTMLLIElement> & { key: string }
         return (
-          <MenuItem
-            value={option.key}
-            sx={{ whiteSpace: 'normal' }}
-            key={key}
-            {...rest}
-          >
+          <ListItem sx={{ whiteSpace: 'normal' }} key={key} {...rest}>
             <ListItemIcon>{toImg(option.key)}</ListItemIcon>
             <ListItemText color={option.color}>
               <Suspense fallback={<Skeleton variant="text" width={100} />}>
@@ -126,7 +122,7 @@ export function GeneralAutocomplete<T extends string>({
               </Suspense>
             </ListItemText>
             {!!option.favorite && <FavoriteIcon />}
-          </MenuItem>
+          </ListItem>
         )
       }}
       filterOptions={(options, { inputValue }) =>
@@ -188,36 +184,47 @@ export function GeneralAutocompleteMulti<T extends string>({
         <TextField
           {...params}
           label={label}
-          inputProps={{
-            ...params.inputProps,
-            autoComplete: 'new-password', // disable autocomplete and autofill
-          }}
           color={keys.length ? 'success' : 'primary'}
+          slotProps={{
+            ...params.slotProps,
+
+            htmlInput: {
+              ...params.slotProps.htmlInput,
+              autoComplete: 'new-password', // disable autocomplete and autofill
+            },
+          }}
         />
       )}
-      renderOption={(props, option) => (
-        <MenuItem value={option.key} {...props} key={option.key}>
-          <ListItemIcon>{toImg(option.key)}</ListItemIcon>
-          <ListItemText>
-            <Suspense fallback={<Skeleton variant="text" width={100} />}>
-              <ColorText color={option.color} sx={{ display: 'flex', gap: 1 }}>
-                {keys.includes(option.key) ? (
-                  <strong>{option.label}</strong>
-                ) : (
-                  <span>{option.label}</span>
-                )}
-                {toExItemLabel?.(option.key)}
-              </ColorText>
-            </Suspense>
-          </ListItemText>
-          {!!option.favorite && <FavoriteIcon />}
-        </MenuItem>
-      )}
-      renderTags={(selected, getTagProps) =>
+      renderOption={(props, option) => {
+        const { key, ...rest } =
+          props as React.HTMLAttributes<HTMLLIElement> & { key: string }
+        return (
+          <ListItem sx={{ whiteSpace: 'normal' }} key={key} {...rest}>
+            <ListItemIcon>{toImg(option.key)}</ListItemIcon>
+            <ListItemText>
+              <Suspense fallback={<Skeleton variant="text" width={100} />}>
+                <ColorText
+                  color={option.color}
+                  sx={{ display: 'flex', gap: 1 }}
+                >
+                  {keys.includes(option.key) ? (
+                    <strong>{option.label}</strong>
+                  ) : (
+                    <span>{option.label}</span>
+                  )}
+                  {toExItemLabel?.(option.key)}
+                </ColorText>
+              </Suspense>
+            </ListItemText>
+            {!!option.favorite && <FavoriteIcon />}
+          </ListItem>
+        )
+      }}
+      renderValue={(selected, getItemProps) =>
         selected.map(({ key, label, color: variant }, index) => (
           <Chip
             {...chipProps}
-            {...getTagProps({ index })}
+            {...getItemProps({ index })}
             key={`${index}${key}${label}`}
             icon={toImg(key)}
             label={

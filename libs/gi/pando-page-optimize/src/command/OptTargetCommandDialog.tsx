@@ -1,4 +1,5 @@
 import { ModalWrapper } from '@genshin-optimizer/common/ui'
+import { CharacterContext, useDatabase } from '@genshin-optimizer/gi/db-ui'
 import type { FormulaRef } from '@genshin-optimizer/gi/formula'
 import { sameFormula } from '@genshin-optimizer/gi/formula'
 import type { CatalogJoinedRow } from '@genshin-optimizer/gi/formula-ui'
@@ -11,12 +12,12 @@ import {
   useGiCalcContext,
   useResolvedOptTarget,
 } from '@genshin-optimizer/gi/formula-ui'
-import { CharacterContext, useDatabase } from '@genshin-optimizer/gi/db-ui'
 import SearchIcon from '@mui/icons-material/Search'
 import {
   Box,
   Divider,
   InputAdornment,
+  MenuList,
   Stack,
   TextField,
   Typography,
@@ -128,23 +129,32 @@ export function OptTargetCommandDialog({
       >
         <Box>
           <Typography variant="subtitle1">{t('commandPickTarget')}</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+            }}
+          >
             {t('commandShortcutTarget')}
           </Typography>
         </Box>
 
         <Stack
           direction="row"
-          flexWrap="wrap"
-          gap={1}
-          alignItems="center"
-          sx={{ width: '100%' }}
+          sx={{
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+            width: '100%',
+          }}
         >
           <Box sx={{ flex: '1 1 200px', minWidth: 0 }}>
             <Typography
               variant="caption"
-              color="text.secondary"
-              display="block"
+              sx={{
+                color: 'text.secondary',
+                display: 'block',
+              }}
             >
               {t('optTarget')}
             </Typography>
@@ -155,7 +165,9 @@ export function OptTargetCommandDialog({
                 <Typography
                   component="span"
                   variant="body2"
-                  color="text.secondary"
+                  sx={{
+                    color: 'text.secondary',
+                  }}
                 >
                   {t('selectOptTarget')}
                 </Typography>
@@ -175,41 +187,49 @@ export function OptTargetCommandDialog({
           placeholder={t('commandSearchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          inputProps={commandSearchInputProps}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+
+            htmlInput: commandSearchInputProps,
           }}
         />
 
         <Box sx={{ overflow: 'auto', flex: 1, minHeight: 0, mx: -0.5 }}>
           {hasResults ? (
-            <OptFormulaSections
-              characterKey={characterKey}
-              statRows={filteredStatRows}
-              otherRows={filteredOtherRows}
-              categorySections={filteredCategorySections}
-              renderRow={(row) => {
-                const formulaRef = refFromJoinedRow(row)
-                if (!formulaRef) return null
-                return (
-                  <OptTargetFieldMenuItem
-                    key={`${formulaRef.sheet}:${formulaRef.name}:${formulaRef.dim}`}
-                    formulaRef={formulaRef}
-                    selected={sameFormula(currentRef, formulaRef)}
-                    onSelect={() => onSelectRef(formulaRef)}
-                  />
-                )
-              }}
-            />
+            <MenuList dense disablePadding>
+              <OptFormulaSections
+                characterKey={characterKey}
+                statRows={filteredStatRows}
+                otherRows={filteredOtherRows}
+                categorySections={filteredCategorySections}
+                renderRow={(row) => {
+                  const formulaRef = refFromJoinedRow(row)
+                  if (!formulaRef) return null
+                  return (
+                    <OptTargetFieldMenuItem
+                      key={`${formulaRef.sheet}:${formulaRef.name}:${formulaRef.dim}`}
+                      formulaRef={formulaRef}
+                      selected={sameFormula(currentRef, formulaRef)}
+                      onSelect={() => onSelectRef(formulaRef)}
+                    />
+                  )
+                }}
+              />
+            </MenuList>
           ) : (
             <Typography
               variant="body2"
-              color="text.secondary"
-              sx={{ py: 2, px: 1 }}
+              sx={{
+                color: 'text.secondary',
+                py: 2,
+                px: 1,
+              }}
             >
               {t('commandSearchNoResults')}
             </Typography>

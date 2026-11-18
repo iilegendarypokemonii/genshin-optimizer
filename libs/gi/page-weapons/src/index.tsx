@@ -186,7 +186,13 @@ export default function PageWeapon() {
   }
 
   return (
-    <Box display="flex" flexDirection="column" gap={1}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+      }}
+    >
       <Suspense fallback={false}>
         <WeaponSelectionModal
           show={newWeaponModalShow}
@@ -211,10 +217,12 @@ export default function PageWeapon() {
       <CardThemed>
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            flexWrap="wrap"
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
           >
             <TextField
               autoFocus
@@ -225,7 +233,9 @@ export default function PageWeapon() {
               }
               label={t('weaponName')}
               sx={{ height: '100%' }}
-              InputProps={{ sx: { height: '100%' } }}
+              slotProps={{
+                input: { sx: { height: '100%' } },
+              }}
             />
             <ShowingAndSortOptionSelect
               showingTextProps={showingTextProps}
@@ -253,7 +263,7 @@ export default function PageWeapon() {
         </Button>
         <Grid container spacing={1} columns={columns}>
           {weaponIdsToShow.map((weaponId) => (
-            <Grid item key={weaponId} xs={1}>
+            <Grid key={weaponId} size={1}>
               <WeaponCard
                 weaponId={weaponId}
                 onDelete={deleteWeapon}

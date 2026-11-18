@@ -39,7 +39,7 @@ export default function ArtifactFilter({
       <CardThemed>
         <CardContent>
           <Grid container>
-            <Grid item>
+            <Grid>
               <Typography variant="h6">
                 <Trans t={t} i18nKey="artifactFilter">
                   Artifact Filter
@@ -47,17 +47,18 @@ export default function ArtifactFilter({
               </Typography>
             </Grid>
             <Grid
-              item
-              flexGrow={1}
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
+              sx={{
+                flexGrow: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
             >
               <Typography>
                 <strong>{numShowing}</strong> / {total}
               </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Button
                 size="small"
                 color="error"
@@ -128,8 +129,20 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
     )) && artifactIds.map((id) => database.arts.set(id, { lock: false }))
 
   return (
-    <Grid container spacing={1} alignItems="center">
-      <Grid item xs={12} sm={6} md={3}>
+    <Grid
+      container
+      spacing={1}
+      sx={{
+        alignItems: 'center',
+      }}
+    >
+      <Grid
+        size={{
+          xs: 12,
+          sm: 6,
+          md: 3,
+        }}
+      >
         <Button
           fullWidth
           color="error"
@@ -145,7 +158,13 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
           </SqBadge>
         </Button>
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 6,
+          md: 3,
+        }}
+      >
         <Button
           fullWidth
           color="error"
@@ -161,7 +180,13 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
           </SqBadge>
         </Button>
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 6,
+          md: 3,
+        }}
+      >
         <Button
           fullWidth
           color="error"
@@ -177,7 +202,13 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
           </SqBadge>
         </Button>
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 6,
+          md: 3,
+        }}
+      >
         <Button
           fullWidth
           color="error"
@@ -193,8 +224,19 @@ export function ArtifactRedButtons({ artifactIds }: { artifactIds: string[] }) {
           </SqBadge>
         </Button>
       </Grid>
-      <Grid item xs={12} display="flex" justifyContent="space-around">
-        <Typography variant="caption" color="text.secondary">
+      <Grid
+        size={12}
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-around',
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+          }}
+        >
           <Trans t={t} i18nKey="buttonHint">
             Note: the red buttons above only apply to
             <b>currently filtered artifacts</b>

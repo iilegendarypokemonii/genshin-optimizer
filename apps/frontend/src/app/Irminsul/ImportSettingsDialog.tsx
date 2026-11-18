@@ -91,11 +91,13 @@ export function ImportSettingsDialog({
                         fullWidth
                         disabled={!categories[category]}
                         value={draft[key]}
-                        inputProps={{
-                          min,
-                          max,
-                          step: 1,
-                          'aria-label': `${category} ${label.toLowerCase()}`,
+                        slotProps={{
+                          htmlInput: {
+                            min,
+                            max,
+                            step: 1,
+                            'aria-label': `${category} ${label.toLowerCase()}`,
+                          },
                         }}
                         onChange={(e) =>
                           setDraft((s) => ({

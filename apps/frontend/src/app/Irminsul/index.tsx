@@ -56,7 +56,12 @@ export default function IrminsulPage() {
   return (
     <Box sx={{ py: 2 }} data-testid="game-data-page">
       <Typography variant="h4">Game data</Typography>
-      <Typography color="text.secondary" sx={{ mb: 2 }}>
+      <Typography
+        sx={{
+          color: 'text.secondary',
+          mb: 2,
+        }}
+      >
         Account inventory and wish history for each account.
       </Typography>
       <Tabs
@@ -303,9 +308,11 @@ function AccountData() {
         <CardContent>
           <Stack
             direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mb: 2 }}
+            sx={{
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
           >
             <Typography variant="h6">Account snapshots</Typography>
             <Button disabled={working} onClick={() => setSettingsOpen(true)}>
@@ -313,7 +320,11 @@ function AccountData() {
             </Button>
           </Stack>
           {!selected ? (
-            <Typography color="text.secondary">
+            <Typography
+              sx={{
+                color: 'text.secondary',
+              }}
+            >
               Completed scans will appear here, separately for each account.
             </Typography>
           ) : (
@@ -336,14 +347,26 @@ function AccountData() {
                   </MenuItem>
                 ))}
               </TextField>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mt: 1,
+                }}
+              >
                 Captured {new Date(selected.capturedAtMs).toLocaleString()}.
                 This is inventory at login; scan again after farming or
                 upgrading.
               </Typography>
               <Grid container spacing={1} sx={{ my: 1 }}>
                 {dataCategories.map((category) => (
-                  <Grid item xs={6} sm={3} key={category}>
+                  <Grid
+                    key={category}
+                    size={{
+                      xs: 6,
+                      sm: 3,
+                    }}
+                  >
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -364,7 +387,12 @@ function AccountData() {
                   </Grid>
                 ))}
               </Grid>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 Import settings filter the selected categories for every
                 account. With the default settings, export includes all rarities
                 at their actual levels. Optimizer import supports 3–5-star
