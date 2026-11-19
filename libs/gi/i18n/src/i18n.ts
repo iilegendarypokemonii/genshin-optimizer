@@ -23,11 +23,15 @@ export const languageCodeList = [
 ]
 
 function getLocaleLoadPath(lng: string, ns: string) {
-  if (typeof window === 'undefined') return `./assets/locales/${lng}/${ns}.json`
-  return new URL(
-    `./assets/locales/${lng}/${ns}.json`,
-    window.location.href.split('#')[0]
-  ).toString()
+  const relativePath = `./assets/locales/${lng}/${ns}.json`
+  // Under Vitest (jsdom) an absolute URL becomes a pending request to a server
+  // that does not exist, which suspends components that render synchronously.
+  const runningUnderVitest = Boolean(
+    (globalThis as { process?: { env?: Record<string, string | undefined> } })
+      .process?.env?.['VITEST']
+  )
+  if (typeof window === 'undefined' || runningUnderVitest) return relativePath
+  return new URL(relativePath, window.location.href.split('#')[0]).toString()
 }
 
 function resolveLocaleLoadPath(
